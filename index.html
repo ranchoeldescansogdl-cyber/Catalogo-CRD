@@ -804,7 +804,7 @@ const SEMENTALES = [
 "predicado": "STER CAMPEON",
 "predmaternos": "STER PREF*5/STB/STER PREF*6/STER",
 "misma": 20000,
-"otra": 10000,
+"otra": null,
 "foto": "sem-dusse.webp"
 },
   {
@@ -836,7 +836,7 @@ const SEMENTALES = [
 "predicado": "",
 "predmaternos": "",
 "misma": 15000,
-"otra": 10000,
+"otra": null,
 "foto": "sem-marcopolo.webp"
 },
   {
@@ -852,7 +852,7 @@ const SEMENTALES = [
 "predicado": "",
 "predmaternos": "",
 "misma": 15000,
-"otra": 10000,
+"otra": null,
 "foto": "sem-nydals.webp"
 },
   {
@@ -868,7 +868,7 @@ const SEMENTALES = [
 "predicado": "",
 "predmaternos": "",
 "misma": 15000,
-"otra": 10000,
+"otra": null,
 "foto": ""
 }
 ];
@@ -1121,7 +1121,7 @@ async function loadStuds(){
       capa:pick(up(col(m,"capa")),b.capa), nacimiento:pick(col(m,"nacimiento"),b.nacimiento), alzada:pick(col(m,"alzada m"),b.alzada),
       padre:pick(up(col(m,"padre")),b.padre), madre:pick(up(col(m,"madre")),b.madre), abuelo:pick(up(col(m,"abuelo materno")),b.abuelo),
       predicado:pick(col(m,"predicado propio")||splitPred(col(m,"predicados"))[0],b.predicado), predmaternos:pick(col(m,"predicados maternos")||splitPred(col(m,"predicados"))[1],b.predmaternos),
-      misma:parseMoney(col(r,"monta misma raza"))??b.misma, otra:parseMoney(col(r,"monta otra raza"))??b.otra,
+      misma:parseMoney(col(r,"monta misma raza"))??b.misma, otra:(/^\s*no\b/i.test(col(r,"monta otra raza"))?null:(parseMoney(col(r,"monta otra raza"))??b.otra)),
       antes_misma:antesM, antes_otra:antesO, promo:col(r,"promocion"), nota:col(r,"nota"), foto:col(r,"foto")};
   });
   if(list.length){ SEMENTALES.length=0; SEMENTALES.push(...list); renderStuds(); }
@@ -1275,7 +1275,7 @@ function renderStuds(){
         ${s.predicado?`<p class="stud-pred">${esc(s.predicado)}</p>`:""}
         ${s.nota?`<p class="stud-note">${esc(s.nota)}</p>`:""}
         ${preds.length?`<p class="stud-lbl">Línea materna</p><ul class="preds">${preds.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:""}
-        <dl class="fees"><div><dt>${lbl}</dt><dd>${s.antes_misma?`<s>${money(s.antes_misma)}</s>`:""}${money(s.misma)}</dd></div><div><dt>Yegua de otra raza</dt><dd>${s.antes_otra?`<s>${money(s.antes_otra)}</s>`:""}${money(s.otra)}</dd></div></dl>
+        <dl class="fees"><div><dt>${lbl}</dt><dd>${s.antes_misma?`<s>${money(s.antes_misma)}</s>`:""}${money(s.misma)}</dd></div>${s.otra!=null?`<div><dt>Yegua de otra raza</dt><dd>${s.antes_otra?`<s>${money(s.antes_otra)}</s>`:""}${money(s.otra)}</dd></div>`:""}</dl>
         <a class="btn btn-gold-line btn-sm" href="${waLink(msg)}" target="_blank" rel="noopener">Reservar monta</a>
       </article>`;}).join("")}</div></div>`;
   }).join("");
