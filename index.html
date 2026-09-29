@@ -1428,7 +1428,7 @@ function renderPacks(){
   const list=TARIFAS.filter(t=>t.servicio==="sesion"&&t.precio);
   if(!list.length){ box.innerHTML=""; return; }
   box.innerHTML=list.map(p=>{
-    const hot=p.tipo==="manana", prod=p.tipo==="produccion", dep=Math.round(p.precio*(p.anticipo||0.5));
+    const hot=p.tipo==="tarde", prod=p.tipo==="produccion", dep=Math.round(p.precio*(p.anticipo||0.5));
     const cal=CONFIG.CAL_USER && CONFIG.CAL_EVENTS[p.tipo] && !prod;
     const btn = cal ? `<button class="btn btn-dark" type="button" data-cal="${esc(p.tipo)}">Elegir fecha y hora</button>`
                     : `<a class="btn ${hot?"btn-dark":"btn-line"}" data-wa-pack="${esc(p.tipo)}" href="${waLink(prod?`Hola, me interesa una producción en Rancho El Descanso (medio día desde ${money(p.precio)}). Te cuento el proyecto:`:`Hola, quiero agendar la sesión de fotos ${PACK_LBL[p.tipo]||p.tipo} (${money(p.precio)}) en Rancho El Descanso. Fecha tentativa: `)}" target="_blank" rel="noopener">${WA_SVG_JS}${prod?"Cotizar producción":"Agendar por WhatsApp"}</a>`;
