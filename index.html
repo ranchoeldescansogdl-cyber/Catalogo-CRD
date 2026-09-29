@@ -164,6 +164,14 @@ h3.sec{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:34px 
 .feature-inner{max-width:var(--wrap);width:100%;margin:0 auto;padding:0 var(--pad) clamp(40px,6vw,80px)}
 .feature .sec-lede{color:rgba(255,255,255,.82)}
 .feature .motto{margin-bottom:10px}
+.exfr-date{font-family:var(--display);font-size:clamp(1.05rem,2vw,1.3rem);color:var(--paper);letter-spacing:.02em;margin:-4px 0 16px}
+.exfr-quote{font-family:var(--display);font-style:italic;color:var(--gold-light);border-left:2px solid var(--gold);padding-left:14px;margin:0 0 22px;max-width:60ch}
+.exfr-stats{display:flex;flex-wrap:wrap;gap:14px 44px;margin:0 0 22px;padding:0;list-style:none}
+.exfr-stats li{display:flex;flex-direction:column}
+.exfr-stats b{font-family:var(--display);font-weight:400;font-size:clamp(1.6rem,3.4vw,2.2rem);color:var(--gold);line-height:1}
+.exfr-stats span{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-top:6px}
+.exfr-note{font-size:.92rem;color:rgba(255,255,255,.78);max-width:70ch;margin:0 0 24px}
+.exfr-note strong{color:var(--paper);font-weight:500}
 .gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:clamp(200px,27vw,360px);gap:clamp(10px,1.4vw,18px)}
 .gallery figure{margin:0;overflow:hidden;border-radius:2px;background:var(--mist)}
 .gallery img{width:100%;height:100%;object-fit:cover}
@@ -617,14 +625,18 @@ footer p{margin:6px 0 0}
 </section>
 
 <section class="feature" id="exfr" aria-labelledby="t-exfr">
-  <img src="experiencia.webp" alt="Exhibición de caballos Gypsy Vanner al atardecer en la Experiencia Friesian" loading="lazy">
+  <img src="experiencia.webp" alt="Exhibición de caballos Gypsy Vanner al atardecer en La Experiencia Friesian" loading="lazy">
   <div class="feature-inner">
-    <p class="motto">Experiencia Friesian · Sexta edición</p>
-    <h2 class="sec-title" id="t-exfr">La casa de la Experiencia Friesian</h2>
-    <p class="sec-lede">El evento en México dedicado por completo al Friesian y al Gypsy Vanner. Reúne a criadores, expertos y amantes de ambas razas, con sementales y yeguas premiadas, arte, música en vivo y gastronomía. La sexta edición se celebró el 22 de noviembre de 2025.</p>
-    <ul class="feature-facts"><li>Rienda larga y dressage</li><li>Yeguas cremello de ojos azules</li><li>Evento privado, por invitación</li></ul>
+    <p class="motto">La Experiencia Friesian · Séptima edición</p>
+    <h2 class="sec-title" id="t-exfr">La Experiencia Friesian 2027</h2>
+    <p class="exfr-date">20 de noviembre de 2027 · 2:00 a 11:00 pm · Rancho El Descanso</p>
+    <p class="sec-lede">Un evento exclusivo y privado, únicamente por invitación, que reúne a más de 1,000 personalidades del ámbito social, cultural y empresarial de México. Espectáculo ecuestre de élite con Friesian y Gypsy Vanner, arte plástico contemporáneo, gastronomía premium y música en vivo.</p>
+    <p class="exfr-quote">“No es un evento de caballos. Es el evento social del año.”</p>
+    <ul class="exfr-stats"><li><b>+1,000</b><span>Invitados</span></li><li><b>VII</b><span>Edición</span></li><li><b>9 h</b><span>De experiencia</span></li></ul>
+    <ul class="feature-facts"><li>Espectáculo ecuestre de élite</li><li>Arte plástico en vivo</li><li>Gastronomía y spirits premium</li><li>Música en vivo y Zona VIP</li><li>Happenings de patrocinadores</li></ul>
+    <p class="exfr-note">Con los campeones de la <strong>Inspección KFPS México 2026</strong>: Dusse Van (Campeón General), Mens (Campeón de Reserva) e Ygram (3er lugar), además de Nico y las yeguas premiadas Areane (Model) y Vien Fan (Crown). Zona Azul y Zona VIP · solo mayores de edad.</p>
     <div class="actions">
-      <a class="btn btn-wa" data-wa-exfr href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Quiero invitación a la próxima</a>
+      <a class="btn btn-wa" data-wa-exfr href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Solicitar invitación</a>
       <a class="btn btn-ghost" href="https://ranchoeldescanso.com/exfr/" target="_blank" rel="noopener">Ver la edición 2025</a>
     </div>
   </div>
@@ -1325,7 +1337,7 @@ document.querySelectorAll("#f-mares button").forEach(b=>b.onclick=()=>{mareFilte
 renderStuds(); renderMares();
 document.querySelectorAll("[data-wa-event]").forEach(a=>a.href=waLink("Hola, me gustaría cotizar un evento en Rancho El Descanso. Tipo de evento: , fecha tentativa: , número de invitados: ."));
 document.querySelectorAll("[data-wa-shoot]").forEach(a=>a.href=waLink("Hola, me interesa agendar una sesión fotográfica en Rancho El Descanso."));
-document.querySelectorAll("[data-wa-exfr]").forEach(a=>a.href=waLink("Hola, me gustaría recibir invitación a la próxima Experiencia Friesian en Rancho El Descanso."));
+document.querySelectorAll("[data-wa-exfr]").forEach(a=>a.href=waLink("Hola, me gustaría recibir invitación a La Experiencia Friesian 2027 (20 de noviembre) en Rancho El Descanso."));
 
 /* ================== EVENTOS, SESIONES Y APARTADOS ================== */
 const numv = v => { const n=parseFloat(String(v??"").replace(/[^0-9.\-]/g,"")); return isFinite(n)?n:0; };
