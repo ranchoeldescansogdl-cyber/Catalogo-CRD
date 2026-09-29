@@ -288,6 +288,7 @@ section[id],main[id]{scroll-margin-top:20px}
 .mare-cross{font-family:var(--display);font-size:1.2rem;line-height:1.25;margin:0}
 .mare-cross em{font-style:normal;color:var(--gold-deep);padding:0 4px}
 .mare-note{font-size:.88rem;color:var(--muted);margin:0}
+.mare-pred{font-size:.9rem;color:var(--gold-deep);margin:0;letter-spacing:.02em}
 .mare-date{margin-top:auto;padding-top:8px;font-size:.93rem;font-weight:500}
 .mare-ask{font-size:.88rem;color:var(--gold-deep);text-decoration:underline;text-underline-offset:4px}
 
@@ -494,7 +495,7 @@ footer p{margin:6px 0 0}
     <div class="hero-body">
       <p class="motto">Ride the legacy, own the excellence.</p>
       <h1 class="brand">Caballos en venta</h1>
-      <p class="lede">Friesian y Gypsy Vanner criados en Rancho El Descanso, Guadalajara. Criadero con certificación KFPS. Revisa genealogía y predicados de cada ejemplar, y agenda una visita.</p>
+      <p class="lede">Friesian y Gypsy Vanner criados en Rancho El Descanso, Guadalajara. Criadero con certificación KFPS. Revisa genealogía y predicados de cada ejemplar, y agenda una visita. Si lo requieres, facturamos la compra de tu caballo.</p>
       <div class="hero-actions">
         <a class="btn btn-wa" data-wa href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Escribir por WhatsApp</a>
         <a class="btn btn-ghost" href="#catalogo">Ver ejemplares</a>
@@ -578,6 +579,7 @@ footer p{margin:6px 0 0}
       <h3>Temporada 2027</h3>
       <p class="season" id="season-start">La temporada de nacimientos inicia en febrero de 2027.</p>
       <p class="season">Lista abierta en Friesian y Gypsy Vanner. Quien aparta primero, escoge primero.</p>
+      <p class="season">Facturamos tu potro si lo requieres.</p>
       <a class="btn btn-dark" data-wa-queue href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Apartar mi lugar</a>
     </aside>
   </div>
@@ -1034,7 +1036,7 @@ const SEMENTALES = [
 ];
 const VIENTRES = [
   {
-"madre": "TROYA VAN DE SANRO",
+"madre": "TROYA",
 "raza": "Friesian",
 "semental": "Menso Jede",
 "parto": "2027-02",
@@ -1292,7 +1294,9 @@ async function loadMares(){
   const rows=await fetchCSV(CONFIG.REPRODUCCION_CSV_URL); if(!rows) return;
   const list=rows.filter(r=>si(col(r,"publicar lista espera"))).map(r=>{
     const d=parseDate(col(r,"parto estimado"));
-    return {madre:col(r,"yegua"), raza:col(r,"raza"), semental:col(r,"semental"), dato:col(r,"dato para web"), publicar:true,
+    const [pred]=splitPred(col(r,"predicados yegua"));
+    return {madre:col(r,"nombre yegua")||col(r,"yegua"), raza:col(r,"raza"), semental:col(r,"semental"), dato:col(r,"dato para web"), publicar:true,
+      alzada:col(r,"alzada yegua"), pred, padre:col(r,"padre yegua"), madreMadre:col(r,"madre yegua"),
       parto:d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`:""};
   });
   VIENTRES.length=0; VIENTRES.push(...list); renderMares();
@@ -1360,6 +1364,7 @@ function openFicha(h){
       <p class="sheet-meta">${esc(metaLine(h))}</p>
       ${h.promo?`<span class="sheet-promo">${esc(h.promo)}</span>`:""}
       <p class="sheet-price">${esc(priceText(h))}${h.precioN?"<small>MXN</small>":""}</p>
+      <p class="sheet-dep">Facturamos si lo requieres.</p>
       <div class="sheet-actions">
         <a class="btn btn-dark" href="${waLink(msg)}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Preguntar por ${esc(h.nombreVis)}</a>
         <button class="btn btn-line" type="button" id="share">Copiar enlace</button>
@@ -1531,6 +1536,16 @@ function renderStuds(){
   });
 }
 let mareFilter="";
+function mareInfo(v){
+  const pred=v.pred||(v.raza==="Friesian"?v.dato:"");
+  const rows=[];
+  if(pred) rows.push(`<p class="mare-pred">${esc(pred)}</p>`);
+  const alt=alz(v.alzada);
+  if(alt) rows.push(`<p class="mare-note">Alzada de la yegua: ${esc(alt)}</p>`);
+  if(v.padre||v.madreMadre) rows.push(`<p class="mare-note">Padres de la yegua: ${esc([v.padre,v.madreMadre].filter(Boolean).map(displayName).join(" × "))}</p>`);
+  if(v.raza!=="Friesian"&&v.dato) rows.push(`<p class="mare-note">Capa de la yegua: ${esc(displayName(v.dato))}</p>`);
+  return rows.join("");
+}
 function renderMares(){
   const box=$("#mares"); if(!box) return;
   const first=VIENTRES.filter(v=>v.publicar&&v.parto).map(v=>v.parto).sort()[0];
@@ -1544,7 +1559,7 @@ function renderMares(){
     return `<a class="mare" href="${waLink(msg)}" target="_blank" rel="noopener">
       <span class="mare-breed">${esc(v.raza)}</span>
       <p class="mare-cross">${esc(madre)}<em>×</em>${esc(v.semental)}</p>
-      ${v.dato?`<p class="mare-note">${v.raza==="Friesian"?"Predicado de la madre":"Capa de la madre"}: ${esc(v.raza==="Friesian"?v.dato:displayName(v.dato))}</p>`:""}
+      ${mareInfo(v)}
       <span class="mare-date">${esc(cuando)}</span>
       <span class="mare-ask">Preguntar por esta cruza</span>
     </a>`;}).join("") || `<p class="empty">No hay yeguas publicadas con este filtro.</p>`;
