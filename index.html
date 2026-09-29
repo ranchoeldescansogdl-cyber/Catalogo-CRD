@@ -244,6 +244,25 @@ section[id],main[id]{scroll-margin-top:20px}
 .btn-gold-line:hover{background:var(--gold);color:var(--black)}
 .fine{font-size:.88rem;color:var(--muted);margin:22px 0 0}
 .dark .fine{color:rgba(255,255,255,.55)}
+/* Sementales: abrir ficha con fotos y videos */
+.stud-card .plate[data-open]{cursor:zoom-in}
+.stud-name button{all:unset;cursor:pointer}
+.stud-name button:hover,.stud-name button:focus-visible{text-decoration:underline;text-decoration-color:var(--gold);text-underline-offset:6px}
+.stud-media{position:absolute;right:10px;bottom:10px;z-index:3;display:inline-flex;align-items:center;gap:6px;background:rgba(0,0,0,.66);color:var(--paper);border:1px solid rgba(206,179,92,.55);font-size:.78rem;padding:4px 10px;border-radius:999px;pointer-events:none}
+.stud-media svg{width:11px;height:11px;fill:var(--gold)}
+.carrusel .sl-dots{bottom:44px}
+.stud-more{all:unset;cursor:pointer;color:var(--gold);font-size:.92rem;text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:1px;align-self:flex-start}
+.stud-more:hover{color:var(--gold-light)}
+.plate-vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1}
+.thumbs .th-vid{position:relative;background:var(--black)}
+.thumbs .th-vid::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.35) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='rgba(0,0,0,.55)' stroke='%23ceb35c'/%3E%3Cpath d='M10 8l6 4-6 4z' fill='%23ceb35c'/%3E%3C/svg%3E") center/30px no-repeat}
+.sheet .fees{border-color:var(--rule);margin-top:26px}
+.sheet .fees div + div{border-color:var(--rule)}
+.sheet .fees dt,.sheet .fees small,.sheet .fees s{color:var(--muted)}
+.sheet .fees dd{color:var(--gold-deep)}
+.sheet .stud-note{color:var(--ink);margin-top:12px}
+.sheet .stud-pred{color:var(--gold-deep);margin-top:14px}
+.media-count{font-size:.85rem;color:var(--muted);margin:0}
 
 /* ---------- Potros 2027 ---------- */
 .foals-top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(28px,5vw,72px);align-items:start}
@@ -928,7 +947,8 @@ const SEMENTALES = [
 "predmaternos": "STER/STER/STER/STER",
 "misma": 20000,
 "otra": 10000,
-"foto": "sem-ygram.webp"
+"foto": "sem-ygram.webp",
+"video": "https://drive.google.com/file/d/17ceAJYwoBty2Q_waaHlw6v6ndEpmXPzJ/view"
 },
   {
 "id": "CRD-FR-028",
@@ -976,7 +996,8 @@ const SEMENTALES = [
 "predmaternos": "",
 "misma": 15000,
 "otra": null,
-"foto": "sem-marcopolo.webp"
+"foto": "sem-marcopolo.webp",
+"video": "https://drive.google.com/file/d/1FbHww1vONA8ectHclkUC15RhMTNt3MHa/view"
 },
   {
 "id": "CRD-GV-043",
@@ -1261,9 +1282,10 @@ async function loadStuds(){
       padre:pick(up(col(m,"padre")),b.padre), madre:pick(up(col(m,"madre")),b.madre), abuelo:pick(up(col(m,"abuelo materno")),b.abuelo),
       predicado:pick(col(m,"predicado propio")||splitPred(col(m,"predicados"))[0],b.predicado), predmaternos:pick(col(m,"predicados maternos")||splitPred(col(m,"predicados"))[1],b.predmaternos),
       misma:parseMoney(col(r,"monta misma raza"))??b.misma, otra:(/^\s*no\b/i.test(col(r,"monta otra raza"))?null:(parseMoney(col(r,"monta otra raza"))??b.otra)),
-      antes_misma:antesM, antes_otra:antesO, promo:col(r,"promocion"), nota:col(r,"nota"), foto:[col(r,"foto"), col(m,"link foto")].filter(Boolean).join(", ")};
+      antes_misma:antesM, antes_otra:antesO, promo:col(r,"promocion"), nota:col(r,"nota"), foto:[col(r,"foto"), col(m,"link foto")].filter(Boolean).join(", "),
+      video:[col(r,"video"), col(m,"link video")].filter(Boolean).join(", ")};
   });
-  if(list.length){ SEMENTALES.length=0; SEMENTALES.push(...list); renderStuds(); }
+  if(list.length){ SEMENTALES.length=0; SEMENTALES.push(...list); renderStuds(); if(location.hash.startsWith("#/semental/")) route(); }
 }
 // Lista de espera: pestaña REPRODUCCION, filas con "Publicar lista espera" = SI
 async function loadMares(){
@@ -1378,6 +1400,8 @@ function closeFicha(){
   document.title="Caballos en venta | Rancho El Descanso";
 }
 function route(){
+  const st=location.hash.match(/^#\/semental\/(.+)/);
+  if(st){ const s=SEMENTALES.find(x=>slug(x.nombre)===decodeURIComponent(st[1])); if(s) return openStud(s); }
   const m=location.hash.match(/^#\/(.+)/);
   if(m){ const h=HORSES.find(x=>x.id===m[1]); if(h) return openFicha(h); }
   const d=$("#ficha"); if(d.open) d.close();
@@ -1388,6 +1412,77 @@ function route(){
 const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 function mesTxt(s){ const m=String(s||"").match(/^(\d{4})-(\d{2})/); return m?`${MESES[+m[2]-1]} ${m[1]}`:""; }
 const NUM=["cero","un","dos","tres","cuatro","cinco","seis","siete","ocho","nueve","diez","once","doce"];
+function studMedia(s){
+  const vistas=new Set();
+  const fotos=String(s.foto||"").split(/[\s,;]+/).filter(x=>/^(https?:\/\/|[\w-]+\.(webp|jpe?g|png)$)/i.test(x)).map(driveImg).filter(u=>!vistas.has(u)&&vistas.add(u));
+  const vids=links(s.video).map(u=>{
+    const y=ytId(u); if(y) return {src:`https://www.youtube-nocookie.com/embed/${y}`, th:`https://i.ytimg.com/vi/${y}/hqdefault.jpg`, key:"yt"+y};
+    const d=driveId(u); if(d) return {src:`https://drive.google.com/file/d/${d}/preview`, th:`https://drive.google.com/thumbnail?id=${d}&sz=w400`, key:"dr"+d};
+    return {link:u, key:u};
+  }).filter(v=>!vistas.has(v.key)&&vistas.add(v.key));
+  return {fotos,vids};
+}
+function openStud(s){
+  const d=$("#ficha"), {fotos,vids}=studMedia(s);
+  const items=[...fotos.map(f=>({t:"img",src:f,th:f})), ...vids.filter(v=>v.src).map(v=>({t:"vid",src:v.src,th:v.th}))];
+  const extLinks=vids.filter(v=>v.link);
+  const nac=parseDate(s.nacimiento);
+  const alt=`${s.nombre}, semental ${s.raza}`;
+  const view=i=>{ const it=items[i]; if(!it) return `<div class="plate" role="img" aria-label="${esc(s.nombre)}, foto próximamente"><span class="plate-mark"></span><span class="plate-note">Foto próximamente</span></div>`;
+    return it.t==="img"?`<div class="plate"><img class="plate-bg" src="${esc(it.src)}" alt="" aria-hidden="true"><img src="${esc(it.src)}" alt="${esc(alt)}"></div>`
+      :`<div class="plate plate-vid"><iframe src="${esc(it.src)}" title="Video de ${esc(s.nombre)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`; };
+  const facts=[["Nacimiento",nac?`${fmtDate(nac)} (${age(nac)})`:""],["Alzada",alz(s.alzada)],["Capa",s.capa||""]].filter(x=>x[1]);
+  const ped=(cls,label,val)=>`<div class="ped ${cls}${val?"":" ped-empty"}"><span>${label}</span><strong>${val?esc(val):"Sin dato"}</strong></div>`;
+  const preds=String(s.predmaternos||"").split("/").map(x=>x.trim()).filter(Boolean);
+  const lbl=s.raza==="Friesian"?"Yegua Friesian":"Yegua Gypsy Vanner";
+  const msg=`Hola, me interesa una monta con ${s.nombre} (${s.raza}) de Rancho El Descanso. ¿Me dan información de disponibilidad?`;
+  const nF=items.filter(x=>x.t==="img").length, nV=items.length-nF;
+  const cuenta=[nF&&(nF===1?"1 foto":nF+" fotos"), nV&&(nV===1?"1 video":nV+" videos")].filter(Boolean).join(" · ");
+  d.innerHTML=`
+  <div class="sheet">
+    <div class="sheet-media">
+      <div id="cover">${view(0)}</div>
+      ${items.length>1?`<div class="thumbs">${items.map((it,i)=>`<button type="button" data-i="${i}" aria-current="${i===0}" aria-label="${it.t==="vid"?"Video":"Foto"} ${i+1}"${it.t==="vid"?' class="th-vid"':""}><img src="${esc(it.th)}" alt="" onerror="this.style.visibility='hidden'"></button>`).join("")}</div>`:""}
+      ${cuenta?`<p class="media-count">${cuenta}</p>`:""}
+      ${extLinks.map(v=>`<a class="video-link" href="${esc(v.link)}" target="_blank" rel="noopener">Ver video de ${esc(s.nombre)}</a>`).join("")}
+    </div>
+    <div class="sheet-body">
+      <button class="close" type="button" aria-label="Cerrar ficha"><svg viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.6"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+      <h2 class="sheet-name" id="ficha-nombre">${esc(s.nombre)}</h2>
+      <p class="sheet-meta">Semental ${esc(s.raza)}</p>
+      ${s.promo?`<span class="sheet-promo">${esc(s.promo)}</span>`:""}
+      ${s.predicado?`<p class="stud-pred">${esc(s.predicado)}</p>`:""}
+      ${s.nota?`<p class="stud-note">${esc(s.nota)}</p>`:""}
+      <dl class="fees"><div><dt>${lbl}</dt><dd>${s.antes_misma?`<s>${money(s.antes_misma)}</s>`:""}${money(s.misma)}<small>+ IVA</small></dd></div>${s.otra!=null?`<div><dt>Yegua de otra raza</dt><dd>${s.antes_otra?`<s>${money(s.antes_otra)}</s>`:""}${money(s.otra)}<small>+ IVA</small></dd></div>`:""}</dl>
+      <div class="sheet-actions">
+        <a class="btn btn-dark" href="${CONFIG.KOALENDAR.maquila?esc(CONFIG.KOALENDAR.maquila):waLink(msg)}" target="_blank" rel="noopener">Reservar monta con ${esc(s.nombre)}</a>
+        <button class="btn btn-line" type="button" id="share">Copiar enlace</button>
+      </div>
+      ${facts.length?`<dl class="facts">${facts.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>`:""}
+      <h3 class="sec">Genealogía</h3>
+      <div class="pedigree">
+        <div class="ped ped-self"><span>${esc(s.raza)}</span><strong>${esc(s.nombre)}</strong></div>
+        ${ped("ped-sire","Padre",s.padre)}
+        ${ped("ped-dam","Madre",s.madre)}
+        ${ped("ped-damsire","Abuelo materno",s.abuelo)}
+      </div>
+      ${preds.length?`<h3 class="sec">Línea materna</h3><ul class="preds">${preds.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:""}
+    </div>
+  </div>`;
+  d.querySelector(".close").onclick=()=>closeFicha();
+  d.querySelectorAll(".thumbs button").forEach(b=>b.onclick=()=>{
+    $("#cover",d).innerHTML=view(+b.dataset.i);
+    d.querySelectorAll(".thumbs button").forEach(x=>x.setAttribute("aria-current",x===b));
+  });
+  $("#share",d).onclick=async e=>{
+    try{ await navigator.clipboard.writeText(location.href); e.target.textContent="Enlace copiado"; }
+    catch{ e.target.textContent="No se pudo copiar"; }
+  };
+  document.title=`${s.nombre}, semental ${s.raza} | Rancho El Descanso`;
+  track("ViewContent",{content_name:s.nombre,content_category:"semental "+s.raza});
+  if(!d.open) d.showModal();
+  d.scrollTop=0;
+}
 function renderStuds(){
   const box=$("#studs"); if(!box) return;
   const nF=SEMENTALES.filter(s=>s.raza==="Friesian").length, nG=SEMENTALES.filter(s=>s.raza==="Gypsy Vanner").length, n=nF+nG;
@@ -1399,19 +1494,20 @@ function renderStuds(){
     const list=SEMENTALES.filter(s=>s.raza===raza); if(!list.length) return "";
     return `<div class="stud-group"><h3>${raza}</h3><div class="studs">${list.map(s=>{
       const nac=parseDate(s.nacimiento);
-      const vistas=new Set(), fotos=String(s.foto||"").split(/[\s,;]+/).filter(x=>/^(https?:\/\/|[\w-]+\.(webp|jpe?g|png)$)/i.test(x)).map(driveImg).filter(u=>!vistas.has(u)&&vistas.add(u));
+      const {fotos,vids}=studMedia(s), sid=slug(s.nombre);
       const meta=[s.capa, alz(s.alzada), nac?age(nac):""].filter(Boolean).join(" · ");
       const ped=[s.padre&&`<span>Padre</span> ${esc(s.padre)}`, s.madre&&`<span>Madre</span> ${esc(s.madre)}`, s.abuelo&&`<span>Abuelo materno</span> ${esc(s.abuelo)}`].filter(Boolean).join(" &nbsp;·&nbsp; ");
       const preds=String(s.predmaternos||"").split("/").map(x=>x.trim()).filter(Boolean);
       const msg=`Hola, me interesa una monta con ${s.nombre} (${s.raza}) de Rancho El Descanso. ¿Me dan información de disponibilidad?`;
       const alt=i=>`${esc(s.nombre)}, semental ${esc(s.raza)}${fotos.length>1?`, foto ${i+1} de ${fotos.length}`:""}`;
       const slide=(f,i)=>`<img class="plate-bg" src="${esc(f)}" alt="" aria-hidden="true" loading="lazy"><img src="${esc(f)}" alt="${alt(i)}" loading="lazy">`;
-      const img=fotos.length>1?`<div class="plate carrusel"><div class="slides">${fotos.map((f,i)=>`<div class="slide">${slide(f,i)}</div>`).join("")}</div><button type="button" class="sl-btn sl-prev" aria-label="Foto anterior"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3L5 8l5 5"/></svg></button><button type="button" class="sl-btn sl-next" aria-label="Foto siguiente"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3l5 5-5 5"/></svg></button><div class="sl-dots" aria-hidden="true">${fotos.map((f,i)=>`<i${i?"":' class="on"'}></i>`).join("")}</div></div>`
-        :fotos[0]?`<div class="plate">${slide(fotos[0],0)}</div>`:`<div class="plate" role="img" aria-label="${esc(s.nombre)}, foto próximamente"><span class="plate-mark"></span><span class="plate-note">Foto próximamente</span></div>`;
-      return `<article class="stud-card" id="sem-${slug(s.nombre)}">
+      const badge=vids.length?`<span class="stud-media"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z"/></svg>${vids.length===1?"1 video":vids.length+" videos"}</span>`:"";
+      const img=fotos.length>1?`<div class="plate carrusel" data-open="${sid}"><div class="slides">${fotos.map((f,i)=>`<div class="slide">${slide(f,i)}</div>`).join("")}</div><button type="button" class="sl-btn sl-prev" aria-label="Foto anterior"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3L5 8l5 5"/></svg></button><button type="button" class="sl-btn sl-next" aria-label="Foto siguiente"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3l5 5-5 5"/></svg></button><div class="sl-dots" aria-hidden="true">${fotos.map((f,i)=>`<i${i?"":' class="on"'}></i>`).join("")}</div>${badge}</div>`
+        :fotos[0]?`<div class="plate" data-open="${sid}">${slide(fotos[0],0)}${badge}</div>`:`<div class="plate" role="img" aria-label="${esc(s.nombre)}, foto próximamente"><span class="plate-mark"></span><span class="plate-note">Foto próximamente</span></div>`;
+      return `<article class="stud-card" id="sem-${sid}">
         ${img}
         ${s.promo?`<span class="stud-promo">${esc(s.promo)}</span>`:""}
-        <h4 class="stud-name">${esc(s.nombre)}</h4>
+        <h4 class="stud-name"><button type="button" data-open="${sid}">${esc(s.nombre)}</button></h4>
         ${meta?`<p class="stud-meta">${esc(meta)}</p>`:""}
         ${ped?`<p class="stud-ped">${ped}</p>`:""}
         ${s.predicado?`<p class="stud-pred">${esc(s.predicado)}</p>`:""}
@@ -1419,8 +1515,13 @@ function renderStuds(){
         ${preds.length?`<p class="stud-lbl">Línea materna</p><ul class="preds">${preds.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:""}
         <dl class="fees"><div><dt>${lbl}</dt><dd>${s.antes_misma?`<s>${money(s.antes_misma)}</s>`:""}${money(s.misma)}<small>+ IVA</small></dd></div>${s.otra!=null?`<div><dt>Yegua de otra raza</dt><dd>${s.antes_otra?`<s>${money(s.antes_otra)}</s>`:""}${money(s.otra)}<small>+ IVA</small></dd></div>`:""}</dl>
         <a class="btn btn-gold-line btn-sm" href="${CONFIG.KOALENDAR.maquila?esc(CONFIG.KOALENDAR.maquila):waLink(msg)}" target="_blank" rel="noopener">Reservar monta</a>
+        <button type="button" class="stud-more" data-open="${sid}">${vids.length?"Ver fotos y videos":"Ver ficha completa"}</button>
       </article>`;}).join("")}</div></div>`;
   }).join("");
+  box.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",e=>{
+    if(e.target.closest(".sl-btn")) return;
+    location.hash="#/semental/"+el.dataset.open;
+  }));
   box.querySelectorAll(".carrusel").forEach(c=>{
     const tr=c.querySelector(".slides"), dots=[...c.querySelectorAll(".sl-dots i")];
     const go=d=>{ const n=dots.length, i=Math.round(tr.scrollLeft/tr.clientWidth); tr.scrollTo({left:((i+d+n)%n)*tr.clientWidth,behavior:"smooth"}); };
