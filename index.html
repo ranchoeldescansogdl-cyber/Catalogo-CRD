@@ -720,7 +720,7 @@ const CONFIG = {
   TARIFAS_CSV_URL: "",        // pestaña TARIFAS publicada como CSV. Vacío = usa TARIFAS_FALLBACK de abajo
   FECHAS_CSV_URL: "",         // pestaña FECHAS APARTADAS publicada como CSV. Vacío = no revisa disponibilidad
   CAL_USER: "",               // usuario de Cal.com, p. ej. "el-descanso". Vacío = las sesiones se agendan por WhatsApp
-  CAL_EVENTS: { express:"sesion-express", editorial:"sesion-editorial", premium:"sesion-premium" }, // slugs de cada evento en Cal.com
+  CAL_EVENTS: { manana:"sesion-manana", tarde:"sesion-tarde-sabado" }, // slugs de cada evento en Cal.com
   STRIPE: {                   // Payment Links de Stripe. Vacío = el botón manda a WhatsApp
     evento_anticipo: "",      //   link "el cliente elige el monto" para el 10% de eventos
     caballo_anticipo: "",     //   link "el cliente elige el monto" para el 10% de un caballo
@@ -754,9 +754,8 @@ const TARIFAS_FALLBACK = [
   ["factor","domingo","","",0.90,"","","","sí",""],
   ["factor","entre_semana","","",0.75,"","","","sí","Lunes a jueves: 25% menos"],
   ["factor","temporada_alta","","",1.15,"","","","sí","Sábados de oct-dic y mar-may: 15% más"],
-  ["sesion","express","","",2500,1,1500,0.50,"sí","1 hora · 1 caballo · 1 escenario (jardín o bosque) · hasta 4 personas"],
-  ["sesion","editorial","","",4500,2,1500,0.50,"sí","2 horas · hasta 2 caballos · todos los escenarios · cambio de vestuario · hasta 8 personas"],
-  ["sesion","premium","","",7500,3,1500,0.50,"sí","3 horas · 3 caballos a elección (Friesian y cremello) · todos los escenarios · hasta 12 personas"],
+  ["sesion","manana","","",4000,3,1500,0.50,"sí","Lunes a viernes de 10:00 a 14:00 · 2 caballos · todos los escenarios · cambio de vestuario · hasta 8 personas"],
+  ["sesion","tarde","","",5000,3,1500,0.50,"sí","Lunes a viernes de 14:00 a 18:00, o sábado de 10:00 a 14:00 · 2 caballos · todos los escenarios · cambio de vestuario · hasta 8 personas"],
   ["sesion","produccion","","",12000,4,2500,0.50,"sí","Medio día · marcas, moda, video · equipo hasta 10 personas · caballos según brief"],
   ["apartado","caballo_en_venta","","",0,"","",0.10,"sí","10% del precio publicado aparta el caballo 15 días."],
   ["apartado","potro_2027","","",10000,"","","","sí","Reserva de lugar en lista de espera; se abona al precio del potro."]
@@ -1423,13 +1422,13 @@ function initCot(){
 }
 
 /* Sesiones de fotos: paquetes desde TARIFAS + agenda Cal.com */
-const PACK_LBL={express:"Express",editorial:"Editorial",premium:"Premium",produccion:"Producción y marcas"};
+const PACK_LBL={manana:"Entre semana · mañana",tarde:"Tarde o sábado",produccion:"Producción y marcas"};
 function renderPacks(){
   const box=$("#packs"); if(!box) return;
   const list=TARIFAS.filter(t=>t.servicio==="sesion"&&t.precio);
   if(!list.length){ box.innerHTML=""; return; }
   box.innerHTML=list.map(p=>{
-    const hot=p.tipo==="editorial", prod=p.tipo==="produccion", dep=Math.round(p.precio*(p.anticipo||0.5));
+    const hot=p.tipo==="manana", prod=p.tipo==="produccion", dep=Math.round(p.precio*(p.anticipo||0.5));
     const cal=CONFIG.CAL_USER && CONFIG.CAL_EVENTS[p.tipo] && !prod;
     const btn = cal ? `<button class="btn btn-dark" type="button" data-cal="${esc(p.tipo)}">Elegir fecha y hora</button>`
                     : `<a class="btn ${hot?"btn-dark":"btn-line"}" data-wa-pack="${esc(p.tipo)}" href="${waLink(prod?`Hola, me interesa una producción en Rancho El Descanso (medio día desde ${money(p.precio)}). Te cuento el proyecto:`:`Hola, quiero agendar la sesión de fotos ${PACK_LBL[p.tipo]||p.tipo} (${money(p.precio)}) en Rancho El Descanso. Fecha tentativa: `)}" target="_blank" rel="noopener">${WA_SVG_JS}${prod?"Cotizar producción":"Agendar por WhatsApp"}</a>`;
