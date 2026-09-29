@@ -94,6 +94,7 @@ main{padding-top:clamp(28px,4vw,48px);padding-bottom:0}
 .card-name{font-family:var(--display);font-size:1.5rem;line-height:1.15;margin:0;font-weight:400}
 .card-meta{color:var(--muted);font-size:.95rem;margin:4px 0 0}
 .card-price{font-weight:500;font-size:1.05rem;margin:8px 0 0}
+.fees small{display:block;font-family:var(--sans);font-size:.72rem;color:rgba(255,255,255,.5);margin-top:2px}
 .empty{padding:60px 0;text-align:center;color:var(--muted)}
 .empty button{margin-top:14px;background:none;border:1px solid var(--rule);border-radius:999px;padding:9px 18px;cursor:pointer}
 .loading{padding:60px 0;color:var(--muted)}
@@ -509,7 +510,7 @@ footer p{margin:6px 0 0}
     <h2 class="sec-title" id="t-sem">Sementales en servicio</h2>
     <p class="sec-lede"><span id="stud-count">Siete sementales de nuestro plantel, tres Friesian y cuatro Gypsy Vanner</span>, disponibles para monta. El precio depende de la raza de tu yegua.</p>
     <div id="studs"></div>
-    <p class="fine">Precios por monta en pesos mexicanos, sujetos a disponibilidad del semental. Pregunta por fechas y condiciones.</p>
+    <p class="fine">Precios por monta en pesos mexicanos, más IVA. Todas las montas son facturables. Sujetos a disponibilidad del semental; pregunta por fechas y condiciones.</p>
   </div>
 </section>
 
@@ -584,9 +585,9 @@ footer p{margin:6px 0 0}
         <label>Horas extra
           <select name="hx" id="q-hx"><option value="0">Ninguna (5 h incluidas)</option><option value="1">1 hora</option><option value="2">2 horas</option><option value="3">3 horas</option></select>
         </label>
-        <label class="chk"><input type="checkbox" id="q-iva"> Necesito factura (más IVA)</label>
+        <label class="chk"><input type="checkbox" id="q-iva"> Necesito factura (sumar IVA 16%)</label>
       </form>
-      <p class="q-fine">Estimado orientativo. La propuesta formal en PDF te la mandamos por WhatsApp el mismo día. Anticipo del 10% para apartar la fecha; la tarifa se respeta para fechas de 2027 si apartas ahora.</p>
+      <p class="q-fine">Precios más IVA; todos nuestros servicios son facturables. Estimado orientativo. La propuesta formal en PDF te la mandamos por WhatsApp el mismo día. Anticipo del 10% para apartar la fecha; la tarifa se respeta para fechas de 2027 si apartas ahora.</p>
     </div>
     <div class="qr" aria-live="polite">
       <p class="q-lbl">Renta estimada</p>
@@ -685,7 +686,7 @@ footer p{margin:6px 0 0}
     </div>
     <div>
       <p class="foot-social"><a href="https://chat.whatsapp.com/GK2yv1ScgG9ALHMamZUh75" target="_blank" rel="noopener">Comunidad de WhatsApp</a><a href="https://www.instagram.com/eldescansogdl/" target="_blank" rel="noopener">Instagram</a><a href="https://www.tiktok.com/@eldescansogdl" target="_blank" rel="noopener">TikTok</a><a href="https://www.facebook.com/ranchoeldescanso" target="_blank" rel="noopener">Facebook</a><a href="https://ranchoeldescanso.com/" target="_blank" rel="noopener">ranchoeldescanso.com</a></p>
-      <p>Precios en pesos mexicanos, sujetos a disponibilidad.</p>
+      <p>Precios en pesos mexicanos, sujetos a disponibilidad. Maquilas, sesiones de fotos y eventos, más IVA. Todas nuestras ventas y servicios son facturables.</p>
     </div>
     <div class="team" aria-label="Equipo">
       <div class="person"><p class="person-name">Nicolás Campero</p><p class="person-role">Director de ventas</p><p><a data-wa href="#" target="_blank" rel="noopener">WhatsApp <span data-phone-label></span></a></p></div>
@@ -1289,7 +1290,7 @@ function renderStuds(){
         ${s.predicado?`<p class="stud-pred">${esc(s.predicado)}</p>`:""}
         ${s.nota?`<p class="stud-note">${esc(s.nota)}</p>`:""}
         ${preds.length?`<p class="stud-lbl">Línea materna</p><ul class="preds">${preds.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:""}
-        <dl class="fees"><div><dt>${lbl}</dt><dd>${s.antes_misma?`<s>${money(s.antes_misma)}</s>`:""}${money(s.misma)}</dd></div>${s.otra!=null?`<div><dt>Yegua de otra raza</dt><dd>${s.antes_otra?`<s>${money(s.antes_otra)}</s>`:""}${money(s.otra)}</dd></div>`:""}</dl>
+        <dl class="fees"><div><dt>${lbl}</dt><dd>${s.antes_misma?`<s>${money(s.antes_misma)}</s>`:""}${money(s.misma)}<small>+ IVA</small></dd></div>${s.otra!=null?`<div><dt>Yegua de otra raza</dt><dd>${s.antes_otra?`<s>${money(s.antes_otra)}</s>`:""}${money(s.otra)}<small>+ IVA</small></dd></div>`:""}</dl>
         <a class="btn btn-gold-line btn-sm" href="${waLink(msg)}" target="_blank" rel="noopener">Reservar monta</a>
       </article>`;}).join("")}</div></div>`;
   }).join("");
@@ -1396,7 +1397,7 @@ function renderCot(){
     $("#q-wa").href=waLink(`Hola, quiero cotizar un evento en Rancho El Descanso.\nTipo: ${lbl}\nInvitados: ${q.inv||"por definir"}\nFecha tentativa: ${q.fecha||"por definir"}`);
     return;
   }
-  tot.style.fontSize=""; tot.innerHTML=`${money(q.total)}<small>MXN${q.iva?" con IVA":""}</small>`;
+  tot.style.fontSize=""; tot.innerHTML=`${money(q.total)}<small>MXN${q.iva?" con IVA":" + IVA"}</small>`;
   hint.textContent = q.fecha ? (q.temp?"Sábado en temporada alta":"") : "Calculado en sábado. Elige una fecha para ajustar por día y ver disponibilidad.";
   const rows=[[`${lbl} · hasta ${q.fila.max} invitados · ${q.fila.horas||5} h`,money(q.base)]];
   if(q.fDia!==1) rows.push([`${q.txtDia}: ${Math.round((q.fDia-1)*100)}%`, ""]);
@@ -1436,7 +1437,7 @@ function renderPacks(){
       ${hot?`<span class="pack-tag">La más pedida</span>`:""}
       <h4>${esc(PACK_LBL[p.tipo]||p.tipo)}</h4>
       <p class="pack-dur">${p.horas?`${p.horas} hora${p.horas>1?"s":""}`:""}${prod?" · medio día":""}</p>
-      <p class="pack-price">${prod?"Desde ":""}${money(p.precio)}<small>MXN</small></p>
+      <p class="pack-price">${prod?"Desde ":""}${money(p.precio)}<small>MXN + IVA</small></p>
       <p class="pack-desc">${esc(p.nota||"")}</p>
       ${prod?"":`<p class="pack-dep">Apartas con ${money(dep)} al agendar; el resto el día de la sesión.</p>`}
       ${btn}
