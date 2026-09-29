@@ -878,8 +878,8 @@ const TARIFAS_FALLBACK = [
   ["evento","corporativo",201,300,65000,5,3000,0.1,"sí",""],
   ["evento","corporativo",301,500,75000,5,3000,0.1,"sí",""],
   ["factor","sabado","","",1.0,"","","","sí","Sábado"],
-  ["factor","viernes","","",0.9,"","","","sí","Viernes o domingo: 10% menos"],
-  ["factor","domingo","","",0.9,"","","","sí",""],
+  ["factor","viernes","","",0.9,"","","","sí","Viernes 10% menos"],
+  ["factor","domingo","","",1.1,"","","","sí",""],
   ["factor","entre_semana","","",0.8,"","","","sí","Lunes a jueves: 20% menos"],
   ["factor","temporada_alta","","",1.15,"","","","sí","Sábados de oct-dic y mar-may: 15% más"],
   ["sesion","manana","","",4000,3,1500,2500,"sí","Lunes a viernes de 10:00 a 14:00 · 2 caballos · todos los escenarios · cambio de vestuario · hasta 8 personas"],
@@ -1528,7 +1528,7 @@ function renderCot(){
   tot.style.fontSize=""; tot.innerHTML=`${money(q.total)}<small>MXN${q.iva?" con IVA":" + IVA"}</small>`;
   hint.textContent = q.fecha ? (q.temp?"Sábado en temporada alta":"") : "Calculado en sábado. Elige una fecha para ajustar por día y ver disponibilidad.";
   const rows=[[`${lbl} · hasta ${q.fila.max} invitados · ${q.fila.horas||5} h`,money(q.base)]];
-  if(q.fDia!==1) rows.push([`${q.txtDia}: ${Math.round((q.fDia-1)*100)}%`, ""]);
+  if(q.fDia!==1) rows.push([`${q.txtDia}: ${q.fDia>1?"+":""}${Math.round((q.fDia-1)*100)}%`, ""]);
   if(q.temp) rows.push([`Temporada alta: +${Math.round((q.fTemp-1)*100)}%`, ""]);
   if(q.extra) rows.push([`${q.hx} hora${q.hx>1?"s":""} extra`, "+"+money(q.extra)]);
   if(q.iva) rows.push(["IVA 16%", "+"+money(q.total-q.sub)]);
