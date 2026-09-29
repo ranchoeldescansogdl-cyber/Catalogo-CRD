@@ -368,7 +368,28 @@ section[id],main[id]{scroll-margin-top:20px}
 .pack .btn{align-self:flex-start;margin-top:10px}
 .shoots{margin-top:28px}
 
-/* ---------- Agenda (Cal.com) ---------- */
+/* ---------- Legal (aviso, términos, cancelaciones) ---------- */
+#legal{max-width:min(820px,100vw)}
+#legal .legal-head{position:sticky;top:0;z-index:1;background:var(--paper);display:flex;flex-wrap:nowrap;align-items:flex-start;justify-content:space-between;gap:10px 16px;padding:16px 20px;border-bottom:1px solid var(--rule)}
+#legal .legal-tabs{display:flex;flex-wrap:wrap;gap:6px}
+#legal .legal-tabs button{font:inherit;font-size:.88rem;padding:7px 14px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer}
+#legal .legal-tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+#legal .close{position:static;flex:none}
+#legal .legal-body{padding:clamp(20px,4vw,40px);max-height:calc(100dvh - 140px);overflow:auto}
+#legal article h3{font-family:var(--display);font-weight:400;font-size:1.6rem;margin:0 0 6px}
+#legal article h4{font-size:1rem;margin:22px 0 6px}
+#legal article p,#legal article li{font-size:.95rem;line-height:1.6;color:var(--ink)}
+#legal article ul{padding-left:20px;margin:6px 0}
+#legal .legal-date{color:var(--muted);font-size:.85rem;margin:0 0 14px}
+.foot-legal{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.88rem}
+/* ---------- Gracias por tu pago (regreso de Stripe) ---------- */
+#gracias{max-width:min(560px,100vw);text-align:center}
+#gracias .g-body{padding:clamp(28px,5vw,48px)}
+#gracias h3{font-family:var(--display);font-weight:400;font-size:2rem;margin:10px 0 8px}
+#gracias p{color:var(--muted);line-height:1.6;margin:0 0 20px}
+#gracias .g-mark{width:56px;height:56px;border-radius:50%;border:1px solid var(--gold);color:var(--gold-deep);display:grid;place-items:center;margin:0 auto}
+#gracias .g-actions{display:flex;flex-direction:column;gap:10px;align-items:center}
+/* ---------- Agenda (sin uso: Koalendar abre en pestaña nueva) ---------- */
 #cal{max-width:min(960px,100vw);width:100%}
 #cal .cal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--rule)}
 #cal .cal-head h3{font-family:var(--display);font-weight:400;font-size:1.3rem;margin:0}
@@ -699,6 +720,7 @@ footer p{margin:6px 0 0}
     <div>
       <p class="foot-social"><a href="https://chat.whatsapp.com/GK2yv1ScgG9ALHMamZUh75" target="_blank" rel="noopener">Comunidad de WhatsApp</a><a href="https://www.instagram.com/eldescansogdl/" target="_blank" rel="noopener">Instagram</a><a href="https://www.tiktok.com/@eldescansogdl" target="_blank" rel="noopener">TikTok</a><a href="https://www.facebook.com/ranchoeldescanso" target="_blank" rel="noopener">Facebook</a><a href="https://ranchoeldescanso.com/" target="_blank" rel="noopener">ranchoeldescanso.com</a></p>
       <p>Precios en pesos mexicanos, sujetos a disponibilidad. Maquilas, sesiones de fotos y eventos, más IVA. Todas nuestras ventas y servicios son facturables.</p>
+      <p class="foot-legal"><a href="#terminos">Términos y condiciones</a><a href="#cancelaciones">Cancelaciones y reembolsos</a><a href="#aviso-de-privacidad">Aviso de privacidad</a></p>
     </div>
     <div class="team" aria-label="Equipo">
       <div class="person"><p class="person-name">Nicolás Campero</p><p class="person-role">Director de ventas</p><p><a data-wa href="#" target="_blank" rel="noopener">WhatsApp <span data-phone-label></span></a></p></div>
@@ -711,11 +733,96 @@ footer p{margin:6px 0 0}
 <a class="btn btn-wa fab" data-wa href="#" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>WhatsApp</a>
 
 <dialog id="ficha" aria-labelledby="ficha-nombre"></dialog>
-<dialog id="cal" aria-labelledby="cal-title">
-  <div class="cal-head"><h3 id="cal-title">Agendar sesión</h3><button class="close" type="button" aria-label="Cerrar agenda" onclick="document.getElementById('cal').close()"><svg viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.6"><path d="M3 3l10 10M13 3L3 13"/></svg></button></div>
-  <div class="cal-body" id="cal-body"></div>
+<dialog id="gracias" aria-labelledby="g-title">
+  <div class="g-body">
+    <div class="g-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <h3 id="g-title">Recibimos tu pago</h3>
+    <p id="g-text">Gracias. Te enviamos el comprobante por correo.</p>
+    <div class="g-actions">
+      <a class="btn btn-wa" id="g-wa" href="#" target="_blank" rel="noopener">Confirmar por WhatsApp</a>
+      <button class="btn btn-line" type="button" id="g-close">Seguir viendo el rancho</button>
+    </div>
+  </div>
 </dialog>
+<dialog id="legal" aria-labelledby="legal-title">
+  <div class="legal-head">
+    <div class="legal-tabs" role="tablist" aria-label="Documentos legales">
+      <button role="tab" data-doc="terminos" aria-selected="true">Términos</button>
+      <button role="tab" data-doc="cancelaciones" aria-selected="false">Cancelaciones y reembolsos</button>
+      <button role="tab" data-doc="aviso-de-privacidad" aria-selected="false">Aviso de privacidad</button>
+    </div>
+    <button class="close" type="button" aria-label="Cerrar" data-legal-close><svg viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.6"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+  </div>
+  <div class="legal-body">
+    <h2 id="legal-title" class="sr-only" style="position:absolute;left:-9999px">Documentos legales</h2>
 
+    <article data-doc="terminos">
+      <h3>Términos y condiciones</h3>
+      <p class="legal-date">Vigentes desde el 28 de septiembre de 2026.</p>
+      <p><span data-legal-titular></span> ("el Rancho"), con domicilio en San Miguel Cuyutlán, Tlajomulco de Zúñiga, Jalisco, México, ofrece en este sitio la venta de caballos Friesian y Gypsy Vanner, la reserva de potros, servicios de reproducción equina (maquila o monta), renta del rancho para eventos y sesiones fotográficas.</p>
+      <h4>Precios y pagos</h4>
+      <ul>
+        <li>Todos los precios están en pesos mexicanos (MXN). Maquilas, sesiones de fotos y eventos se cotizan más IVA; el precio publicado de los caballos y potros es el precio final.</li>
+        <li>Los pagos en línea se procesan con Stripe. El Rancho no recibe ni guarda los datos de tu tarjeta.</li>
+        <li>Los estimados de eventos que da la página son orientativos; el precio final es el de la propuesta formal que te enviamos por WhatsApp.</li>
+        <li>Todas nuestras ventas y servicios son facturables. Para recibir tu CFDI envíanos tus datos fiscales dentro del mismo mes del pago.</li>
+      </ul>
+      <h4>Apartados y reservas</h4>
+      <ul>
+        <li><strong>Eventos:</strong> la fecha queda apartada al recibir el anticipo del 10% y la confirmación del Rancho. El saldo y sus fechas de pago se establecen en la propuesta formal.</li>
+        <li><strong>Sesiones fotográficas:</strong> se apartan con un anticipo de $2,500 MXN al agendar; el resto se paga 2 días antes de la sesión.</li>
+        <li><strong>Caballos en venta:</strong> el 10% del precio publicado aparta el caballo durante 15 días naturales. En ese plazo se liquida el saldo o se acuerda por escrito otro esquema.</li>
+        <li><strong>Potros 2027:</strong> la reserva de $10,000 MXN asegura tu lugar en la lista de espera y se abona íntegra al precio del potro.</li>
+        <li><strong>Maquilas:</strong> la garantía de preñez se mantiene hasta que la yegua quede cargada y hasta 4 meses después. La pensión de la yegua durante su estancia se cobra aparte.</li>
+      </ul>
+      <h4>Uso de las instalaciones</h4>
+      <p>El acceso a caballerizas y a los caballos es siempre con personal del Rancho. Las indicaciones de seguridad del personal son obligatorias para clientes, invitados y proveedores. El cliente responde por los daños que él, sus invitados o proveedores causen a las instalaciones.</p>
+      <h4>Contacto</h4>
+      <p>WhatsApp <a data-wa href="#" target="_blank" rel="noopener"><span data-phone-label></span></a><span data-legal-email></span>.</p>
+    </article>
+
+    <article data-doc="cancelaciones" hidden>
+      <h3>Cancelaciones y reembolsos</h3>
+      <p class="legal-date">Vigente desde el 28 de septiembre de 2026.</p>
+      <h4>Eventos</h4>
+      <ul>
+        <li>El anticipo no es reembolsable, porque la fecha se retira de la venta para otros clientes.</li>
+        <li>Puedes cambiar la fecha una vez, avisando con al menos 30 días de anticipación y sujeto a disponibilidad, dentro de los 12 meses siguientes. Si la nueva fecha tiene otra tarifa, se ajusta la diferencia.</li>
+      </ul>
+      <h4>Sesiones fotográficas</h4>
+      <ul>
+        <li>Puedes reprogramar una vez sin costo avisando con al menos 72 horas de anticipación.</li>
+        <li>Si cancelas con menos de 72 horas o no te presentas, el anticipo no es reembolsable.</li>
+        <li>Si la sesión no puede hacerse por lluvia o por una causa del Rancho, se reprograma sin costo o se reembolsa el anticipo completo, como prefieras.</li>
+      </ul>
+      <h4>Caballos y potros</h4>
+      <ul>
+        <li>El apartado de un caballo no es reembolsable si el comprador desiste. Si el examen veterinario de precompra, hecho dentro del plazo de apartado, muestra un hallazgo relevante no informado por el Rancho, se reembolsa el 100%.</li>
+        <li>La reserva de potro no es reembolsable; si el potro que nace no es el que buscas, conservas tu lugar para el siguiente nacimiento.</li>
+      </ul>
+      <h4>Cómo se hacen los reembolsos</h4>
+      <p>Cuando proceda un reembolso, se hace al mismo medio de pago en un plazo de hasta 10 días hábiles. Si pagaste con tarjeta, el tiempo en que se refleja depende de tu banco. Antes de iniciar una disputa o contracargo con tu banco, escríbenos: casi siempre se resuelve más rápido directamente.</p>
+    </article>
+
+    <article data-doc="aviso-de-privacidad" hidden>
+      <h3>Aviso de privacidad</h3>
+      <p class="legal-date">Última actualización: 28 de septiembre de 2026.</p>
+      <p><span data-legal-titular></span>, con domicilio en San Miguel Cuyutlán, Tlajomulco de Zúñiga, Jalisco, México, es responsable del tratamiento de tus datos personales conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares.</p>
+      <h4>Datos que recabamos</h4>
+      <p>Nombre, teléfono, correo electrónico, los datos de tu evento, sesión o compra y, si pides factura, tus datos fiscales. No recabamos datos personales sensibles. Los datos de tu tarjeta los captura directamente Stripe; el Rancho no los recibe.</p>
+      <h4>Para qué los usamos</h4>
+      <p>Finalidades necesarias: contactarte, cotizar, agendar, cobrar, facturar y dar seguimiento a tu servicio o compra. Finalidad adicional: enviarte novedades del rancho, caballos en venta y eventos. Si no quieres esta última, avísanos por WhatsApp o correo y dejamos de enviártela sin afectar tu servicio.</p>
+      <h4>Con quién los compartimos</h4>
+      <p>Solo con los proveedores necesarios para dar el servicio: Stripe (procesamiento de pagos), Koalendar (agenda), Meta/WhatsApp (mensajería) y nuestro proveedor de facturación ante el SAT. No vendemos tus datos.</p>
+      <h4>Tus derechos</h4>
+      <p>Puedes acceder, rectificar, cancelar u oponerte al uso de tus datos (derechos ARCO), o revocar tu consentimiento, escribiéndonos por WhatsApp al <span data-phone-label></span><span data-legal-email></span>. Te respondemos en un máximo de 20 días hábiles.</p>
+      <h4>Cookies</h4>
+      <p>Este sitio puede usar cookies de medición de Meta para saber qué anuncios funcionan. Puedes bloquearlas desde la configuración de tu navegador.</p>
+      <h4>Cambios</h4>
+      <p>Cualquier cambio a este aviso se publicará en esta misma página.</p>
+    </article>
+  </div>
+</dialog>
 <script>
 /* ================== CONFIGURACIÓN ==================
    SHEET_CSV_URL: link de la pestaña CATALOGO WEB publicada como CSV
@@ -731,9 +838,16 @@ const CONFIG = {
 
   /* --- Eventos, sesiones y apartados (nuevo) --- */
   TARIFAS_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRB8_wzp7c5W-OLs1YFFBOiRt_oZ2rF0aHFIOxfKPxHYnICNrDL6UW78rzFp49r-6L08MyMNiRSMq8h/pub?gid=1137766291&single=true&output=csv",        // pestaña TARIFAS publicada como CSV. Vacío = usa TARIFAS_FALLBACK de abajo
-  FECHAS_CSV_URL: "",         // pestaña FECHAS APARTADAS publicada como CSV. Vacío = no revisa disponibilidad
-  CAL_USER: "",               // usuario de Cal.com, p. ej. "el-descanso". Vacío = las sesiones se agendan por WhatsApp
-  CAL_EVENTS: { manana:"sesion-manana", tarde:"sesion-tarde-sabado" }, // slugs de cada evento en Cal.com
+  FECHAS_CSV_URL: "",         // pestaña FECHAS WEB publicada como CSV (NUNCA publicar FECHAS APARTADAS: trae clientes y teléfonos). Vacío = no revisa disponibilidad
+  KOALENDAR: {                // Links completos de Koalendar (con Stripe conectado ahí). Vacío = el botón manda a WhatsApp
+    manana: "",               //   sesión entre semana · mañana
+    tarde: "",                //   sesión tarde o sábado
+    maquila: ""               //   reservar monta / maquila
+  },
+  LEGAL: {                    // Aparece en aviso de privacidad y términos
+    titular: "Rancho El Descanso",   // nombre o razón social del titular del RFC que cobra
+    email: ""                 // correo para derechos ARCO y facturación. Vacío = solo WhatsApp
+  },
   STRIPE: {                   // Payment Links de Stripe. Vacío = el botón manda a WhatsApp
     evento_anticipo: "",      //   link "el cliente elige el monto" para el 10% de eventos
     caballo_anticipo: "",     //   link "el cliente elige el monto" para el 10% de un caballo
@@ -741,36 +855,37 @@ const CONFIG = {
   },
   META_PIXEL_ID: ""           // ID del pixel de Meta. Vacío = no carga nada
 };
-/* Respaldo de TARIFAS (mismos valores que la pestaña propuesta, 28 sep 2026). Se ignora si TARIFAS_CSV_URL responde. */
+/* Respaldo de TARIFAS (mismos valores que la pestaña TARIFAS, 28 sep 2026). Se ignora si TARIFAS_CSV_URL responde. */
 const TARIFAS_FALLBACK = [
-  ["evento","boda",1,80,43500,5,3000,0.10,"sí","Jardín, terraza, bosque, baños y personal del rancho. 5 h de servicio."],
-  ["evento","boda",81,150,55000,5,3000,0.10,"sí",""],
-  ["evento","boda",151,300,71500,5,3000,0.10,"sí",""],
-  ["evento","boda",301,500,92000,5,3000,0.10,"sí",""],
-  ["evento","boda",501,1500,0,5,3000,0.10,"sí","Cotización personalizada"],
-  ["evento","xv",1,80,37000,5,3000,0.10,"sí",""],
-  ["evento","xv",81,150,46000,5,3000,0.10,"sí",""],
-  ["evento","xv",151,300,60000,5,3000,0.10,"sí",""],
-  ["evento","xv",301,500,78000,5,3000,0.10,"sí",""],
-  ["evento","xv",501,1500,0,5,3000,0.10,"sí","Cotización personalizada"],
-  ["evento","social",1,80,32000,5,3000,0.10,"sí",""],
-  ["evento","social",81,150,40000,5,3000,0.10,"sí",""],
-  ["evento","social",151,300,51500,5,3000,0.10,"sí",""],
-  ["evento","social",301,500,69000,5,3000,0.10,"sí",""],
-  ["evento","social",501,1500,0,5,3000,0.10,"sí","Cotización personalizada"],
-  ["evento","corporativo",1,80,34500,5,3000,0.10,"sí",""],
-  ["evento","corporativo",81,150,43500,5,3000,0.10,"sí",""],
-  ["evento","corporativo",151,300,57500,5,3000,0.10,"sí",""],
-  ["evento","corporativo",301,1500,0,5,3000,0.10,"sí","Cotización personalizada"],
-  ["factor","sabado","","",1.00,"","","","sí","Sábado"],
-  ["factor","viernes","","",0.90,"","","","sí","Viernes o domingo: 10% menos"],
-  ["factor","domingo","","",0.90,"","","","sí",""],
-  ["factor","entre_semana","","",0.75,"","","","sí","Lunes a jueves: 25% menos"],
+  ["evento","boda",1,80,40000,5,3000,0.1,"sí","Jardín,terraza,bosque,baños y personal del rancho. 5 h de servicio."],
+  ["evento","boda",81,150,50000,5,3000,0.1,"sí",""],
+  ["evento","boda",151,200,55000,5,3000,0.1,"sí",""],
+  ["evento","boda",201,300,65000,5,3000,0.1,"sí",""],
+  ["evento","boda",301,500,75000,5,3000,0.1,"sí",""],
+  ["evento","xv",1,80,35000,5,3000,0.1,"sí",""],
+  ["evento","xv",81,150,45000,5,3000,0.1,"sí",""],
+  ["evento","xv",151,200,50000,5,3000,0.1,"sí",""],
+  ["evento","xv",201,300,60000,5,3000,0.1,"sí",""],
+  ["evento","xv",301,500,70000,5,3000,0.1,"sí",""],
+  ["evento","social",1,80,35000,5,3000,0.1,"sí","Cumpleaños,aniversarios,bautizos,reuniones."],
+  ["evento","social",81,150,45000,5,3000,0.1,"sí",""],
+  ["evento","social",151,200,50000,5,3000,0.1,"sí",""],
+  ["evento","social",201,300,60000,5,3000,0.1,"sí",""],
+  ["evento","social",301,500,70000,5,3000,0.1,"sí",""],
+  ["evento","corporativo",1,80,40000,5,3000,0.1,"sí","Activaciones de marca,team building,lanzamientos. Factura disponible."],
+  ["evento","corporativo",81,150,50000,5,3000,0.1,"sí",""],
+  ["evento","corporativo",151,200,55000,5,3000,0.1,"sí",""],
+  ["evento","corporativo",201,300,65000,5,3000,0.1,"sí",""],
+  ["evento","corporativo",301,500,75000,5,3000,0.1,"sí",""],
+  ["factor","sabado","","",1.0,"","","","sí","Sábado"],
+  ["factor","viernes","","",0.9,"","","","sí","Viernes o domingo: 10% menos"],
+  ["factor","domingo","","",0.9,"","","","sí",""],
+  ["factor","entre_semana","","",0.8,"","","","sí","Lunes a jueves: 20% menos"],
   ["factor","temporada_alta","","",1.15,"","","","sí","Sábados de oct-dic y mar-may: 15% más"],
-  ["sesion","manana","","",4000,3,1500,0.50,"sí","Lunes a viernes de 10:00 a 14:00 · 2 caballos · todos los escenarios · cambio de vestuario · hasta 8 personas"],
-  ["sesion","tarde","","",5000,3,1500,0.50,"sí","Lunes a viernes de 14:00 a 18:00, o sábado de 10:00 a 14:00 · 2 caballos · todos los escenarios · cambio de vestuario · hasta 8 personas"],
-  ["sesion","produccion","","",12000,4,2500,0.50,"sí","Medio día · marcas, moda, video · equipo hasta 10 personas · caballos según brief"],
-  ["apartado","caballo_en_venta","","",0,"","",0.10,"sí","10% del precio publicado aparta el caballo 15 días."],
+  ["sesion","manana","","",4000,3,1500,2500,"sí","Lunes a viernes de 10:00 a 14:00 · 2 caballos · todos los escenarios · cambio de vestuario · hasta 8 personas"],
+  ["sesion","tarde","","",5000,3,1500,2500,"sí","Lunes a viernes de 14:00 a 18:00,o sábado de 10:00 a 14:00 · 2 caballos · todos los escenarios · cambio de vestuario · hasta 8 personas"],
+  ["sesion","produccion","","",10000,4,2500,0.5,"sí","Medio día · marcas,moda,video · equipo hasta 10 personas · caballos según brief"],
+  ["apartado","caballo_en_venta","","",0,"","",0.1,"sí","10% del precio publicado aparta el caballo 15 días."],
   ["apartado","potro_2027","","",10000,"","","","sí","Reserva de lugar en lista de espera; se abona al precio del potro."]
 ].map(r=>({servicio:r[0],tipo:r[1],min:r[2],max:r[3],precio:r[4],horas:r[5],hora_extra:r[6],anticipo:r[7],publicar:r[8],nota:r[9]}));
 const FALLBACK = [{"Nombre": "ILE (ULRIKE)", "Raza": "Friesian", "Sexo": "Hembra", "Capa": "NEGRO", "Nacimiento": "26/05/2026", "Alzada (m)": "", "Padre": "DUSSE VAN", "Madre": "ULRIKE", "Abuelo materno": "WYLSTER 463", "Predicado propio": "", "Predicados maternos": "KROON AA 2º, 2º, 1º PREMIO/STER/STER PREF*5/STER/STER PREF*4", "ADN": "", "Precio": "328700", "Link foto": "", "Link video": ""}, {"Nombre": "CHARLOTTE VAN de Meulebossen", "Raza": "Friesian", "Sexo": "Hembra", "Capa": "NEGRO", "Nacimiento": "03/05/2016", "Alzada (m)": "1.68", "Padre": "GERBEN 479", "Madre": "RIENA FAN IT HIEM", "Abuelo materno": "ANTON 343", "Predicado propio": "3º PREMIO STB", "Predicados maternos": "STER/STER PREF*6/STER PREF*6/STER PREF*4", "ADN": "ENANISMO NICO-LIBRE DV", "Precio": "498700", "Link foto": "", "Link video": ""}, {"Nombre": "GRACE (GRIETSJE)", "Raza": "Friesian", "Sexo": "Hembra", "Capa": "NEGRO", "Nacimiento": "12/08/2026", "Alzada (m)": "", "Padre": "DUSSE VAN", "Madre": "GRIETSJE", "Abuelo materno": "JURRE 495", "Predicado propio": "", "Predicados maternos": "1º,1º PREMIO/STER/STER/MODEL PREF AA*5/STER", "ADN": "", "Precio": "328700", "Link foto": "", "Link video": ""}, {"Nombre": "WAILING VAN LAPINENBURG", "Raza": "Friesian", "Sexo": "Macho", "Capa": "NEGRO", "Nacimiento": "01/05/2023", "Alzada (m)": "", "Padre": "TIEDE 501", "Madre": "ANDREA K", "Abuelo materno": "JEHANNES 484", "Predicado propio": "", "Predicados maternos": "MODEL AAA/STER PREF*5/STER PREF*5", "ADN": "", "Precio": "1050000", "Link foto": "", "Link video": ""}, {"Nombre": "HARMEN (NINA)", "Raza": "Friesian", "Sexo": "Macho", "Capa": "NEGRO", "Nacimiento": "09/04/2026", "Alzada (m)": "", "Padre": "YGRAM", "Madre": "NINA", "Abuelo materno": "NANE 492", "Predicado propio": "", "Predicados maternos": "VB/KROON SPORT AA/STER PREF PREST*5/STER PREF*5/MODEL PREF*7", "ADN": "", "Precio": "294700", "Link foto": "", "Link video": ""}, {"Nombre": "BOB2", "Raza": "Gypsy Vanner", "Sexo": "Hembra", "Capa": "", "Nacimiento": "01/05/2019", "Alzada (m)": "1.60", "Padre": "", "Madre": "", "Abuelo materno": "", "Predicado propio": "", "Predicados maternos": "", "ADN": "", "Precio": "498700", "Link foto": "", "Link video": ""}, {"Nombre": "ZURI CA", "Raza": "Gypsy Vanner", "Sexo": "Hembra", "Capa": "", "Nacimiento": "23/05/2023", "Alzada (m)": "", "Padre": "MARCOPOLO", "Madre": "KAROLINE", "Abuelo materno": "BLIZZARD", "Predicado propio": "", "Predicados maternos": "", "ADN": "", "Precio": "498700", "Link foto": "", "Link video": ""}, {"Nombre": "DESIEE (IVORY)", "Raza": "Gypsy Vanner", "Sexo": "Hembra", "Capa": "CREMELLO", "Nacimiento": "29/04/2025", "Alzada (m)": "", "Padre": "BLIZZARD", "Madre": "ITS IVORY GIRL", "Abuelo materno": "FLAS OF GOLD", "Predicado propio": "", "Predicados maternos": "", "ADN": "", "Precio": "348700", "Link foto": "", "Link video": ""}, {"Nombre": "SIR ALBERT (MOONLIGHT)", "Raza": "Gypsy Vanner", "Sexo": "Macho", "Capa": "CREMELLO", "Nacimiento": "18/07/2025", "Alzada (m)": "", "Padre": "ITS BLIZZARD", "Madre": "ITS MOONLIGHT", "Abuelo materno": "ITS AMADEUS", "Predicado propio": "", "Predicados maternos": "", "ADN": "", "Precio": "328700", "Link foto": "", "Link video": ""}, {"Nombre": "ISBRAND (MADAME CURIE)", "Raza": "Gypsy Vanner", "Sexo": "Macho", "Capa": "", "Nacimiento": "22/06/2026", "Alzada (m)": "", "Padre": "MARCO POLO", "Madre": "MADAME CURIE", "Abuelo materno": "ITS BLIZZARD", "Predicado propio": "", "Predicados maternos": "", "ADN": "", "Precio": "328700", "Link foto": "", "Link video": ""}];
@@ -1303,7 +1418,7 @@ function renderStuds(){
         ${s.nota?`<p class="stud-note">${esc(s.nota)}</p>`:""}
         ${preds.length?`<p class="stud-lbl">Línea materna</p><ul class="preds">${preds.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:""}
         <dl class="fees"><div><dt>${lbl}</dt><dd>${s.antes_misma?`<s>${money(s.antes_misma)}</s>`:""}${money(s.misma)}<small>+ IVA</small></dd></div>${s.otra!=null?`<div><dt>Yegua de otra raza</dt><dd>${s.antes_otra?`<s>${money(s.antes_otra)}</s>`:""}${money(s.otra)}<small>+ IVA</small></dd></div>`:""}</dl>
-        <a class="btn btn-gold-line btn-sm" href="${waLink(msg)}" target="_blank" rel="noopener">Reservar monta</a>
+        <a class="btn btn-gold-line btn-sm" href="${CONFIG.KOALENDAR.maquila?esc(CONFIG.KOALENDAR.maquila):waLink(msg)}" target="_blank" rel="noopener">Reservar monta</a>
       </article>`;}).join("")}</div></div>`;
   }).join("");
   box.querySelectorAll(".carrusel").forEach(c=>{
@@ -1342,7 +1457,8 @@ document.querySelectorAll("[data-wa-exfr]").forEach(a=>a.href=waLink("Hola, me g
 
 /* ================== EVENTOS, SESIONES Y APARTADOS ================== */
 const numv = v => { const n=parseFloat(String(v??"").replace(/[^0-9.\-]/g,"")); return isFinite(n)?n:0; };
-const pct  = v => { const n=numv(v); return n>1 ? n/100 : n; };   // acepta 10, 10% o 0.10
+const pct  = v => { const n=numv(v); if(/\$/.test(String(v))||n>100) return n; return n>1 ? n/100 : n; };   // acepta 10, 10% o 0.10 (porcentaje) o $2,500 / 2500 (monto fijo)
+const depDe = (precio,a,def) => { const x=a||def; return x>1.5 ? Math.round(x) : Math.round(precio*x); };
 let TARIFAS = [], FECHAS = {};
 async function loadTarifas(){
   TARIFAS = TARIFAS_FALLBACK.map(t=>({...t,servicio:norm(t.servicio),tipo:norm(t.tipo)}));
@@ -1434,16 +1550,16 @@ function initCot(){
   renderCot();
 }
 
-/* Sesiones de fotos: paquetes desde TARIFAS + agenda Cal.com */
+/* Sesiones de fotos: paquetes desde TARIFAS + agenda Koalendar (cobra con Stripe) */
 const PACK_LBL={manana:"Entre semana · mañana",tarde:"Tarde o sábado",produccion:"Producción y marcas"};
 function renderPacks(){
   const box=$("#packs"); if(!box) return;
   const list=TARIFAS.filter(t=>t.servicio==="sesion"&&t.precio);
   if(!list.length){ box.innerHTML=""; return; }
   box.innerHTML=list.map(p=>{
-    const hot=p.tipo==="tarde", prod=p.tipo==="produccion", dep=Math.round(p.precio*(p.anticipo||0.5));
-    const cal=CONFIG.CAL_USER && CONFIG.CAL_EVENTS[p.tipo] && !prod;
-    const btn = cal ? `<button class="btn btn-dark" type="button" data-cal="${esc(p.tipo)}">Elegir fecha y hora</button>`
+    const hot=p.tipo==="tarde", prod=p.tipo==="produccion", dep=depDe(p.precio,p.anticipo,2500);
+    const koa=!prod && CONFIG.KOALENDAR[p.tipo];
+    const btn = koa ? `<a class="btn ${hot?"btn-dark":"btn-line"}" data-koa="${esc(p.tipo)}" href="${esc(koa)}" target="_blank" rel="noopener">Elegir fecha y pagar anticipo</a>`
                     : `<a class="btn ${hot?"btn-dark":"btn-line"}" data-wa-pack="${esc(p.tipo)}" href="${waLink(prod?`Hola, me interesa una producción en Rancho El Descanso (medio día desde ${money(p.precio)}). Te cuento el proyecto:`:`Hola, quiero agendar la sesión de fotos ${PACK_LBL[p.tipo]||p.tipo} (${money(p.precio)}) en Rancho El Descanso. Fecha tentativa: `)}" target="_blank" rel="noopener">${WA_SVG_JS}${prod?"Cotizar producción":"Agendar por WhatsApp"}</a>`;
     return `<article class="pack${hot?" hot":""}">
       ${hot?`<span class="pack-tag">La más pedida</span>`:""}
@@ -1451,23 +1567,15 @@ function renderPacks(){
       <p class="pack-dur">${p.horas?`${p.horas} hora${p.horas>1?"s":""}`:""}${prod?" · medio día":""}</p>
       <p class="pack-price">${prod?"Desde ":""}${money(p.precio)}<small>MXN + IVA</small></p>
       <p class="pack-desc">${esc(p.nota||"")}</p>
-      ${prod?"":`<p class="pack-dep">Apartas con ${money(dep)} al agendar; el resto 2 días antes de la sesión.</p>`}
+      ${prod?"":`<p class="pack-dep">Apartas con ${money(dep)} al agendar${koa?" (pago con tarjeta)":""}; el resto 2 días antes de la sesión.</p>`}
       ${btn}
     </article>`;
   }).join("");
-  box.querySelectorAll("[data-cal]").forEach(b=>b.onclick=()=>openCal(b.dataset.cal));
+  box.querySelectorAll("[data-koa]").forEach(a=>a.addEventListener("click",()=>track("Schedule",{content_name:"sesion_"+a.dataset.koa})));
   box.querySelectorAll("[data-wa-pack]").forEach(a=>a.addEventListener("click",()=>track("Lead",{content_name:"sesion_"+a.dataset.waPack})));
 }
 const WA_SVG_JS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>';
-function openCal(tipo){
-  const d=$("#cal"), slug=CONFIG.CAL_EVENTS[tipo]; if(!d||!slug) return;
-  $("#cal-title").textContent=`Agendar sesión ${PACK_LBL[tipo]||tipo}`;
-  const url=`https://cal.com/${CONFIG.CAL_USER}/${slug}?embed=true&layout=month_view&theme=light`;
-  $("#cal-body").innerHTML=`<iframe src="${esc(url)}" title="Agenda de sesión ${esc(PACK_LBL[tipo]||tipo)}" loading="lazy" allow="payment"></iframe>`;
-  track("Schedule",{content_name:"sesion_"+tipo});
-  if(!d.open) d.showModal();
-}
-$("#cal").addEventListener("click",e=>{ if(e.target.id==="cal") e.target.close(); });
+
 
 /* Apartar caballos y potros */
 function apartarHTML(h){
@@ -1487,6 +1595,44 @@ function wirePotros(){
     a.addEventListener("click",()=>track(CONFIG.STRIPE.potro_reserva?"InitiateCheckout":"Lead",{content_name:"potro_2027"}));
   });
 }
+
+/* Regreso de Stripe. En cada Payment Link: "Después del pago" > redirigir a
+   https://ranchoeldescansogdl-cyber.github.io/Catalogo-CRD/?pago=evento&ref={CHECKOUT_SESSION_ID}   (o pago=caballo / pago=potro) */
+const GRACIAS = {
+  evento:["Recibimos tu anticipo","Te escribimos por WhatsApp el mismo día para confirmar tu fecha y enviarte la propuesta formal de tu evento."],
+  caballo:["Tu caballo quedó apartado","Recibimos tu anticipo. El apartado dura 15 días; te escribimos por WhatsApp para coordinar la visita, el examen y el saldo."],
+  potro:["Tu lugar en la lista está reservado","Recibimos tu reserva de potro 2027. Te escribimos por WhatsApp para confirmar tu lugar en la lista."]
+};
+function initGracias(){
+  const q=new URLSearchParams(location.search), tipo=q.get("pago"); const d=$("#gracias");
+  if(!d||!tipo||!GRACIAS[tipo]) return;
+  const ref=(q.get("ref")||"").replace(/[^A-Za-z0-9_-]/g,"").slice(-12);
+  $("#g-title").textContent=GRACIAS[tipo][0]; $("#g-text").textContent=GRACIAS[tipo][1]+" El comprobante de Stripe llega a tu correo.";
+  $("#g-wa").href=waLink(`Hola, acabo de pagar en la página de Rancho El Descanso (${tipo}${ref?", folio "+ref:""}). Mi nombre es: `);
+  const limpiar=()=>history.replaceState(null,"",location.pathname+location.hash);
+  $("#g-close").addEventListener("click",()=>d.close()); d.addEventListener("close",limpiar);
+  track("Purchase",{content_name:tipo,currency:"MXN"});
+  d.showModal();
+}
+initGracias();
+
+/* Legal: #terminos, #cancelaciones, #aviso-de-privacidad abren el documento (sirven como URL para Stripe) */
+const LEGAL_DOCS=["terminos","cancelaciones","aviso-de-privacidad"];
+function initLegal(){
+  const d=$("#legal"); if(!d) return;
+  d.querySelectorAll("[data-legal-titular]").forEach(e=>e.textContent=CONFIG.LEGAL.titular||"Rancho El Descanso");
+  d.querySelectorAll("[data-legal-email]").forEach(e=>{ if(CONFIG.LEGAL.email) e.innerHTML=` o al correo <a href="mailto:${esc(CONFIG.LEGAL.email)}">${esc(CONFIG.LEGAL.email)}</a>`; });
+  const show=doc=>{ d.querySelectorAll("article[data-doc]").forEach(a=>a.hidden=a.dataset.doc!==doc); d.querySelectorAll("[role=tab]").forEach(b=>b.setAttribute("aria-selected",b.dataset.doc===doc)); d.querySelector(".legal-body").scrollTop=0; };
+  const open=doc=>{ show(doc); if(!d.open) d.showModal(); };
+  d.querySelectorAll("[role=tab]").forEach(b=>b.addEventListener("click",()=>{ show(b.dataset.doc); history.replaceState(null,"","#"+b.dataset.doc); }));
+  const cerrar=()=>{ d.close(); };
+  d.querySelector("[data-legal-close]").addEventListener("click",cerrar);
+  d.addEventListener("click",e=>{ if(e.target===d) cerrar(); });
+  d.addEventListener("close",()=>{ if(LEGAL_DOCS.includes(location.hash.slice(1))) history.replaceState(null,"",location.pathname+location.search); });
+  const fromHash=()=>{ const h=location.hash.slice(1); if(LEGAL_DOCS.includes(h)) open(h); };
+  window.addEventListener("hashchange",fromHash); fromHash();
+}
+initLegal();
 
 /* Meta Pixel (solo si hay ID) */
 function track(ev,params){ try{ if(window.fbq) fbq("track",ev,params||{}); }catch(e){} }
