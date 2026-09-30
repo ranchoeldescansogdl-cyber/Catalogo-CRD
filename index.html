@@ -1295,9 +1295,9 @@ async function loadMares(){
   const rows=await fetchCSV(CONFIG.REPRODUCCION_CSV_URL); if(!rows) return;
   const list=rows.filter(r=>si(col(r,"publicar lista espera"))).map(r=>{
     const d=parseDate(col(r,"parto estimado"));
-    const [pred]=splitPred(col(r,"predicados yegua"));
+    const [pred,predm]=splitPred(col(r,"predicados yegua")).map(x=>x.replace(/\s+/g," ").trim());
     return {madre:col(r,"nombre yegua")||col(r,"yegua"), raza:col(r,"raza"), semental:col(r,"semental"), dato:col(r,"dato para web"), publicar:true,
-      alzada:col(r,"alzada yegua"), pred, padre:col(r,"padre yegua"), madreMadre:col(r,"madre yegua"),
+      alzada:col(r,"alzada yegua"), pred, predm, padre:col(r,"padre yegua"), madreMadre:col(r,"madre yegua"),
       parto:d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`:""};
   });
   VIENTRES.length=0; VIENTRES.push(...list); renderMares();
@@ -1539,9 +1539,10 @@ function renderStuds(){
 }
 let mareFilter="";
 function mareInfo(v){
-  const pred=v.pred||(v.raza==="Friesian"?v.dato:"");
+  const pred=v.pred||(v.raza==="Friesian"&&!v.predm?v.dato:"");
   const rows=[];
   if(pred) rows.push(`<p class="mare-pred">${esc(pred)}</p>`);
+  if(v.predm) rows.push(`<p class="mare-note">Predicados de la madre: ${esc(v.predm)}</p>`);
   const alt=alz(v.alzada);
   if(alt) rows.push(`<p class="mare-note">Alzada de la yegua: ${esc(alt)}</p>`);
   if(v.padre||v.madreMadre) rows.push(`<p class="mare-note">Padres de la yegua: ${esc([v.padre,v.madreMadre].filter(Boolean).map(displayName).join(" × "))}</p>`);
