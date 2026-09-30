@@ -188,10 +188,16 @@ async function crearSesion(c, origin) {
 
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
-  if (req.method !== "POST") { res.setHeader("Allow", "POST"); return res.status(405).json({error: "Método no permitido."}); }
-  if (!process.env.STRIPE_SECRET_KEY) return res.status(503).json({error: "Pagos en línea aún no configurados.", sinLlave: true});
+  /* Modo de cobro según la llave en Vercel: sk_live_ = cobros reales, sk_test_ = solo pruebas (?prueba en la URL), sin llave = WhatsApp */
+  const key = process.env.STRIPE_SECRET_KEY || "";
+  const modo = key.startsWith("sk_live_") || key.startsWith("rk_live_") ? "live" : key ? "test" : "off";
+  if (req.method === "GET") return res.status(200).json({modo});
+  if (req.method !== "POST") { res.setHeader("Allow", "GET, POST"); return res.status(405).json({error: "Método no permitido."}); }
+  if (modo === "off") return res.status(503).json({error: "Pagos en línea aún no configurados.", sinLlave: true});
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
+    // Con llave de prueba nunca mandamos a un cliente real a un cobro de prueba
+    if (modo === "test" && body.prueba !== true) return res.status(503).json({error: "Pagos en línea en modo de prueba.", sinLlave: true});
     const T = await loadTarifas();
     const tipo = norm(body.tipo);
     const c = tipo === "caballo" ? await cargoCaballo(body, T)
