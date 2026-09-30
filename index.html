@@ -835,11 +835,41 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
   <div class="shoots-head">
     <div>
       <h2 class="sec-title">Sesiones fotográficas</h2>
-      <p>Locación y caballos del rancho para tu sesión de XV años, boda, maternidad, familia o moda. Tú traes a tu fotógrafo, nosotros ponemos los Friesian, los Gypsy Vanner y los escenarios. Elige tu paquete y fecha, y te confirmamos por WhatsApp.</p>
+      <p>Locación y caballos del rancho para tu sesión de XV años, boda, maternidad, familia o moda. Tú traes a tu fotógrafo, nosotros ponemos los Friesian, los Gypsy Vanner y los escenarios. Elige tu paquete, día y horario, y apártalo en línea o por WhatsApp.</p>
     </div>
     <a class="btn btn-line" data-wa-shoot href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Tengo una duda</a>
   </div>
   <div class="packs" id="packs"><p class="loading">Cargando paquetes…</p></div>
+  <div class="quote" id="agendar" aria-labelledby="t-agendar" hidden>
+    <div>
+      <h3 id="t-agendar">Aparta tu sesión</h3>
+      <p class="lede-s">Elige paquete, día y horario. Ves en tiempo real qué está libre y lo apartas en línea.</p>
+      <form class="qf" id="sform" autocomplete="off">
+        <label class="full">Paquete
+          <select id="s-paq"><option value="manana">Entre semana · mañana</option><option value="tarde">Tarde o sábado</option></select>
+        </label>
+        <label>Fecha
+          <input type="date" id="s-fecha">
+        </label>
+        <label>Horario
+          <select id="s-hor" disabled><option value="">Elige una fecha</option></select>
+        </label>
+        <label class="chk"><input type="checkbox" id="s-iva"> Necesito factura (sumar IVA 16%)</label>
+      </form>
+      <p class="q-fine">Reservas con mínimo 24 horas de anticipación. Apartas con el anticipo y el resto se paga 2 días antes; si reservas con menos de 48 horas, pagas el total al reservar. Domingos no hay sesiones.</p>
+    </div>
+    <div class="qr" aria-live="polite">
+      <p class="q-lbl">Tu sesión</p>
+      <p class="q-total" id="s-total">—</p>
+      <p class="q-hint" id="s-hint"></p>
+      <ul class="q-break" id="s-break"></ul>
+      <p class="q-avail" id="s-avail" hidden></p>
+      <div class="q-actions">
+        <a class="btn btn-dark" id="s-pay" href="#" hidden>Apartar</a>
+        <a class="btn btn-line" id="s-wa" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Agendar por WhatsApp</a>
+      </div>
+    </div>
+  </div>
   <div class="shoots">
     <figure><img src="sesion-friesian.webp" alt="Sesión editorial con un Friesian negro" loading="lazy"></figure>
     <figure><img src="estudio.webp" alt="Sesión de moda con un Friesian" loading="lazy"></figure>
@@ -1019,7 +1049,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
       <h4>Apartados y reservas</h4>
       <ul>
         <li><strong>Eventos:</strong> la fecha queda apartada al recibir el anticipo del 10% y la confirmación del Rancho. El saldo y sus fechas de pago se establecen en la propuesta formal.</li>
-        <li><strong>Sesiones fotográficas:</strong> se apartan con un anticipo de $2,500 MXN al agendar; el resto se paga 2 días antes de la sesión.</li>
+        <li><strong>Sesiones fotográficas:</strong> se reservan con mínimo 24 horas de anticipación y se apartan con un anticipo de $2,500 MXN al agendar; el resto se paga 2 días antes de la sesión. Si reservas con menos de 48 horas, se paga el total al reservar.</li>
         <li><strong>Caballos en venta:</strong> el 10% del precio publicado aparta el caballo durante 15 días naturales. En ese plazo se liquida el saldo o se acuerda por escrito otro esquema.</li>
         <li><strong>Potros 2027:</strong> la reserva de $10,000 MXN asegura tu lugar en la lista de espera y se abona íntegra al precio del potro. Según el plan que elijas, al precio del potro se suma 5% (pagos de $20,000 mensuales), 10% ($15,000) o 15% ($10,000). Si al destete queda saldo, el potro permanece en el Rancho y la pensión corre por tu cuenta hasta liquidarlo.</li>
         <li><strong>Maquilas:</strong> la garantía de preñez se mantiene hasta que la yegua quede cargada y hasta 4 meses después. La pensión de la yegua durante su estancia se cobra aparte.</li>
@@ -1101,8 +1131,10 @@ const CONFIG = {
     api: /github\.io$/.test(location.hostname) ? "" : "/api/checkout", // GitHub Pages no tiene /api: ahí los pagos van a WhatsApp. Vacío = todos a WhatsApp
     evento_anticipo: true,    //   10% para apartar fecha de evento (monto calculado en el servidor)
     caballo_anticipo: true,   //   10% para apartar un caballo (monto calculado en el servidor)
-    potro_reserva: true       //   reserva de lugar en potros 2027
+    potro_reserva: true,      //   reserva de lugar en potros 2027
+    sesion_anticipo: true     //   anticipo (o total con menos de 48 h) de sesión de fotos, con horario de la Agenda
   },
+  AGENDA_API: /github\.io$/.test(location.hostname) ? "" : "/api/agenda", // Agenda (Google Calendar): días y horarios libres. Vacío = sin agenda en línea
   META_PIXEL_ID: ""           // ID del pixel de Meta. Vacío = no carga nada
 };
 /* Respaldo de TARIFAS (mismos valores que la pestaña TARIFAS, 28 sep 2026). Se ignora si TARIFAS_CSV_URL responde. */
@@ -1817,7 +1849,11 @@ document.querySelectorAll("[data-wa-exfr]").forEach(a=>a.href=waLink("Hola, me g
 const numv = v => { const n=parseFloat(String(v??"").replace(/[^0-9.\-]/g,"")); return isFinite(n)?n:0; };
 const pct  = v => { const n=numv(v); if(/\$/.test(String(v))||n>100) return n; return n>1 ? n/100 : n; };   // acepta 10, 10% o 0.10 (porcentaje) o $2,500 / 2500 (monto fijo)
 const depDe = (precio,a,def) => { const x=a||def; return x>1.5 ? Math.round(x) : Math.round(precio*x); };
-let TARIFAS = [], FECHAS = {};
+let TARIFAS = [], FECHAS = {}, AGENDA = null;
+async function loadAgenda(){
+  if(!CONFIG.AGENDA_API) return;
+  try{ const r=await fetch(CONFIG.AGENDA_API,{cache:"no-store"}); const j=await r.json(); AGENDA = j&&j.activa ? j : null; }catch(e){ AGENDA=null; }
+}
 async function loadTarifas(){
   TARIFAS = TARIFAS_FALLBACK.map(t=>({...t,servicio:norm(t.servicio),tipo:norm(t.tipo)}));
   const rows = await fetchCSV(CONFIG.TARIFAS_CSV_URL);
@@ -1865,6 +1901,11 @@ function cotizar(){
   if(fecha){
     const hoy=new Date(); hoy.setHours(0,0,0,0);
     if(new Date(fecha+"T12:00:00")<hoy) avail={cls:"no",txt:"Esa fecha ya pasó"};
+    else if(AGENDA){ const a=AGENDA.dias[fecha]||{};
+      if(a.d==="ocupado") avail={cls:"no",txt:"Fecha ocupada, escríbenos para alternativas"};
+      else if(a.d==="por_confirmar") avail={cls:"ask",txt:"Hay otra solicitud para esa fecha; consúltanos"};
+      else if(a.x) avail={cls:"ask",txt:"Ese día hay otra actividad en el rancho; consúltanos"};
+      else avail={cls:"ok",txt:"Fecha disponible al día de hoy"}; }
     else if(!CONFIG.FECHAS_CSV_URL) avail=null;
     else { const f=FECHAS[fecha];
       if(!f) avail={cls:"ok",txt:"Fecha disponible al día de hoy"};
@@ -1941,7 +1982,9 @@ function renderPacks(){
   box.innerHTML=list.map(p=>{
     const hot=p.tipo==="tarde", prod=p.tipo==="produccion", dep=depDe(p.precio,p.anticipo,2500);
     const koa=!prod && CONFIG.KOALENDAR[p.tipo];
-    const btn = koa ? `<a class="btn ${hot?"btn-dark":"btn-line"}" data-koa="${esc(p.tipo)}" href="${esc(koa)}" target="_blank" rel="noopener">Elegir fecha y pagar anticipo</a>`
+    const book=!prod && AGENDA && (p.tipo==="manana"||p.tipo==="tarde");
+    const btn = book ? `<a class="btn ${hot?"btn-dark":"btn-line"}" data-book="${esc(p.tipo)}" href="#agendar">Elegir día y horario</a>`
+              : koa ? `<a class="btn ${hot?"btn-dark":"btn-line"}" data-koa="${esc(p.tipo)}" href="${esc(koa)}" target="_blank" rel="noopener">Elegir fecha y pagar anticipo</a>`
                     : `<a class="btn ${hot?"btn-dark":"btn-line"}" data-wa-pack="${esc(p.tipo)}" href="${waLink(prod?`Hola, me interesa una producción en Rancho El Descanso (medio día desde ${money(p.precio)}). Te cuento el proyecto:`:`Hola, quiero agendar la sesión de fotos ${PACK_LBL[p.tipo]||p.tipo} (${money(p.precio)}) en Rancho El Descanso. Fecha tentativa: `)}" target="_blank" rel="noopener">${WA_SVG_JS}${prod?"Cotizar producción":"Agendar por WhatsApp"}</a>`;
     return `<article class="pack${hot?" hot":""}">
       ${hot?`<span class="pack-tag">La más pedida</span>`:""}
@@ -1949,12 +1992,71 @@ function renderPacks(){
       <p class="pack-dur">${p.horas?`${p.horas} hora${p.horas>1?"s":""}`:""}${prod?" · medio día":""}</p>
       <p class="pack-price">${prod?"Desde ":""}${money(p.precio)}<small>MXN + IVA</small></p>
       <p class="pack-desc">${esc(p.nota||"")}</p>
-      ${prod?"":`<p class="pack-dep">Apartas con ${money(dep)} al agendar${koa?" (pago con tarjeta)":""}; el resto 2 días antes de la sesión.</p>`}
+      ${prod?"":`<p class="pack-dep">Apartas con ${money(dep)} al agendar; el resto 2 días antes de la sesión.</p>`}
       ${btn}
     </article>`;
   }).join("");
+  box.querySelectorAll("[data-book]").forEach(a=>a.addEventListener("click",e=>{ e.preventDefault(); abrirAgendar(a.dataset.book); }));
   box.querySelectorAll("[data-koa]").forEach(a=>a.addEventListener("click",()=>track("Schedule",{content_name:"sesion_"+a.dataset.koa})));
   box.querySelectorAll("[data-wa-pack]").forEach(a=>a.addEventListener("click",()=>track("Lead",{content_name:"sesion_"+a.dataset.waPack})));
+}
+/* Agendar sesión: horarios de la Agenda (Google Calendar), cobro con Stripe */
+const SLOT_TXT={"10-14":"10:00 a 14:00","14-18":"14:00 a 18:00"};
+const SES_HOR={manana:d=>d>=1&&d<=5?["10-14"]:[], tarde:d=>d>=1&&d<=5?["14-18"]:d===6?["10-14"]:[]};
+const inicioSlot=(fecha,slot)=>new Date(`${fecha}T${slot.slice(0,2)}:00:00-06:00`);
+function abrirAgendar(paq){
+  const box=$("#agendar"); if(!box) return;
+  box.hidden=false; if(paq) $("#s-paq").value=paq;
+  renderAgendar(); box.scrollIntoView({behavior:"smooth",block:"start"});
+  track("Schedule",{content_name:"sesion_"+(paq||"")});
+}
+function renderAgendar(){
+  const paq=$("#s-paq").value, fecha=$("#s-fecha").value, iva=$("#s-iva").checked, sel=$("#s-hor");
+  const fila=tarifa("sesion",paq); if(!fila) return;
+  const minH=(AGENDA&&AGENDA.reglas&&AGENDA.reglas.minHoras)||24, totH=(AGENDA&&AGENDA.reglas&&AGENDA.reglas.totalSiMenos)||48;
+  let total=fila.precio; if(iva) total=Math.round(total*1.16);
+  const dep=Math.min(total,depDe(total,fila.anticipo,2500));
+  const lbl=PACK_LBL[paq]||paq; const av=$("#s-avail"), pay=$("#s-pay");
+  let slots=[], elegido="", estado=null;
+  if(fecha){
+    const wd=new Date(fecha+"T12:00:00").getDay(); const a=(AGENDA&&AGENDA.dias[fecha])||{};
+    slots=(SES_HOR[paq]||(()=>[]))(wd).map(s=>{ const h=(inicioSlot(fecha,s)-Date.now())/36e5;
+      const libre=!a.d && !(a.s||[]).includes(s) && h>=minH; return {s,libre,h,pronto:h<minH}; });
+    const prev=sel.value;
+    sel.innerHTML = slots.length ? slots.map(x=>`<option value="${x.s}"${x.libre?"":" disabled"}>${SLOT_TXT[x.s]}${x.libre?"":x.pronto?" (muy pronto)":" (ocupado)"}</option>`).join("")
+                                 : `<option value="">Sin sesiones ese día</option>`;
+    const libres=slots.filter(x=>x.libre); sel.disabled=!libres.length;
+    elegido = libres.some(x=>x.s===prev) ? prev : (libres[0]||{}).s || ""; sel.value=elegido;
+    if(!slots.length) estado={cls:"no",txt:wd===0?"Los domingos no hay sesiones":"Este paquete no tiene horario ese día; prueba el otro paquete"};
+    else if(a.d) estado={cls:"no",txt:"Ese día hay un evento en el rancho; elige otra fecha"};
+    else if(!libres.length) estado={cls:"no",txt:slots.every(x=>x.pronto)?"Muy pronto: se reserva con mínimo 24 horas":"Sin horarios libres ese día"};
+    else estado={cls:"ok",txt:"Horario disponible"};
+  } else { sel.innerHTML=`<option value="">Elige una fecha</option>`; sel.disabled=true; }
+  const x=slots.find(v=>v.s===elegido); const completo=!!(x&&x.h<totH); const monto=completo?total:dep;
+  $("#s-total").innerHTML=`${money(total)}<small>MXN${iva?" con IVA":" + IVA"}</small>`;
+  $("#s-hint").textContent = fecha&&elegido ? `${DIAS[new Date(fecha+"T12:00:00").getDay()].replace(/^./,c=>c.toUpperCase())} ${Number(fecha.slice(8))} de ${MESES[Number(fecha.slice(5,7))-1]} · ${SLOT_TXT[elegido]}` : "Elige fecha y horario.";
+  const rows=[[`${lbl}${fila.horas?` · ${fila.horas} h`:""}`,money(fila.precio)]];
+  if(iva) rows.push(["IVA 16%","+"+money(total-fila.precio)]);
+  rows.push(completo?["Pagas hoy el total (faltan menos de 48 h)",money(total)]:["Anticipo para apartar",money(dep)]);
+  if(!completo) rows.push(["Resto, 2 días antes de la sesión",money(total-dep)]);
+  $("#s-break").innerHTML=rows.map(([a,b])=>`<li><span>${esc(a)}</span><span>${esc(b)}</span></li>`).join("");
+  if(estado){ av.hidden=false; av.className="q-avail "+estado.cls; av.textContent=estado.txt; } else av.hidden=true;
+  const msg=`Hola, quiero agendar una sesión de fotos en Rancho El Descanso.\nPaquete: ${lbl} (${money(fila.precio)})\nFecha: ${fecha||"por definir"}${elegido?`\nHorario: ${SLOT_TXT[elegido]}`:""}\nFactura: ${iva?"sí":"no"}`;
+  const wa=waLink(msg); $("#s-wa").href=wa;
+  const puede=PAGO_ON("sesion_anticipo") && !!elegido && estado && estado.cls==="ok";
+  pay.hidden=!puede;
+  if(puede){ pay.textContent=completo?`Pagar ${money(total)} y apartar`:`Apartar con ${money(dep)}`;
+    pay._pago={tipo:"sesion",paquete:paq,fecha,horario:elegido,iva}; pay._wa=wa; }
+}
+function initAgendar(){
+  const f=$("#s-fecha"); if(!f) return;
+  const d=new Date(Date.now()+864e5); f.min=d.toISOString().slice(0,10);
+  const m=new Date(); m.setMonth(m.getMonth()+6); f.max=m.toISOString().slice(0,10);
+  ["#s-paq","#s-fecha","#s-hor","#s-iva"].forEach(s=>{ const el=$(s); el.addEventListener("input",renderAgendar); el.addEventListener("change",renderAgendar); });
+  $("#s-pay").addEventListener("click",e=>{ e.preventDefault(); const p=$("#s-pay"); if(!p._pago) return;
+    track("InitiateCheckout",{content_name:"sesion_"+p._pago.paquete}); pagar(p,p._pago,p._wa); });
+  $("#s-wa").addEventListener("click",()=>track("Lead",{content_name:"sesion_whatsapp"}));
+  if(AGENDA){ $("#agendar").hidden=false; renderAgendar(); }
 }
 const WA_SVG_JS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>';
 
@@ -1984,6 +2086,7 @@ function wirePotros(){
 const GRACIAS = {
   evento:["Recibimos tu anticipo","Te escribimos por WhatsApp el mismo día para confirmar tu fecha y enviarte la propuesta formal de tu evento."],
   caballo:["Tu caballo quedó apartado","Recibimos tu anticipo. El apartado dura 15 días; te escribimos por WhatsApp para coordinar la visita, el examen y el saldo."],
+  sesion:["Tu sesión quedó apartada","Recibimos tu pago y tu horario ya está en nuestra agenda. Te escribimos por WhatsApp para afinar detalles; si pagaste anticipo, el resto se paga 2 días antes."],
   potro:["Tu lugar en la lista está reservado","Recibimos tu reserva de potro 2027. Te escribimos por WhatsApp para confirmar tu lugar en la lista."]
 };
 function initGracias(){
@@ -2100,7 +2203,7 @@ window.addEventListener("hashchange",route);
 
 initPixel();
 const PAGO_LISTO=estadoPago();
-Promise.all([loadTarifas(),PAGO_LISTO]).then(()=>{ renderPacks(); initCot(); wirePotros(); });
+Promise.all([loadTarifas(),PAGO_LISTO,loadAgenda()]).then(()=>{ renderPacks(); initCot(); wirePotros(); initAgendar(); });
 Promise.all([load(),PAGO_LISTO]).then(([list])=>{
   HORSES=list;
   for(const r of ["Friesian","Gypsy Vanner"]){
