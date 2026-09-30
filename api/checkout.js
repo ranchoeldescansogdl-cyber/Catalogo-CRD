@@ -91,6 +91,22 @@ const hoyMX = () => new Date(Date.now() - 6 * 36e5).toISOString().slice(0, 10); 
 
 class UserError extends Error {}
 const AG = require("./_agenda");
+const crypto = require("crypto");
+
+/* Freno contra abuso (30 sep 2026): máximo de intentos de pago por IP en 10 min, por instancia.
+   Es una primera barrera; la Agenda además limita los apartados simultáneos por IP y en total. */
+const LIMITE = {ventana: 10 * 60e3, max: 8};
+const intentos = new Map();
+function ipDe(req) { return String(req.headers["x-real-ip"] || String(req.headers["x-forwarded-for"] || "").split(",")[0] || "").trim(); }
+function demasiados(ip) {
+  if (!ip) return false;
+  const ahora = Date.now(), lista = (intentos.get(ip) || []).filter(t => ahora - t < LIMITE.ventana);
+  lista.push(ahora); intentos.set(ip, lista);
+  if (intentos.size > 5000) for (const [k, v] of intentos) if (!v.some(t => ahora - t < LIMITE.ventana)) intentos.delete(k);
+  return lista.length > LIMITE.max;
+}
+const ipHash = ip => ip ? crypto.createHash("sha256").update("crd|" + ip).digest("hex").slice(0, 16) : "";
+const maxFecha = () => new Date(Date.now() + 2 * 365 * 864e5).toISOString().slice(0, 10);
 
 /* --- cada tipo de pago: devuelve {monto, nombre, descripcion, ref, pago} --- */
 async function cargoCaballo(body, T) {
@@ -105,7 +121,9 @@ async function cargoCaballo(body, T) {
   if (est === "apartado" || est === "vendido") throw new UserError("Este caballo ya está " + est + ". Escríbenos por WhatsApp para opciones parecidas.");
   const precio = parseMoney(col(r, "precio"));
   if (!precio) throw new UserError("Este caballo no tiene precio publicado. Escríbenos por WhatsApp.");
-  const t = tarifaDe(T, "apartado", "caballo_en_venta"); const p = (t && t.anticipo) || 0.10;
+  if (precio < 20000) throw new UserError("El precio de este caballo no se pudo leer bien. Escríbenos por WhatsApp.");
+  const t = tarifaDe(T, "apartado", "caballo_en_venta"); let p = (t && t.anticipo) || 0.10;
+  if (!(p > 0 && p <= 0.5)) p = 0.10;
   const monto = Math.round(precio * p);
   const nombre = col(r, "nombre");
   return {
@@ -132,11 +150,14 @@ async function cargoEvento(body, T) {
   const fecha = isoDate(body.fecha);
   if (!fecha) throw new UserError("Elige la fecha de tu evento.");
   if (fecha < hoyMX()) throw new UserError("Esa fecha ya pasó.");
+  if (fecha > maxFecha()) throw new UserError("Para fechas tan lejanas escríbenos por WhatsApp.");
   const fila = T.find(t => t.servicio === "evento" && t.tipo === tipo && inv >= t.min && inv <= t.max);
   if (!fila || !fila.precio) throw new UserError("Este evento requiere cotización personalizada. Escríbenos por WhatsApp.");
   if (AG.AGENDA_URL) {
     const ag = await AG.disponibilidad({fresco: true}).catch(e => { console.error(e); return null; });
-    if (ag && !AG.libre(ag.dias, fecha)) throw new UserError("Esa fecha ya está ocupada o en consulta. Escríbenos por WhatsApp para alternativas.");
+    if (!ag) throw new UserError("No pudimos revisar la agenda en este momento. Escríbenos por WhatsApp para apartar tu fecha.");
+    if (ag.hasta && fecha > ag.hasta) throw new UserError("Para esa fecha escríbenos por WhatsApp.");
+    if (!AG.libre(ag.dias, fecha)) throw new UserError("Esa fecha ya está ocupada o en consulta. Escríbenos por WhatsApp para alternativas.");
   } else if (HOJAS.fechas) {
     const fr = await fetchCSV(HOJAS.fechas);
     const f = (fr || []).find(r => isoDate(col(r, "fecha")) === fecha);
@@ -167,12 +188,15 @@ async function cargoSesion(body, T) {
   if (!fila || !fila.precio) throw new UserError("Este paquete se cotiza por WhatsApp.");
   const fecha = isoDate(body.fecha), horario = String(body.horario || "");
   if (!fecha) throw new UserError("Elige la fecha de tu sesión.");
+  if (fecha > maxFecha()) throw new UserError("Para fechas tan lejanas escríbenos por WhatsApp.");
   if (!AG.HORARIOS[paquete](AG.diaSemana(fecha)).includes(horario)) throw new UserError("Ese horario no está disponible para este paquete.");
   const inicio = AG.inicioMX(fecha, AG.SLOTS[horario][0]);
   const horas = (inicio - Date.now()) / 36e5;
   if (horas < AG.MIN_HORAS) throw new UserError(`Las sesiones se reservan con mínimo ${AG.MIN_HORAS} horas de anticipación. Escríbenos por WhatsApp.`);
   if (!AG.AGENDA_URL) throw new UserError("La agenda en línea no está activa. Escríbenos por WhatsApp.");
-  const ag = await AG.disponibilidad({fresco: true});
+  const ag = await AG.disponibilidad({fresco: true}).catch(e => { console.error(e); return null; });
+  if (!ag) throw new UserError("No pudimos revisar la agenda en este momento. Escríbenos por WhatsApp.");
+  if (ag.hasta && fecha > ag.hasta) throw new UserError("Para esa fecha escríbenos por WhatsApp.");
   if (!AG.libre(ag.dias, fecha, horario)) throw new UserError("Ese horario ya está ocupado. Elige otro.");
   const iva = body.iva === true || body.iva === "true";
   let total = fila.precio; if (iva) total = Math.round(total * 1.16);
@@ -220,6 +244,8 @@ async function crearSesion(c, origin) {
     line_items: {0: {quantity: 1, price_data: {currency: "mxn", unit_amount: c.monto * 100,
       product_data: {name: c.nombre.slice(0, 250), description: c.descripcion.slice(0, 500)}}}},
     metadata: {tipo: c.pago, ref: c.ref, ...c.meta},
+    // Sesiones y eventos solo con tarjeta: un pago diferido (OXXO) llegaría después de que venza el apartado del horario
+    payment_method_types: c.agenda ? {0: "card"} : undefined,
     payment_intent_data: {description: c.nombre.slice(0, 250), metadata: {tipo: c.pago, ref: c.ref, ...c.meta}}
   };
   const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
@@ -240,6 +266,8 @@ module.exports = async (req, res) => {
   if (req.method === "GET") return res.status(200).json({modo});
   if (req.method !== "POST") { res.setHeader("Allow", "GET, POST"); return res.status(405).json({error: "Método no permitido."}); }
   if (modo === "off") return res.status(503).json({error: "Pagos en línea aún no configurados.", sinLlave: true});
+  const ip = ipDe(req);
+  if (demasiados(ip)) return res.status(429).json({error: "Demasiados intentos seguidos. Espera unos minutos o escríbenos por WhatsApp."});
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     // Con llave de prueba nunca mandamos a un cliente real a un cobro de prueba
@@ -253,13 +281,18 @@ module.exports = async (req, res) => {
             : null;
     if (!c) throw new UserError("Tipo de pago no válido.");
     if (!(c.monto >= 10)) throw new UserError("El monto no es válido. Escríbenos por WhatsApp.");
-    const host = req.headers["x-forwarded-host"] || req.headers.host;
-    const origin = process.env.SITE_URL ? process.env.SITE_URL.replace(/\/$/, "") : `https://${host}`;
+    c.meta = {...c.meta, ip: ipHash(ip)};
+    const host = String(req.headers["x-forwarded-host"] || req.headers.host || "");
+    const origin = process.env.SITE_URL ? process.env.SITE_URL.replace(/\/$/, "")
+      : /^[a-z0-9-]+\.vercel\.app$/i.test(host) ? `https://${host}` : "https://rancho-el-descanso.vercel.app";
     const {url, id} = await crearSesion(c, origin);
     if (c.agenda && AG.AGENDA_URL) {
       // Aparta el horario en la Agenda mientras paga; si alguien lo ganó en ese instante, cancela la liga
-      const h = await AG.apartar(id).catch(e => { console.error("Agenda apartar:", e); return {ok: true, sinAgenda: true}; });
-      if (!h.ok) { await expirar(id); throw new UserError(h.conflicto ? "Ese horario se acaba de ocupar. Elige otro." : "No pudimos apartar el horario. Escríbenos por WhatsApp."); }
+      // Falla cerrado: si la Agenda no responde, no se cobra (se evita apartar dos veces el mismo horario)
+      const h = await AG.apartar(id).catch(e => { console.error("Agenda apartar:", e); return {ok: false}; });
+      if (!h.ok) { await expirar(id); throw new UserError(h.conflicto ? "Ese horario se acaba de ocupar. Elige otro."
+        : h.limite ? "Hay muchas reservas en proceso en este momento. Intenta en unos minutos o escríbenos por WhatsApp."
+        : "No pudimos apartar el horario. Escríbenos por WhatsApp."); }
     }
     return res.status(200).json({url, monto: c.monto});
   } catch (e) {

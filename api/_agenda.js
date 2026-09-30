@@ -1,6 +1,7 @@
 /* Rancho El Descanso · conexión con la Agenda (Google Calendar vía Apps Script).
    El calendario "Rancho El Descanso · Agenda" es la fuente de verdad de sesiones y eventos.
-   AGENDA_URL = Apps Script "Agenda Rancho El Descanso" (cuenta nicolas@legaius.com) publicado como aplicación web.
+   AGENDA_URL = Apps Script "Agenda Rancho El Descanso" publicado como aplicación web.
+   Con RANCHO_TOKEN en Vercel, apartar/confirmar llevan ese token (el Apps Script lo exige si lo tiene).
    Si la URL queda vacía, la página no muestra horarios y las sesiones se agendan por WhatsApp. */
 const AGENDA_URL = process.env.AGENDA_URL || "https://script.google.com/macros/s/AKfycbzccWMScnT9y-jZXQzTsIza4bSk8pBUKE7a0SxZvqmlVfoJA5nC0tkvtr1EKBUwfsgV/exec";
 
@@ -31,7 +32,7 @@ async function disponibilidad({fresco = false} = {}) {
 async function post(accion, session_id) {
   if (!AGENDA_URL) return {ok: true, apagada: true};
   const r = await fetch(AGENDA_URL, {method: "POST", headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({accion, session_id}), redirect: "follow"});
+    body: JSON.stringify({accion, session_id, token: process.env.RANCHO_TOKEN || undefined}), redirect: "follow"});
   const txt = await r.text();
   try { return JSON.parse(txt); } catch (e) { throw new Error("Agenda respondió " + r.status + ": " + txt.slice(0, 200)); }
 }
