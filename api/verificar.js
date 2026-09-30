@@ -22,6 +22,8 @@ module.exports = async (req, res) => {
     caballo_id: m.caballo_id || "",
     caballo_slug: m.caballo_slug || "",
     evento: m.evento || "", fecha: m.fecha || "", invitados: m.invitados || "",
+    paquete: m.paquete || "", horario: m.horario || "", total: m.total || m.estimado_total || "", resta: m.resta || "",
+    estado: s.status || "", vence: s.expires_at || null,
     monto: (s.amount_total || 0) / 100,
     moneda: String(s.currency || "").toUpperCase(),
     nombre: c.name || "", email: c.email || "", telefono: c.phone || "",

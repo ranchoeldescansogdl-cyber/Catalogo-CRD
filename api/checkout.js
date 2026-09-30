@@ -6,6 +6,8 @@
      {tipo:"caballo", id:"<id del caballo en la página>"}
      {tipo:"potro"}
      {tipo:"evento", evento:"boda|xv|social|corporativo", inv:120, hx:1, iva:true, fecha:"2026-11-14"}
+     {tipo:"sesion", paquete:"manana|tarde|produccion", fecha:"2026-11-14", horario:"10-14|14-18", iva:false}
+   Sesiones y eventos revisan la Agenda (Google Calendar) y apartan el horario 35 min mientras se paga.
    Responde {url} (página de pago de Stripe) o {error}. */
 
 const HOJAS = {
@@ -26,7 +28,8 @@ const TARIFAS_FALLBACK = [
   ["evento","corporativo",201,300,65000,5,3000,0.1],["evento","corporativo",301,500,75000,5,3000,0.1],
   ["factor","sabado","","",1.0],["factor","viernes","","",0.9],["factor","domingo","","",1.1],
   ["factor","entre_semana","","",0.8],["factor","temporada_alta","","",1.15],
-  ["apartado","caballo_en_venta","","",0,"","",0.1],["apartado","potro_2027","","",10000]
+  ["apartado","caballo_en_venta","","",0,"","",0.1],["apartado","potro_2027","","",10000],
+  ["sesion","manana","","",4000,3,1500,2500],["sesion","tarde","","",5000,3,1500,2500],["sesion","produccion","","",10000,4,2500,0.5]
 ].map(r => ({servicio:r[0], tipo:r[1], min:r[2], max:r[3], precio:r[4], horas:r[5], hora_extra:r[6], anticipo:r[7]}));
 
 const TIPO_LBL = {boda:"Boda", xv:"XV años", social:"Evento social", corporativo:"Evento corporativo"};
@@ -87,6 +90,7 @@ const tarifaDe = (T, servicio, tipo) => T.find(t => t.servicio === servicio && t
 const hoyMX = () => new Date(Date.now() - 6 * 36e5).toISOString().slice(0, 10); // fecha de hoy en Guadalajara (UTC-6)
 
 class UserError extends Error {}
+const AG = require("./_agenda");
 
 /* --- cada tipo de pago: devuelve {monto, nombre, descripcion, ref, pago} --- */
 async function cargoCaballo(body, T) {
@@ -130,7 +134,10 @@ async function cargoEvento(body, T) {
   if (fecha < hoyMX()) throw new UserError("Esa fecha ya pasó.");
   const fila = T.find(t => t.servicio === "evento" && t.tipo === tipo && inv >= t.min && inv <= t.max);
   if (!fila || !fila.precio) throw new UserError("Este evento requiere cotización personalizada. Escríbenos por WhatsApp.");
-  if (HOJAS.fechas) {
+  if (AG.AGENDA_URL) {
+    const ag = await AG.disponibilidad({fresco: true}).catch(e => { console.error(e); return null; });
+    if (ag && !AG.libre(ag.dias, fecha)) throw new UserError("Esa fecha ya está ocupada o en consulta. Escríbenos por WhatsApp para alternativas.");
+  } else if (HOJAS.fechas) {
     const fr = await fetchCSV(HOJAS.fechas);
     const f = (fr || []).find(r => isoDate(col(r, "fecha")) === fecha);
     if (f && norm(col(f, "estatus"))) throw new UserError("Esa fecha ya tiene otra solicitud. Escríbenos por WhatsApp para alternativas.");
@@ -148,8 +155,46 @@ async function cargoEvento(body, T) {
     monto, pago: "evento", ref: `EVT-${fecha}-${tipo}-${inv}`,
     nombre: `Anticipo ${Math.round(p * 100)}% · ${TIPO_LBL[tipo]} · ${txtFecha}`,
     descripcion: `${inv} invitados${hx ? ` · ${hx} h extra` : ""} · estimado ${money(total)} MXN ${iva ? "con IVA" : "+ IVA"}. La fecha se confirma por WhatsApp.`,
-    meta: {evento: tipo, fecha, invitados: String(inv), horas_extra: String(hx), factura: iva ? "si" : "no", estimado_total: String(total)}
+    meta: {evento: tipo, fecha, invitados: String(inv), horas_extra: String(hx), factura: iva ? "si" : "no", estimado_total: String(total), total: String(total), resta: String(total - monto)},
+    agenda: true
   };
+}
+const PAQ_LBL = {manana: "Sesión entre semana · mañana", tarde: "Sesión tarde o sábado", produccion: "Producción y marcas"};
+async function cargoSesion(body, T) {
+  const paquete = norm(body.paquete);
+  if (!PAQ_LBL[paquete] || !AG.HORARIOS[paquete]) throw new UserError("Paquete no válido.");
+  const fila = tarifaDe(T, "sesion", paquete);
+  if (!fila || !fila.precio) throw new UserError("Este paquete se cotiza por WhatsApp.");
+  const fecha = isoDate(body.fecha), horario = String(body.horario || "");
+  if (!fecha) throw new UserError("Elige la fecha de tu sesión.");
+  if (!AG.HORARIOS[paquete](AG.diaSemana(fecha)).includes(horario)) throw new UserError("Ese horario no está disponible para este paquete.");
+  const inicio = AG.inicioMX(fecha, AG.SLOTS[horario][0]);
+  const horas = (inicio - Date.now()) / 36e5;
+  if (horas < AG.MIN_HORAS) throw new UserError(`Las sesiones se reservan con mínimo ${AG.MIN_HORAS} horas de anticipación. Escríbenos por WhatsApp.`);
+  if (!AG.AGENDA_URL) throw new UserError("La agenda en línea no está activa. Escríbenos por WhatsApp.");
+  const ag = await AG.disponibilidad({fresco: true});
+  if (!AG.libre(ag.dias, fecha, horario)) throw new UserError("Ese horario ya está ocupado. Elige otro.");
+  const iva = body.iva === true || body.iva === "true";
+  let total = fila.precio; if (iva) total = Math.round(total * 1.16);
+  const dep = fila.anticipo > 1 ? fila.anticipo : Math.round(total * (fila.anticipo || 0.5));
+  const completo = horas < AG.TOTAL_SI_MENOS;
+  const monto = completo ? total : Math.min(total, dep);
+  const d = new Date(fecha + "T12:00:00Z");
+  const txt = `${d.getUTCDate()} de ${MESES[d.getUTCMonth()]} de ${d.getUTCFullYear()} · ${horario.replace("-", ":00 a ")}:00`;
+  return {
+    monto, pago: "sesion", ref: `SES-${fecha}-${horario}-${paquete}`,
+    nombre: `${completo ? "Pago total" : "Anticipo"} · ${PAQ_LBL[paquete]} · ${txt}`,
+    descripcion: completo ? `Pago total por reservar con menos de ${AG.TOTAL_SI_MENOS} h. Total ${money(total)} MXN ${iva ? "con IVA" : "+ IVA"}.`
+                          : `Total ${money(total)} MXN ${iva ? "con IVA" : "+ IVA"}. El resto (${money(total - monto)}) se paga 2 días antes de la sesión.`,
+    meta: {paquete, fecha, horario, factura: iva ? "si" : "no", total: String(total), resta: String(total - monto)},
+    agenda: true
+  };
+}
+async function expirar(id) {
+  try {
+    await fetch(`https://api.stripe.com/v1/checkout/sessions/${id}/expire`, {method: "POST",
+      headers: {Authorization: "Bearer " + process.env.STRIPE_SECRET_KEY, "Stripe-Version": "2026-08-26.dahlia"}});
+  } catch (e) { console.error("No se pudo expirar", id, e); }
 }
 
 /* --- Stripe (API directa, sin librerías) --- */
@@ -184,7 +229,7 @@ async function crearSesion(c, origin) {
   });
   const j = await res.json();
   if (!res.ok) { console.error("Stripe:", j.error); throw new Error((j.error && j.error.message) || "Stripe " + res.status); }
-  return j.url;
+  return {url: j.url, id: j.id};
 }
 
 module.exports = async (req, res) => {
@@ -204,12 +249,18 @@ module.exports = async (req, res) => {
     const c = tipo === "caballo" ? await cargoCaballo(body, T)
             : tipo === "potro" ? await cargoPotro(body, T)
             : tipo === "evento" ? await cargoEvento(body, T)
+            : tipo === "sesion" ? await cargoSesion(body, T)
             : null;
     if (!c) throw new UserError("Tipo de pago no válido.");
     if (!(c.monto >= 10)) throw new UserError("El monto no es válido. Escríbenos por WhatsApp.");
     const host = req.headers["x-forwarded-host"] || req.headers.host;
     const origin = process.env.SITE_URL ? process.env.SITE_URL.replace(/\/$/, "") : `https://${host}`;
-    const url = await crearSesion(c, origin);
+    const {url, id} = await crearSesion(c, origin);
+    if (c.agenda && AG.AGENDA_URL) {
+      // Aparta el horario en la Agenda mientras paga; si alguien lo ganó en ese instante, cancela la liga
+      const h = await AG.apartar(id).catch(e => { console.error("Agenda apartar:", e); return {ok: true, sinAgenda: true}; });
+      if (!h.ok) { await expirar(id); throw new UserError(h.conflicto ? "Ese horario se acaba de ocupar. Elige otro." : "No pudimos apartar el horario. Escríbenos por WhatsApp."); }
+    }
     return res.status(200).json({url, monto: c.monto});
   } catch (e) {
     if (e instanceof UserError) return res.status(400).json({error: e.message});

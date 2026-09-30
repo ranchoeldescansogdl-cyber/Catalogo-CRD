@@ -43,6 +43,13 @@ module.exports = async (req, res) => {
   const obj = ev.data && ev.data.object;
   if (!tipos.includes(ev.type) || !obj || !/^cs_/.test(obj.id || "")) return res.status(200).json({ignorado: ev.type || true});
   if (obj.payment_status && obj.payment_status === "unpaid") return res.status(200).json({pendiente: true}); // OXXO/transferencia: llega luego como async_payment_succeeded
+  // Sesiones y eventos: la Agenda (Google Calendar) convierte el apartado en cita y avisa por correo.
+  // Si falla no detiene lo demás: el Apps Script de la Agenda reintenta solo cada 15 min.
+  const tipoPago = (obj.metadata && obj.metadata.tipo) || "";
+  if (tipoPago === "sesion" || tipoPago === "evento") {
+    try { const a = await require("./_agenda").confirmar(obj.id); if (!a.ok) console.error("Agenda:", JSON.stringify(a)); }
+    catch (e) { console.error("Agenda confirmar:", e); }
+  }
   try {
     const r = await fetch(SHEETS_URL, {method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({session_id: obj.id}), redirect: "follow"});
