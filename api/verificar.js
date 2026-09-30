@@ -7,7 +7,7 @@ module.exports = async (req, res) => {
   if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(id)) return res.status(400).json({error: "id no válido"});
   if (!process.env.STRIPE_SECRET_KEY) return res.status(503).json({error: "sin llave"});
   const r = await fetch("https://api.stripe.com/v1/checkout/sessions/" + id, {
-    headers: {Authorization: "Bearer " + process.env.STRIPE_SECRET_KEY}
+    headers: {Authorization: "Bearer " + process.env.STRIPE_SECRET_KEY, "Stripe-Version": "2026-08-26.dahlia"}
   });
   const s = await r.json();
   if (!r.ok) return res.status(404).json({error: (s.error && s.error.message) || "no encontrado"});

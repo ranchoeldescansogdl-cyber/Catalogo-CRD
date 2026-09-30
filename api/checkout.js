@@ -165,6 +165,7 @@ function form(obj, prefix, out = []) {
 async function crearSesion(c, origin) {
   const params = {
     mode: "payment",
+    integration_identifier: "rancho_web_checkout_qhvnbtzk", // etiqueta para ver este flujo en el Dashboard de Stripe
     locale: "es-419",
     client_reference_id: c.ref.replace(/[^A-Za-z0-9_-]/g, "-").slice(0, 200),
     success_url: `${origin}/?pago=${c.pago}&ref={CHECKOUT_SESSION_ID}`,
@@ -178,7 +179,7 @@ async function crearSesion(c, origin) {
   };
   const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
-    headers: {Authorization: "Bearer " + process.env.STRIPE_SECRET_KEY, "Content-Type": "application/x-www-form-urlencoded"},
+    headers: {Authorization: "Bearer " + process.env.STRIPE_SECRET_KEY, "Content-Type": "application/x-www-form-urlencoded", "Stripe-Version": "2026-08-26.dahlia"},
     body: form(params)
   });
   const j = await res.json();
