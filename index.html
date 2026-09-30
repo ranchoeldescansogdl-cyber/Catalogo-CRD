@@ -1830,14 +1830,22 @@ function renderCot(){
   if(puedePagar){ pay.textContent=`Apartar fecha con el ${Math.round((q.fila.anticipo||0.10)*100)}% (${money(q.anticipo)})`; pay.href="#"; pay.removeAttribute("target");
     pay._pago={tipo:"evento",evento:q.tipo,inv:q.inv,hx:q.hx,iva:q.iva,fecha:q.fecha}; pay._wa=waLink(msg); }
 }
-const PAGO_ON = k => !!(CONFIG.STRIPE.api && CONFIG.STRIPE[k]);
+/* Modo de cobro: lo dice el servidor según la llave de Stripe en Vercel.
+   live = cobros reales · test = solo con ?prueba en la URL · off = todo a WhatsApp */
+const PRUEBA_PAGOS = new URLSearchParams(location.search).has("prueba");
+let MODO_PAGO = "off";
+async function estadoPago(){
+  if(!CONFIG.STRIPE.api) return;
+  try{ const r=await fetch(CONFIG.STRIPE.api,{cache:"no-store"}); if(r.ok) MODO_PAGO=(await r.json()).modo||"off"; }catch(e){}
+}
+const PAGO_ON = k => !!(CONFIG.STRIPE.api && CONFIG.STRIPE[k] && (MODO_PAGO==="live" || (MODO_PAGO==="test" && PRUEBA_PAGOS)));
 /* Abre Stripe Checkout. El servidor calcula el monto con la hoja. Si falla, manda a WhatsApp. */
 async function pagar(btn,payload,waFallback){
   if(btn.dataset.busy) return; btn.dataset.busy="1";
   const txt=btn.innerHTML; btn.textContent="Abriendo pago seguro…"; btn.setAttribute("aria-busy","true");
   let j={};
   try{
-    const r=await fetch(CONFIG.STRIPE.api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const r=await fetch(CONFIG.STRIPE.api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(PRUEBA_PAGOS?{...payload,prueba:true}:payload)});
     j=await r.json().catch(()=>({}));
     if(r.ok&&j.url){ location.href=j.url; return; }
   }catch(e){ console.warn("Pago no disponible",e); }
@@ -2021,8 +2029,9 @@ $("#ficha").addEventListener("click",e=>{ if(e.target.id==="ficha") closeFicha()
 window.addEventListener("hashchange",route);
 
 initPixel();
-loadTarifas().then(()=>{ renderPacks(); initCot(); wirePotros(); });
-load().then(list=>{
+const PAGO_LISTO=estadoPago();
+Promise.all([loadTarifas(),PAGO_LISTO]).then(()=>{ renderPacks(); initCot(); wirePotros(); });
+Promise.all([load(),PAGO_LISTO]).then(([list])=>{
   HORSES=list;
   for(const r of ["Friesian","Gypsy Vanner"]){
     const n=list.filter(h=>h.raza===r&&h.disponible).length;
