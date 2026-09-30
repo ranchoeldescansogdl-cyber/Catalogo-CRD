@@ -281,16 +281,34 @@ section[id],main[id]{scroll-margin-top:20px}
 .queue .btn{margin-top:18px}
 .mares-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px;margin:clamp(44px,6vw,72px) 0 18px}
 .mares-head h3{font-family:var(--display);font-weight:400;font-size:clamp(1.5rem,3vw,2rem);margin:0}
-.mares{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
-.mare{border:1px solid var(--rule);border-radius:2px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:6px;text-decoration:none;transition:border-color .2s}
-.mare:hover{border-color:var(--gold)}
-.mare-breed{font-size:.8rem;color:var(--gold-deep);letter-spacing:.04em}
-.mare-cross{font-family:var(--display);font-size:1.2rem;line-height:1.25;margin:0}
-.mare-cross em{font-style:normal;color:var(--gold-deep);padding:0 4px}
-.mare-note{font-size:.88rem;color:var(--muted);margin:0}
-.mare-pred{font-size:.9rem;color:var(--gold-deep);margin:0;letter-spacing:.02em}
-.mare-date{margin-top:auto;padding-top:8px;font-size:.93rem;font-weight:500}
-.mare-ask{font-size:.88rem;color:var(--gold-deep);text-decoration:underline;text-underline-offset:4px}
+.mares{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
+.mare{position:relative;display:flex;flex-direction:column;background:var(--paper);border:1px solid var(--rule);border-radius:3px;overflow:hidden;text-decoration:none;color:var(--ink);transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.mare:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 14px 34px -18px rgba(0,0,0,.45)}
+.mare-top{background:var(--black);color:var(--paper);padding:18px 20px 20px;position:relative;overflow:hidden}
+.mare-top::before{content:"";position:absolute;right:-18px;bottom:-22px;width:120px;height:120px;background:url(marca/simbolo-oro.png) center/contain no-repeat;opacity:.1;pointer-events:none}
+.mare-top > *{position:relative}
+.mare-top::after{content:"";position:absolute;left:20px;right:20px;bottom:0;height:1px;background:linear-gradient(90deg,var(--gold),rgba(206,179,92,0))}
+.mare-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.mare-breed{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.mare-date{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.72);border:1px solid var(--rule-dark);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.mare-name{font-family:var(--display);font-size:1.45rem;line-height:1.15;margin:0}
+.mare-sire{margin:6px 0 0;font-size:.92rem;color:rgba(255,255,255,.7)}
+.mare-sire em{font-style:normal;font-family:var(--display);color:var(--gold);font-size:1.05rem;margin-right:6px}
+.mare-sire b{font-weight:400;color:var(--paper)}
+.mare-body{padding:18px 20px 4px;display:flex;flex-direction:column;gap:14px;flex:1}
+.mare-lbl{display:block;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.mare-pred{font-family:var(--display);font-size:1.08rem;line-height:1.3;color:var(--gold-deep);margin:0}
+.mare-line{display:flex;flex-wrap:wrap;gap:5px;margin:0;padding:0;list-style:none}
+.mare-line li{font-size:.72rem;letter-spacing:.05em;padding:4px 9px;border-radius:2px;color:var(--ink);background:var(--mist)}
+.mare-body:empty{justify-content:center;align-items:center;min-height:120px}
+.mare-body:empty::before{content:"";width:64px;height:64px;background:url(marca/simbolo-oro.png) center/contain no-repeat;opacity:.22}
+.mare-body > .mare-specs:first-child{margin-top:0;padding-top:0;border-top:0}
+.mare-specs{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:auto 0 0;padding-top:14px;border-top:1px solid var(--rule);font-size:.86rem}
+.mare-specs dt{font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding-top:3px}
+.mare-specs dd{margin:0;color:var(--ink)}
+.mare-ask{display:flex;justify-content:space-between;align-items:center;margin:14px 20px 0;padding:14px 0 16px;border-top:1px solid var(--rule);font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);font-weight:500}
+.mare-ask span{color:var(--gold-deep);font-size:1.1rem;transition:transform .25s ease}
+.mare:hover .mare-ask span{transform:translateX(4px)}
 
 /* ---------- Eventos ---------- */
 .events-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(28px,5vw,64px);align-items:center}
@@ -1540,14 +1558,17 @@ function renderStuds(){
 let mareFilter="";
 function mareInfo(v){
   const pred=v.pred||(v.raza==="Friesian"&&!v.predm?v.dato:"");
-  const rows=[];
-  if(pred) rows.push(`<p class="mare-pred">${esc(pred)}</p>`);
-  if(v.predm) rows.push(`<p class="mare-note">Predicados de la madre: ${esc(v.predm)}</p>`);
-  const alt=alz(v.alzada);
-  if(alt) rows.push(`<p class="mare-note">Alzada de la yegua: ${esc(alt)}</p>`);
-  if(v.padre||v.madreMadre) rows.push(`<p class="mare-note">Padres de la yegua: ${esc([v.padre,v.madreMadre].filter(Boolean).map(displayName).join(" × "))}</p>`);
-  if(v.raza!=="Friesian"&&v.dato) rows.push(`<p class="mare-note">Capa de la yegua: ${esc(displayName(v.dato))}</p>`);
-  return rows.join("");
+  const linea=String(v.predm||"").split("/").map(x=>x.trim()).filter(Boolean);
+  const out=[];
+  if(pred) out.push(`<div><span class="mare-lbl">Predicados</span><p class="mare-pred">${esc(pred)}</p></div>`);
+  if(linea.length) out.push(`<div><span class="mare-lbl">Línea materna</span><ul class="mare-line">${linea.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`);
+  const specs=[];
+  const alt=alz(v.alzada); if(alt) specs.push(["Alzada",alt]);
+  if(v.raza!=="Friesian"&&v.dato) specs.push(["Capa",displayName(v.dato)]);
+  if(v.padre) specs.push(["Padre",displayName(v.padre)]);
+  if(v.madreMadre) specs.push(["Madre",displayName(v.madreMadre)]);
+  if(specs.length) out.push(`<dl class="mare-specs">${specs.map(([k,x])=>`<dt>${k}</dt><dd>${esc(x)}</dd>`).join("")}</dl>`);
+  return out.join("");
 }
 function renderMares(){
   const box=$("#mares"); if(!box) return;
@@ -1559,12 +1580,14 @@ function renderMares(){
     const madre=displayName(v.madre);
     const cuando=v.parto?`Parto estimado: ${mesTxt(v.parto)}`:"Fecha de parto por confirmar";
     const msg=`Hola, me interesa apartar el potro ${(v.parto||"").slice(0,4)||"2027"} de ${madre} × ${v.semental} (${v.raza}). ¿Cómo funciona la lista de espera?`;
-    return `<a class="mare" href="${waLink(msg)}" target="_blank" rel="noopener">
-      <span class="mare-breed">${esc(v.raza)}</span>
-      <p class="mare-cross">${esc(madre)}<em>×</em>${esc(v.semental)}</p>
-      ${mareInfo(v)}
-      <span class="mare-date">${esc(cuando)}</span>
-      <span class="mare-ask">Preguntar por esta cruza</span>
+    return `<a class="mare" href="${waLink(msg)}" target="_blank" rel="noopener" aria-label="${esc(madre)} por ${esc(v.semental)}. ${esc(cuando)}. Preguntar por esta cruza">
+      <div class="mare-top">
+        <div class="mare-meta"><span class="mare-breed">${esc(v.raza)}</span><span class="mare-date">${esc(v.parto?"Parto · "+mesTxt(v.parto):"Parto por confirmar")}</span></div>
+        <p class="mare-name">${esc(madre)}</p>
+        <p class="mare-sire"><em>×</em><b>${esc(v.semental)}</b></p>
+      </div>
+      <div class="mare-body">${mareInfo(v)}</div>
+      <span class="mare-ask">Apartar esta cruza <span aria-hidden="true">→</span></span>
     </a>`;}).join("") || `<p class="empty">No hay yeguas publicadas con este filtro.</p>`;
   document.querySelectorAll("#f-mares button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===mareFilter));
 }
