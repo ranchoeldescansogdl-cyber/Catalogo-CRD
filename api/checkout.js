@@ -108,7 +108,7 @@ async function cargoCaballo(body, T) {
     monto, pago: "caballo", ref: `CAB-${id}`,
     nombre: `Apartado ${Math.round(p * 100)}% · ${nombre}`,
     descripcion: `${col(r, "raza") || "Caballo"} · precio publicado ${money(precio)} MXN. El apartado dura 15 días naturales.`,
-    meta: {caballo: nombre, precio_caballo: String(precio)}
+    meta: {caballo: nombre, caballo_id: col(r, "id"), caballo_slug: id, precio_caballo: String(precio)}
   };
 }
 async function cargoPotro(body, T) {
@@ -170,6 +170,7 @@ async function crearSesion(c, origin) {
     success_url: `${origin}/?pago=${c.pago}&ref={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/`,
     phone_number_collection: {enabled: "true"},
+    expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // la liga de pago vence en 30 min (mínimo de Stripe)
     line_items: {0: {quantity: 1, price_data: {currency: "mxn", unit_amount: c.monto * 100,
       product_data: {name: c.nombre.slice(0, 250), description: c.descripcion.slice(0, 500)}}}},
     metadata: {tipo: c.pago, ref: c.ref, ...c.meta},
