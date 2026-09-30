@@ -869,10 +869,11 @@ const CONFIG = {
     titular: "Rancho El Descanso",   // nombre o razón social del titular del RFC que cobra
     email: ""                 // correo para derechos ARCO y facturación. Vacío = solo WhatsApp
   },
-  STRIPE: {                   // Payment Links de Stripe. Vacío = el botón manda a WhatsApp
-    evento_anticipo: "",      //   link "el cliente elige el monto" para el 10% de eventos
-    caballo_anticipo: "",     //   link "el cliente elige el monto" para el 10% de un caballo
-    potro_reserva: ""         //   link de monto fijo ($10,000) para reservar lugar en potros 2027
+  STRIPE: {                   // Pagos con Stripe Checkout vía /api/checkout (Vercel). La llave secreta vive solo en Vercel.
+    api: "/api/checkout",     //   Vacío = todos los botones de pago mandan a WhatsApp
+    evento_anticipo: true,    //   10% para apartar fecha de evento (monto calculado en el servidor)
+    caballo_anticipo: true,   //   10% para apartar un caballo (monto calculado en el servidor)
+    potro_reserva: true       //   reserva de lugar en potros 2027
   },
   META_PIXEL_ID: ""           // ID del pixel de Meta. Vacío = no carga nada
 };
@@ -1393,7 +1394,9 @@ function openFicha(h){
     catch{ e.target.textContent="No se pudo copiar"; }
   };
   document.title=`${h.nombreVis} | Rancho El Descanso`;
-  const ap=d.querySelector("[data-apartar]"); if(ap) ap.addEventListener("click",()=>track(CONFIG.STRIPE.caballo_anticipo?"InitiateCheckout":"Lead",{content_name:"apartar_"+h.id,value:h.precioN,currency:"MXN"}));
+  const ap=d.querySelector("[data-apartar]"); if(ap) ap.addEventListener("click",e=>{
+    track(PAGO_ON("caballo_anticipo")?"InitiateCheckout":"Lead",{content_name:"apartar_"+h.id,value:h.precioN,currency:"MXN"});
+    if(PAGO_ON("caballo_anticipo")){ e.preventDefault(); pagar(ap,{tipo:"caballo",id:h.id},ap.dataset.wa); } });
   track("ViewContent",{content_name:h.nombreVis,content_category:h.raza,value:h.precioN||0,currency:"MXN"});
   if(!d.open) d.showModal();
   d.scrollTop=0;
@@ -1652,16 +1655,32 @@ function renderCot(){
   if(q.avail){ av.hidden=false; av.className="q-avail "+q.avail.cls; av.textContent=q.avail.txt; } else av.hidden=true;
   const msg=`Hola, cotizé mi evento en la página de Rancho El Descanso y quiero la propuesta formal.\nTipo: ${lbl}\nInvitados: ${q.inv}\nFecha: ${q.fecha?q.txtDia:"por definir"}\nHoras extra: ${q.hx}\nFactura: ${q.iva?"sí":"no"}\nEstimado en página: ${money(q.total)} (anticipo ${money(q.anticipo)})`;
   $("#q-wa").href=waLink(msg);
-  const puedePagar = CONFIG.STRIPE.evento_anticipo && q.fecha && (!q.avail || q.avail.cls==="ok");
+  const puedePagar = PAGO_ON("evento_anticipo") && q.fecha && (!q.avail || q.avail.cls==="ok");
   pay.hidden=!puedePagar;
-  if(puedePagar){ pay.textContent=`Apartar fecha con el 10% (${money(q.anticipo)})`; pay.href=stripeLink(CONFIG.STRIPE.evento_anticipo,`EVT-${q.fecha}-${q.tipo}-${q.inv}`); }
+  if(puedePagar){ pay.textContent=`Apartar fecha con el ${Math.round((q.fila.anticipo||0.10)*100)}% (${money(q.anticipo)})`; pay.href="#"; pay.removeAttribute("target");
+    pay._pago={tipo:"evento",evento:q.tipo,inv:q.inv,hx:q.hx,iva:q.iva,fecha:q.fecha}; pay._wa=waLink(msg); }
 }
-function stripeLink(base,ref){ if(!base) return "#"; return base+(base.includes("?")?"&":"?")+"client_reference_id="+encodeURIComponent(ref.replace(/[^A-Za-z0-9_-]/g,"-").slice(0,200)); }
+const PAGO_ON = k => !!(CONFIG.STRIPE.api && CONFIG.STRIPE[k]);
+/* Abre Stripe Checkout. El servidor calcula el monto con la hoja. Si falla, manda a WhatsApp. */
+async function pagar(btn,payload,waFallback){
+  if(btn.dataset.busy) return; btn.dataset.busy="1";
+  const txt=btn.innerHTML; btn.textContent="Abriendo pago seguro…"; btn.setAttribute("aria-busy","true");
+  let j={};
+  try{
+    const r=await fetch(CONFIG.STRIPE.api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    j=await r.json().catch(()=>({}));
+    if(r.ok&&j.url){ location.href=j.url; return; }
+  }catch(e){ console.warn("Pago no disponible",e); }
+  btn.innerHTML=txt; btn.removeAttribute("aria-busy"); delete btn.dataset.busy;
+  if(j.error && !j.sinLlave) alert(j.error+"\n\nTe llevamos a WhatsApp para ayudarte.");
+  location.href=waFallback;
+}
 function initCot(){
   const f=$("#q-fecha"); if(f){ const d=new Date(); f.min=d.toISOString().slice(0,10); }
   ["#q-tipo","#q-inv","#q-fecha","#q-hx","#q-iva"].forEach(sel=>{ const el=$(sel); if(el){ el.addEventListener("input",renderCot); el.addEventListener("change",renderCot); } });
   const wa=$("#q-wa"); if(wa) wa.addEventListener("click",()=>track("Lead",{content_name:"evento_propuesta"}));
-  const pay=$("#q-pay"); if(pay) pay.addEventListener("click",()=>track("InitiateCheckout",{content_name:"evento_anticipo"}));
+  const pay=$("#q-pay"); if(pay) pay.addEventListener("click",e=>{ e.preventDefault(); if(!pay._pago) return;
+    track("InitiateCheckout",{content_name:"evento_anticipo"}); pagar(pay,pay._pago,pay._wa); });
   renderCot();
 }
 
@@ -1697,22 +1716,23 @@ function apartarHTML(h){
   if(!h.disponible||!h.precioN) return "";
   const t=tarifa("apartado","caballo_en_venta"); const p=(t&&t.anticipo)||0.10; const monto=Math.round(h.precioN*p);
   const ref=`CAB-${h.id}`.slice(0,120);
-  const href = CONFIG.STRIPE.caballo_anticipo ? stripeLink(CONFIG.STRIPE.caballo_anticipo,ref)
-    : waLink(`Hola, quiero apartar a ${h.nombreVis} (${h.raza}) del catálogo de Rancho El Descanso con el anticipo del ${Math.round(p*100)}% (${money(monto)}). ¿Cómo hago el pago?`);
-  return `<a class="btn btn-line" data-apartar="${esc(h.id)}" href="${href}" target="_blank" rel="noopener">Apartar con el ${Math.round(p*100)}% · ${money(monto)}</a>
-    <p class="sheet-dep" style="flex-basis:100%">${CONFIG.STRIPE.caballo_anticipo?`Pago seguro con tarjeta. Ingresa ${money(monto)} como monto; el apartado dura 15 días.`:`El apartado dura 15 días a partir del pago.`}</p>`;
+  const on = PAGO_ON("caballo_anticipo");
+  const wa = waLink(`Hola, quiero apartar a ${h.nombreVis} (${h.raza}) del catálogo de Rancho El Descanso con el anticipo del ${Math.round(p*100)}% (${money(monto)}). ¿Cómo hago el pago?`);
+  return `<a class="btn btn-line" data-apartar="${esc(h.id)}" data-wa="${esc(wa)}" href="${on?"#":wa}"${on?"":` target="_blank" rel="noopener"`}>Apartar con el ${Math.round(p*100)}% · ${money(monto)}</a>
+    <p class="sheet-dep" style="flex-basis:100%">${on?`Pago seguro con tarjeta en Stripe; el apartado dura 15 días.`:`El apartado dura 15 días a partir del pago.`}</p>`;
 }
 function wirePotros(){
   const t=tarifa("apartado","potro_2027"); const monto=(t&&t.precio)||10000;
   document.querySelectorAll("[data-wa-queue]").forEach(a=>{
-    if(CONFIG.STRIPE.potro_reserva){ a.href=stripeLink(CONFIG.STRIPE.potro_reserva,"POTRO-2027"); a.textContent=`Reservar mi lugar · ${money(monto)}`; }
-    else a.href=waLink(`Hola, quiero reservar mi lugar en la lista de espera de potros 2027 de Rancho El Descanso (reserva de ${money(monto)} que se abona al precio del potro).`);
-    a.addEventListener("click",()=>track(CONFIG.STRIPE.potro_reserva?"InitiateCheckout":"Lead",{content_name:"potro_2027"}));
+    const wa=waLink(`Hola, quiero reservar mi lugar en la lista de espera de potros 2027 de Rancho El Descanso (reserva de ${money(monto)} que se abona al precio del potro).`);
+    if(PAGO_ON("potro_reserva")){ a.href="#"; a.removeAttribute("target"); a.textContent=`Reservar mi lugar · ${money(monto)}`; }
+    else a.href=wa;
+    a.addEventListener("click",e=>{ track(PAGO_ON("potro_reserva")?"InitiateCheckout":"Lead",{content_name:"potro_2027"});
+      if(PAGO_ON("potro_reserva")){ e.preventDefault(); pagar(a,{tipo:"potro"},wa); } });
   });
 }
 
-/* Regreso de Stripe. En cada Payment Link: "Después del pago" > redirigir a
-   https://ranchoeldescansogdl-cyber.github.io/Catalogo-CRD/?pago=evento&ref={CHECKOUT_SESSION_ID}   (o pago=caballo / pago=potro) */
+/* Regreso de Stripe. /api/checkout manda al cliente de vuelta a /?pago=evento|caballo|potro&ref={CHECKOUT_SESSION_ID} */
 const GRACIAS = {
   evento:["Recibimos tu anticipo","Te escribimos por WhatsApp el mismo día para confirmar tu fecha y enviarte la propuesta formal de tu evento."],
   caballo:["Tu caballo quedó apartado","Recibimos tu anticipo. El apartado dura 15 días; te escribimos por WhatsApp para coordinar la visita, el examen y el saldo."],
