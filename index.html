@@ -41,7 +41,7 @@ button{font:inherit;color:inherit}
 .hero-inner,.bar-inner,main,.foot-inner{max-width:var(--wrap);margin:0 auto;padding-left:var(--pad);padding-right:var(--pad)}
 .topline{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:22px;padding-bottom:22px;border-bottom:1px solid var(--rule-dark)}
 .logo{width:clamp(180px,26vw,280px);height:auto}
-.hero-body{padding-top:clamp(64px,12vw,170px)}
+.hero-body{padding-top:clamp(64px,12vw,170px);padding-bottom:clamp(56px,8vw,110px)}
 .motto{font-family:var(--display);color:var(--gold);font-size:clamp(1rem,1.8vw,1.2rem);letter-spacing:.04em;margin:0 0 14px}
 .brand{font-family:var(--display);font-weight:400;font-size:clamp(2.8rem,8vw,6rem);line-height:1;letter-spacing:.01em;margin:0}
 .lede{font-size:clamp(1.05rem,2vw,1.2rem);color:rgba(255,255,255,.82);max-width:48ch;margin:22px 0 0}
@@ -151,8 +151,8 @@ h3.sec{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:34px 
 .sec-title{font-family:var(--display);font-weight:400;font-size:clamp(2rem,4.4vw,3.2rem);line-height:1.05;margin:0 0 12px}
 .sec-lede{color:var(--muted);max-width:56ch;margin:0 0 36px}
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:clamp(18px,2.4vw,32px)}
-.tile{position:relative;display:block;aspect-ratio:4/5;overflow:hidden;border-radius:2px;background:var(--black);color:var(--paper);text-decoration:none}
-.tile img{width:100%;height:100%;object-fit:cover}
+.tile{position:relative;display:block;aspect-ratio:1/1;overflow:hidden;border-radius:2px;background:var(--black);color:var(--paper);text-decoration:none}
+.tile img{width:100%;height:100%;object-fit:cover;object-position:50% 12%}
 .tile::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.82) 0%,rgba(0,0,0,0) 55%)}
 .tile-body{position:absolute;left:0;right:0;bottom:0;padding:clamp(20px,3vw,34px);z-index:1}
 .tile-name{font-family:var(--display);font-size:clamp(1.8rem,3.4vw,2.6rem);margin:0}
@@ -217,6 +217,7 @@ h3.sec{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:34px 
 .visit .sec-lede{color:rgba(255,255,255,.82);margin-bottom:24px}
 @media (max-width:760px){
   .duo{grid-template-columns:1fr}
+  .tile{aspect-ratio:5/4}
   .gallery{grid-template-columns:1fr 1fr;grid-auto-rows:auto}
   .g-a,.g-d{grid-column:1/3;aspect-ratio:3/2}
   .g-b,.g-c{grid-column:auto;aspect-ratio:3/4}
@@ -621,19 +622,30 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
     <div class="hero-body">
       <p class="hero-kicker">Rancho El Descanso · Desde 2012</p>
       <h1 class="hero-claim"><span>Salir de la ciudad.</span><span>Volver a la <em>tierra.</em></span></h1>
-      <p class="lede">Seis hectáreas donde primero es la naturaleza. Aquí criamos Friesian y Gypsy Vanner, con certificación KFPS: revisa la genealogía y los predicados de cada ejemplar en venta y agenda una visita. Si lo requieres, facturamos la compra de tu caballo.</p>
+      <p class="lede">Seis hectáreas donde primero es la naturaleza. Aquí criamos Friesian con certificación KFPS y Gypsy Vanner: revisa la genealogía y los predicados de cada ejemplar en venta y agenda una visita. Si lo requieres, facturamos la compra de tu caballo.</p>
       <div class="hero-actions">
         <a class="btn btn-mono" href="rancho/">Conoce el rancho <span aria-hidden="true">→</span></a>
         <a class="btn btn-ghost" href="#catalogo">Ver caballos en venta</a>
       </div>
     </div>
-    <div class="breeds" role="group" aria-label="Filtrar por raza">
-      <button class="breed" data-breed="Friesian" aria-pressed="false"><span class="breed-name">Friesian</span><span class="breed-count" data-count="Friesian"></span></button>
-      <button class="breed" data-breed="Gypsy Vanner" aria-pressed="false"><span class="breed-name">Gypsy Vanner</span><span class="breed-count" data-count="Gypsy Vanner"></span></button>
-    </div>
   </div>
 </header>
 <nav class="crumbs" data-view="sementales potros eventos sesiones exfr rancho" aria-label="Ruta"><a href="#inicio">← Inicio</a><span aria-hidden="true">/</span><span id="crumb-now"></span></nav>
+
+<section class="band" id="razas" data-view="inicio" aria-labelledby="t-razas">
+  <h2 class="sec-title" id="t-razas">Dos razas, una misma exigencia</h2>
+  <p class="sec-lede">Criamos y seleccionamos cada ejemplar en el rancho, cuidando genética, carácter y bienestar.</p>
+  <div class="duo">
+    <a class="tile" href="#catalogo" data-go-breed="Friesian">
+      <img src="friesian.webp" alt="Caballo Friesian negro en Rancho El Descanso" loading="lazy">
+      <div class="tile-body"><p class="tile-name">Friesian</p><p class="tile-text">Elegancia, fuerza y nobleza. Pelaje negro brillante y un andar majestuoso. Criadero con certificación KFPS.</p><span class="tile-link">Ver Friesian en venta <span data-count="Friesian"></span></span></div>
+    </a>
+    <a class="tile" href="#catalogo" data-go-breed="Gypsy Vanner">
+      <img src="gypsy.webp" alt="Caballo Gypsy Vanner cremello en Rancho El Descanso" loading="lazy">
+      <div class="tile-body"><p class="tile-name">Gypsy Vanner</p><p class="tile-text">Fuerte, dócil y hermoso. Abundante crin y patas con plumas que lo hacen inconfundible.</p><span class="tile-link">Ver Gypsy Vanner en venta <span data-count="Gypsy Vanner"></span></span></div>
+    </a>
+  </div>
+</section>
 
 <div class="catalog-wrap" data-view="inicio">
 <nav class="bar" aria-label="Filtros">
@@ -675,7 +687,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
     <a class="topic" href="#eventos"><img src="casa.webp" alt="" loading="lazy"><div class="topic-body"><p class="topic-name">Eventos</p><p class="topic-text">Bodas, XV años y corporativos, hasta 500 invitados</p><span class="topic-go">Cotizar →</span></div></a>
     <a class="topic" href="#sesiones"><img src="sesion-friesian.webp" alt="" loading="lazy"><div class="topic-body"><p class="topic-name">Sesiones de fotos</p><p class="topic-text">Locación y caballos para tu sesión</p><span class="topic-go">Ver paquetes →</span></div></a>
     <a class="topic" href="#exfr"><img src="experiencia.webp" alt="" loading="lazy"><div class="topic-body"><p class="topic-name">La Experiencia Friesian</p><p class="topic-text">VII edición · 20 de noviembre de 2027</p><span class="topic-go">Conocer →</span></div></a>
-    <a class="topic" href="#rancho"><img src="porton.webp" alt="" loading="lazy"><div class="topic-body"><p class="topic-name">El rancho</p><p class="topic-text">Nuestras razas, historia e instalaciones</p><span class="topic-go">Conocer el rancho →</span></div></a>
+    <a class="topic" href="#rancho"><img src="porton.webp" alt="" loading="lazy"><div class="topic-body"><p class="topic-name">El rancho</p><p class="topic-text">Historia, instalaciones y cómo llegar</p><span class="topic-go">Conocer el rancho →</span></div></a>
   </div>
 </section>
 
@@ -789,7 +801,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
   <div class="shoots-head">
     <div>
       <h2 class="sec-title">Sesiones fotográficas</h2>
-      <p>Locación y caballos del rancho para tu sesión de XV años, boda, maternidad, familia o moda. Tú traes a tu fotógrafo, nosotros ponemos los Friesian, los Gypsy Vanner y los escenarios. Elige tu paquete, escoge fecha y hora, y queda apartado al momento.</p>
+      <p>Locación y caballos del rancho para tu sesión de XV años, boda, maternidad, familia o moda. Tú traes a tu fotógrafo, nosotros ponemos los Friesian, los Gypsy Vanner y los escenarios. Elige tu paquete y fecha, y te confirmamos por WhatsApp.</p>
     </div>
     <a class="btn btn-line" data-wa-shoot href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Tengo una duda</a>
   </div>
@@ -808,7 +820,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
       <h2 class="xp-title" id="t-exfr">Friesian <span>2027</span></h2>
       <p class="xp-ed">VII · Edición</p>
       <hr class="xp-line">
-      <p class="xp-date">Sábado 20 de noviembre 2027</p>
+      <p class="xp-date">Sábado 20 de noviembre de 2027</p>
       <p class="xp-place">2:00 a 11:00 pm · Rancho El Descanso · Guadalajara</p>
       <p class="xp-lede">Un evento exclusivo y privado, únicamente por invitación, que reúne a más de 1,000 personalidades del ámbito social, cultural y empresarial de México. Espectáculo ecuestre de élite, arte plástico contemporáneo, gastronomía premium y música en vivo.</p>
       <p class="xp-tag">La experiencia que trasciende</p>
@@ -849,21 +861,6 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
     <figure class="g-f"><img src="pista.webp" alt="Pista y caballerizas del rancho" loading="lazy"></figure>
     <figure class="g-h"><img src="porton.webp" alt="Portón de madera con el emblema del rancho" loading="lazy"></figure>
   </div>
-  </div>
-</section>
-
-<section class="band" data-view="rancho" aria-labelledby="t-razas">
-  <h2 class="sec-title" id="t-razas">Dos razas, una misma exigencia</h2>
-  <p class="sec-lede">Criamos y seleccionamos cada ejemplar en el rancho, cuidando genética, carácter y bienestar.</p>
-  <div class="duo">
-    <a class="tile" href="#catalogo" data-go-breed="Friesian">
-      <img src="friesian.webp" alt="Caballo Friesian negro en Rancho El Descanso" loading="lazy">
-      <div class="tile-body"><p class="tile-name">Friesian</p><p class="tile-text">Elegancia, fuerza y nobleza. Pelaje negro brillante y un andar majestuoso. Criadero con certificación KFPS.</p><span class="tile-link">Ver Friesian en venta</span></div>
-    </a>
-    <a class="tile" href="#catalogo" data-go-breed="Gypsy Vanner">
-      <img src="gypsy.webp" alt="Caballo Gypsy Vanner cremello en Rancho El Descanso" loading="lazy">
-      <div class="tile-body"><p class="tile-name">Gypsy Vanner</p><p class="tile-text">Fuerte, dócil y hermoso. Abundante crin y patas con plumas que lo hacen inconfundible.</p><span class="tile-link">Ver Gypsy Vanner en venta</span></div>
-    </a>
   </div>
 </section>
 
@@ -1033,7 +1030,7 @@ const CONFIG = {
     email: ""                 // correo para derechos ARCO y facturación. Vacío = solo WhatsApp
   },
   STRIPE: {                   // Pagos con Stripe Checkout vía /api/checkout (Vercel). La llave secreta vive solo en Vercel.
-    api: "/api/checkout",     //   Vacío = todos los botones de pago mandan a WhatsApp
+    api: /github\.io$/.test(location.hostname) ? "" : "/api/checkout", // GitHub Pages no tiene /api: ahí los pagos van a WhatsApp. Vacío = todos a WhatsApp
     evento_anticipo: true,    //   10% para apartar fecha de evento (monto calculado en el servidor)
     caballo_anticipo: true,   //   10% para apartar un caballo (monto calculado en el servidor)
     potro_reserva: true       //   reserva de lugar en potros 2027
@@ -1482,8 +1479,8 @@ const priceText = h => h.precioN ? money(h.precioN) : "Precio a consultar";
 function render(){
   let list=HORSES.filter(h=>(!state.raza||h.raza===state.raza)&&(!state.sexo||h.sexo===state.sexo));
   const [k,dir]=state.orden.split("-"), s=dir==="asc"?1:-1;
-  list.sort((a,b)=> k==="precio" ? ((a.precioN??Infinity)-(b.precioN??Infinity))*s
-                                 : ((b.nac?.getTime()??0)-(a.nac?.getTime()??0))*s);
+  list.sort((a,b)=> (b.disponible-a.disponible) || (k==="precio" ? ((a.precioN??Infinity)-(b.precioN??Infinity))*s
+                                 : ((b.nac?.getTime()??0)-(a.nac?.getTime()??0))*s));
   $("#count").textContent = list.length===1 ? "1 caballo" : `${list.length} caballos`;
   const grid=$("#grid");
   if(!list.length){
@@ -1569,7 +1566,7 @@ function openFicha(h){
 function closeFicha(){
   const d=$("#ficha"); if(d.open) d.close();
   if(location.hash.startsWith("#/")) history.pushState("",document.title,location.pathname+location.search+viewHash());
-  document.title="Caballos en venta | Rancho El Descanso";
+  document.title=vistaActual==="inicio"?"Rancho El Descanso | Caballos Friesian y Gypsy Vanner, eventos y sesiones de fotos":`${VISTAS[vistaActual]} | Rancho El Descanso`;
 }
 function route(){
   const st=location.hash.match(/^#\/semental\/(.+)/);
@@ -1582,7 +1579,7 @@ function route(){
 
 /* ================== SEMENTALES Y POTROS ================== */
 const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-function mesTxt(s){ const m=String(s||"").match(/^(\d{4})-(\d{2})/); return m?`${MESES[+m[2]-1]} ${m[1]}`:""; }
+function mesTxt(s){ const m=String(s||"").match(/^(\d{4})-(\d{2})/); return m?`${MESES[+m[2]-1]} de ${m[1]}`:""; }
 const NUM=["cero","un","dos","tres","cuatro","cinco","seis","siete","ocho","nueve","diez","once","doce"];
 function studMedia(s){
   const vistas=new Set();
@@ -1775,7 +1772,7 @@ const TIPO_LBL = {boda:"Boda",xv:"XV años",social:"Evento social",corporativo:"
 const DIAS = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
 
 function cotizar(){
-  const tipo=$("#q-tipo").value, inv=Math.min(500,Math.max(0,numv($("#q-inv").value))), hx=numv($("#q-hx").value), iva=$("#q-iva").checked, fecha=$("#q-fecha").value;
+  const tipo=$("#q-tipo").value, inv=Math.max(0,numv($("#q-inv").value)), hx=numv($("#q-hx").value), iva=$("#q-iva").checked, fecha=$("#q-fecha").value;
   const fila = TARIFAS.find(t=>t.servicio==="evento"&&t.tipo===tipo&&inv>=t.min&&inv<=t.max);
   const out={tipo,inv,hx,iva,fecha,fila,personalizado:!fila||!fila.precio};
   if(out.personalizado) return out;
@@ -2018,7 +2015,7 @@ document.querySelectorAll("#f-raza button").forEach(b=>b.onclick=()=>{state.raza
 document.querySelectorAll("#f-sexo button").forEach(b=>b.onclick=()=>{state.sexo=b.dataset.v;sync();render();});
 document.querySelectorAll(".breed").forEach(b=>b.onclick=()=>{state.raza=state.raza===b.dataset.breed?"":b.dataset.breed;sync();render();goCatalog();});
 $("#f-orden").onchange=e=>{state.orden=e.target.value;render();};
-$("#ficha").addEventListener("close",()=>{ if(location.hash.startsWith("#/")) history.pushState("",document.title,location.pathname+location.search+viewHash()); });
+$("#ficha").addEventListener("close",()=>{ if(location.hash.startsWith("#/")) history.pushState("",document.title,location.pathname+location.search+viewHash()); document.title=vistaActual==="inicio"?"Rancho El Descanso | Caballos Friesian y Gypsy Vanner, eventos y sesiones de fotos":`${VISTAS[vistaActual]} | Rancho El Descanso`; });
 $("#ficha").addEventListener("click",e=>{ if(e.target.id==="ficha") closeFicha(); });
 window.addEventListener("hashchange",route);
 
@@ -2027,8 +2024,8 @@ loadTarifas().then(()=>{ renderPacks(); initCot(); wirePotros(); });
 load().then(list=>{
   HORSES=list;
   for(const r of ["Friesian","Gypsy Vanner"]){
-    const n=list.filter(h=>h.raza===r).length;
-    document.querySelectorAll(`[data-count="${r}"]`).forEach(el=>el.textContent=n===1?"1 en venta":`${n} en venta`);
+    const n=list.filter(h=>h.raza===r&&h.disponible).length;
+    document.querySelectorAll(`[data-count="${r}"]`).forEach(el=>el.textContent=`(${n})`);
   }
   render(); route();
   loadStuds(); loadMares();
