@@ -102,6 +102,10 @@ main{padding-top:clamp(28px,4vw,48px);padding-bottom:0}
 .card-name{font-family:var(--display);font-size:1.5rem;line-height:1.15;margin:0;font-weight:400}
 .card-meta{color:var(--muted);font-size:.95rem;margin:4px 0 0}
 .card-price{font-weight:500;font-size:1.05rem;margin:8px 0 0}
+.card-note,.sheet-note{margin:6px 0 0;font-size:.88rem;line-height:1.35;color:var(--gold-deep)}
+.card-note::before,.sheet-note::before,.mare-note::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);margin-right:8px;vertical-align:middle}
+.sheet-note{font-size:1rem;margin-top:12px}
+.mare-note{margin:0;font-size:.92rem;line-height:1.35;color:var(--gold-deep)}
 .fees small{display:block;font-family:var(--sans);font-size:.72rem;color:rgba(255,255,255,.5);margin-top:2px}
 .empty{padding:60px 0;text-align:center;color:var(--muted)}
 .empty button{margin-top:14px;background:none;border:1px solid var(--rule);border-radius:999px;padding:9px 18px;cursor:pointer}
@@ -872,7 +876,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
         <h2 class="rb-title" id="t-rancho">Aquí primero es la <em>naturaleza.</em></h2>
       </div>
       <div>
-        <p class="rb-lede">Seis hectáreas de cerro en San Miguel Cuyutlán donde los árboles estaban antes que nosotros. Una arquitectura de piedra, madera y acero que los rodea y los respeta, venados y aves en libertad, y caballos criados con calma, respeto y tiempo.</p>
+        <p class="rb-lede">Seis hectáreas de cerro en San Miguel Cuyutlán donde los árboles estaban antes que nosotros, y donde ya hemos plantado más de 1,000. Una arquitectura de piedra, madera y acero que los rodea y los respeta, venados y aves en libertad, y caballos criados con calma, respeto y tiempo.</p>
         <a class="rb-btn" href="rancho/">Conoce su historia <span aria-hidden="true">→</span></a>
       </div>
     </div>
@@ -1400,7 +1404,7 @@ function parseCSV(text){
 // Encuentra la columna por nombre aunque cambien acentos o mayúsculas
 const KEYS = {nombre:"nombre", raza:"raza", sexo:"sexo", capa:"capa", nacimiento:"nacimiento", alzada:"alzada m",
   padre:"padre", madre:"madre", abuelo:"abuelo materno", pred:"predicado propio", predm:"predicados maternos",
-  adn:"adn", precio:"precio", foto:"link foto", video:"link video", promo:"promocion", estatus:"estatus", fechaest:"fecha estatus"};
+  adn:"adn", precio:"precio", foto:"link foto", video:"link video", promo:"promocion", estatus:"estatus", fechaest:"fecha estatus", destacado:"destacado"};
 // "STER 2º PREMIO PREDICADOS MADRE: STER/STER" → ["STER 2º PREMIO", "STER/STER"]
 function splitPred(t){
   const s=String(t||""), i=s.toUpperCase().indexOf("PREDICADOS MADRE:");
@@ -1522,7 +1526,7 @@ async function loadMares(){
   const list=rows.filter(r=>si(col(r,"publicar lista espera"))).map(r=>{
     const d=parseDate(col(r,"parto estimado"));
     const [pred,predm]=splitPred(col(r,"predicados yegua")).map(x=>x.replace(/\s+/g," ").trim());
-    return {madre:col(r,"nombre yegua")||col(r,"yegua"), raza:col(r,"raza"), semental:col(r,"semental"), dato:col(r,"dato para web"), publicar:true,
+    return {madre:col(r,"nombre yegua")||col(r,"yegua"), raza:col(r,"raza"), semental:col(r,"semental"), dato:col(r,"dato para web"), destacado:col(r,"destacado"), publicar:true,
       alzada:col(r,"alzada yegua"), capa:col(r,"capa yegua"), pred, predm, padre:col(r,"padre yegua"), madreMadre:col(r,"madre yegua"),
       parto:d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`:""};
   });
@@ -1558,6 +1562,7 @@ function render(){
       <div>
         <h2 class="card-name">${esc(h.nombreVis)}</h2>
         <p class="card-meta">${esc(metaLine(h))}</p>
+        ${h.destacado?`<p class="card-note">${esc(h.destacado)}</p>`:""}
         <p class="card-price">${esc(priceText(h))}</p>
       </div>
     </a>`).join("");
@@ -1589,6 +1594,7 @@ function openFicha(h){
       <button class="close" type="button" aria-label="Cerrar ficha"><svg viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.6"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
       <h2 class="sheet-name" id="ficha-nombre">${esc(h.nombreVis)}</h2>
       <p class="sheet-meta">${esc(metaLine(h))}</p>
+      ${h.destacado?`<p class="sheet-note">${esc(h.destacado)}</p>`:""}
       ${h.promo?`<span class="sheet-promo">${esc(h.promo)}</span>`:""}
       <p class="sheet-price">${esc(priceText(h))}${h.precioN?"<small>MXN</small>":""}</p>
       <p class="sheet-dep">Facturamos si lo requieres.</p>
@@ -1768,6 +1774,7 @@ function mareInfo(v){
   const pred=v.pred||(v.raza==="Friesian"&&!v.predm?v.dato:"");
   const linea=String(v.predm||"").split("/").map(x=>x.trim()).filter(Boolean);
   const out=[];
+  if(v.destacado) out.push(`<p class="mare-note">${esc(v.destacado)}</p>`);
   if(pred) out.push(`<div><span class="mare-lbl">Predicados</span><p class="mare-pred">${esc(pred)}</p></div>`);
   if(linea.length) out.push(`<div><span class="mare-lbl">Línea materna</span><ul class="mare-line">${linea.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`);
   const specs=[];
