@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La Experiencia Friesian 2027 · Séptima edición · Rancho El Descanso</title>
+<meta name="description" content="La Experiencia Friesian 2027, séptima edición. Sábado 20 de noviembre de 2027 en Rancho El Descanso, Guadalajara. Evento exclusivo, solo por invitación: espectáculo ecuestre de élite, arte plástico en vivo, gastronomía premium y música en vivo.">
+<meta property="og:title" content="La Experiencia Friesian 2027 · Séptima edición">
+<meta property="og:description" content="20 · Noviembre · 2027 · Rancho El Descanso, Guadalajara. Solo por invitación.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://imgproxy.gamma.app/resize/quality:80/resizing_type:fit/width:1200/https://cdn.gamma.app/kbd1m7lh3450u9l/9f8d00c8941141739d8f12d44c7cd1d5/original/Dusse-Van.jpg">
+<meta name="theme-color" content="#0B1727">
+<link rel="icon" type="image/png" href="../marca/simbolo-oro.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://imgproxy.gamma.app">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   LA EXPERIENCIA FRIESIAN 2027 — identidad del save the date / EXFR
+   Tipografía: Cinzel (títulos, mayúsculas, espaciado amplio) + Cormorant Garamond (texto e itálicas)
+   Paleta: azul noche #0B1727 · azul profundo #15294E · azul real #1B53A6
+           azul brillante #1E72F8 (acento) · azul claro #6AA6EE (detalles)
+           blanco y gris niebla #E2E6E9 solo para texto
+   ===================================================================== */
+:root{
+  --night:#0B1727; --deep:#15294E; --royal:#1B53A6; --bright:#1E72F8; --sky:#6AA6EE;
+  --white:#FFFFFF; --mist:#E2E6E9; --mist-70:rgba(226,230,233,.72); --mist-50:rgba(226,230,233,.5);
+  --line:rgba(106,166,238,.22); --card:rgba(21,41,78,.42); --card-strong:rgba(11,23,39,.78);
+  --display:'Cinzel', 'Trajan Pro', Georgia, serif;
+  --serif:'Cormorant Garamond', 'Garamond', Georgia, serif;
+  --pad:clamp(16px,5vw,64px); --wrap:calc(1200px + 2 * var(--pad));
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px;font-size:18px}
+body{margin:0;background:var(--night);color:var(--mist);font-family:var(--serif);font-weight:500;font-size:19px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;display:block}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--sky);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+.wrap{max-width:var(--wrap);margin:0 auto;padding-left:var(--pad);padding-right:var(--pad)}
+
+/* Fondo de marca: azul fluido como el tema de los Gamma */
+.bg-fluid{position:relative;isolation:isolate}
+.bg-fluid::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(60% 50% at 8% 12%,rgba(30,114,248,.28),transparent 70%),
+    radial-gradient(45% 60% at 95% 40%,rgba(27,83,166,.35),transparent 70%),
+    radial-gradient(50% 45% at 30% 100%,rgba(21,41,78,.9),transparent 75%),
+    var(--night)}
+
+/* Tipografía */
+.kicker{font-family:var(--display);font-weight:400;font-size:.74rem;letter-spacing:.5em;text-transform:uppercase;color:var(--bright);margin:0 0 18px}
+.kicker.sky{color:var(--sky)}
+.h1,.h2,.h3{font-family:var(--display);font-weight:400;color:var(--white);margin:0;line-height:1.12;letter-spacing:.04em;text-transform:uppercase}
+.h2{font-size:clamp(1.75rem,4.2vw,3rem)}
+.h3{font-size:clamp(1.1rem,2vw,1.4rem);line-height:1.3}
+.lead{font-size:clamp(1rem,1.6vw,1.12rem);color:var(--mist-70);max-width:62ch;margin:20px 0 0}
+.quote{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--sky);font-size:clamp(1.3rem,2.4vw,1.65rem);line-height:1.6;margin:0;max-width:40ch}
+.rule{width:64px;height:1px;background:var(--bright);border:0;margin:26px 0}
+.sec{padding:clamp(72px,11vw,140px) 0;position:relative}
+.sec-head{max-width:760px;margin-bottom:clamp(36px,5vw,60px)}
+.sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+.sec-head.center .rule{margin-left:auto;margin-right:auto}
+.sec-head.center .lead{margin-left:auto;margin-right:auto}
+
+/* Botones */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;border-radius:999px;padding:14px 26px;font-family:var(--display);font-weight:500;font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:background .2s,border-color .2s,color .2s;background:none;min-height:48px}
+.btn svg{width:17px;height:17px;flex:none}
+.btn-primary{background:var(--bright);color:var(--white)}
+.btn-primary:hover{background:#3d86ff}
+.btn-line{border-color:rgba(106,166,238,.55);color:var(--white)}
+.btn-line:hover{border-color:var(--white)}
+.btn-text{padding:10px 0;min-height:0;color:var(--sky);letter-spacing:.18em}
+.btn-text:hover{color:var(--white)}
+.btn-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+
+/* ---------------- Barra superior ---------------- */
+.bar{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .3s,border-color .3s;border-bottom:1px solid transparent}
+.bar.solid{background:rgba(11,23,39,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom-color:var(--line)}
+.bar-in{display:flex;align-items:center;justify-content:space-between;gap:18px;height:64px}
+.back{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-size:.7rem;font-family:var(--display);font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--mist-70);white-space:nowrap}
+.back:hover{color:var(--white)}
+.back img{width:26px;height:26px}
+.bar-nav{display:flex;gap:clamp(14px,2vw,28px);font-size:.68rem;font-family:var(--display);font-weight:500;letter-spacing:.24em;text-transform:uppercase}
+.bar-nav a{text-decoration:none;color:var(--mist-70)}
+.bar-nav a:hover{color:var(--white)}
+.bar .btn{padding:10px 18px;min-height:40px;font-size:.66rem}
+@media (max-width:1020px){.bar-nav{display:none}}
+@media (max-width:520px){.back span{display:none}}
+
+/* ---------------- Portada (misma composición que el save the date) ---------------- */
+.hero{min-height:100svh;display:flex;align-items:flex-end;justify-content:center;position:relative;isolation:isolate;overflow:hidden;background:var(--night);text-align:center}
+.hero-img{position:absolute;inset:0;z-index:-3;background:var(--night)}
+.hero-img img{position:absolute;left:50%;top:0;height:92%;width:auto;max-width:none;transform:translateX(-58%);filter:grayscale(1) contrast(1.15) brightness(.78);-webkit-mask-image:radial-gradient(70% 75% at 55% 40%,#000 55%,transparent 100%);mask-image:radial-gradient(70% 75% at 55% 40%,#000 55%,transparent 100%)}
+.hero-tint{position:absolute;inset:0;z-index:-2;background:linear-gradient(180deg,#1E72F8 0%,#1B53A6 45%,#0B1727 100%);mix-blend-mode:multiply;opacity:.95}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:
+  radial-gradient(40% 45% at 62% 34%,rgba(30,114,248,.35),transparent 70%),
+  linear-gradient(0deg,rgba(11,23,39,1) 0%,rgba(11,23,39,.88) 34%,rgba(11,23,39,0) 62%),
+  linear-gradient(90deg,rgba(11,23,39,.55),rgba(11,23,39,0) 30%,rgba(11,23,39,0) 70%,rgba(11,23,39,.55))}
+.hero-logo-wrap{position:absolute;top:84px;left:0;right:0;display:flex;justify-content:center}
+.hero-logo{width:clamp(190px,24vw,280px);height:auto}
+.hero-in{width:100%;padding-top:max(36vh,300px);padding-bottom:clamp(40px,6vw,70px)}
+.spaced{font-family:var(--display);font-weight:400;letter-spacing:.75em;text-transform:uppercase;margin:0;padding-left:.75em}
+.hero .pre{color:var(--bright);font-size:clamp(.95rem,2vw,1.35rem)}
+.h1{font-size:clamp(3.4rem,11vw,8.4rem);line-height:1;letter-spacing:.05em;font-weight:500;margin:.1em 0 .05em;text-shadow:0 4px 40px rgba(0,0,0,.45)}
+.hero .roman{font-family:var(--display);color:var(--bright);font-size:clamp(2.2rem,5vw,3.6rem);line-height:1;margin:6px 0 4px;letter-spacing:.08em}
+.hero .edic{color:var(--bright);font-size:clamp(.8rem,1.5vw,1rem)}
+.hero-line{width:min(220px,40vw);height:1px;background:var(--bright);border:0;margin:22px auto}
+.hero-date{font-family:var(--display);font-size:clamp(1rem,2.3vw,1.45rem);color:var(--white);margin:0;letter-spacing:.32em;text-transform:uppercase;padding-left:.32em}
+.hero-place{font-family:var(--display);font-size:clamp(.66rem,1.3vw,.82rem);letter-spacing:.3em;text-transform:uppercase;color:var(--mist-50);margin:10px 0 0;padding-left:.3em}
+.hero-tag{font-style:italic;color:var(--sky);font-size:clamp(1.2rem,2.2vw,1.55rem);margin:12px 0 0}
+.countdown{display:flex;justify-content:center;gap:clamp(18px,4vw,44px);margin:30px 0 30px;padding:0;list-style:none}
+.countdown li{display:flex;flex-direction:column;min-width:56px}
+.countdown b{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.6vw,2.5rem);color:var(--white);line-height:1;font-variant-numeric:tabular-nums}
+.countdown span{font-family:var(--display);font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mist-50);margin-top:8px}
+.hero .btn-row{justify-content:center}
+.hero-vert{position:absolute;right:clamp(12px,6vw,90px);top:26%;writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--display);font-size:.7rem;letter-spacing:.4em;text-transform:uppercase;color:var(--mist-50);margin:0;white-space:nowrap}
+.hero-vert b{color:var(--bright);font-weight:400}
+@media (max-width:720px){
+  .hero-img img{height:70%;transform:translateX(-62%)}
+  .hero-in{padding-top:44vh}
+  .hero-logo-wrap{top:76px}
+  .hero-vert{display:none}
+  .spaced{letter-spacing:.45em;padding-left:.45em}
+}
+
+/* ---------------- El evento ---------------- */
+.intro{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(36px,6vw,90px);align-items:center}
+.intro p{margin:0 0 18px}
+.intro-fig{position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/5;border:1px solid var(--line)}
+.intro-fig img{width:100%;height:100%;object-fit:cover}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:40px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.stats li{padding:22px 16px 0 0}
+.stats li+li{border-left:1px solid var(--line);padding-left:20px}
+.stats b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(2rem,4vw,3rem);color:var(--white);line-height:1}
+.stats span{display:block;margin-top:10px;font-size:.66rem;font-family:var(--display);font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:var(--sky)}
+@media (max-width:860px){.intro{grid-template-columns:1fr}.intro-fig{aspect-ratio:4/3}}
+.intro>*,.champs>*,.alliance>*,.spons-cta>*{min-width:0}
+@media (max-width:520px){.stats span{letter-spacing:.12em;font-size:.58rem}.stats li+li{padding-left:12px}.stats li{padding-right:8px}}
+
+/* ---------------- Cinco experiencias ---------------- */
+.five{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.xp{position:relative;border-radius:16px;overflow:hidden;min-height:420px;display:flex;align-items:flex-end;isolation:isolate;border:1px solid var(--line)}
+.xp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform .8s}
+.xp:hover img{transform:scale(1.04)}
+.xp::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,rgba(11,23,39,.97) 0%,rgba(11,23,39,.7) 45%,rgba(11,23,39,.1) 100%)}
+.xp-body{padding:22px}
+.xp-n{font-family:var(--display);font-weight:500;font-size:.66rem;letter-spacing:.3em;color:var(--bright);margin:0 0 10px}
+.xp h3{font-family:var(--display);font-weight:400;font-size:1.3rem;line-height:1.2;color:var(--white);margin:0 0 10px}
+.xp p{margin:0;font-size:.88rem;color:var(--mist-70);line-height:1.6}
+@media (max-width:1100px){.five{grid-template-columns:repeat(3,1fr)}.xp{min-height:360px}}
+@media (max-width:720px){.five{grid-template-columns:1fr 1fr}.xp{min-height:300px}.xp:first-child{grid-column:1/-1}}
+@media (max-width:460px){.five{grid-template-columns:1fr}}
+
+/* ---------------- Campeones ---------------- */
+.champs{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,5vw,70px);align-items:stretch}
+.champ-fig{border-radius:18px;overflow:hidden;position:relative;min-height:520px;border:1px solid var(--line)}
+.champ-fig img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%}
+.champ-fig figcaption{position:absolute;left:0;right:0;bottom:0;padding:22px;background:linear-gradient(0deg,rgba(11,23,39,.95),transparent);font-style:italic;color:var(--mist-70);font-size:.9rem}
+.podium{list-style:none;margin:0;padding:0}
+.podium li{display:grid;grid-template-columns:64px 1fr;gap:18px;padding:22px 0;border-bottom:1px solid var(--line)}
+.podium li:first-child{border-top:1px solid var(--line)}
+.podium .pos{font-family:var(--display);font-size:2.4rem;line-height:1;color:var(--bright)}
+.podium h3{font-family:var(--display);font-weight:400;font-size:1.6rem;color:var(--white);margin:0}
+.podium p{margin:4px 0 0;color:var(--mist-70);font-size:.92rem}
+.also{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:26px}
+.also div{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--card)}
+.also b{display:block;font-family:var(--display);font-weight:400;font-size:1.2rem;color:var(--white)}
+.also span{font-size:.82rem;color:var(--mist-70);line-height:1.5;display:block;margin-top:4px}
+.champs-note{margin:22px 0 0;font-style:italic;color:var(--sky);font-size:.95rem}
+@media (max-width:860px){.champs{grid-template-columns:1fr}.champ-fig{min-height:420px}.also{grid-template-columns:1fr}}
+
+/* ---------------- Programa ---------------- */
+.timeline{list-style:none;margin:0;padding:0;position:relative}
+.timeline::before{content:"";position:absolute;left:calc(170px + 18px);top:10px;bottom:10px;width:1px;background:var(--line)}
+.timeline li{display:grid;grid-template-columns:170px 36px 1fr;gap:0;padding:0 0 38px}
+.timeline .t{font-family:var(--display);font-size:1.25rem;color:var(--white);text-align:right;padding-right:24px;line-height:1.3}
+.timeline .dot{width:11px;height:11px;border-radius:50%;background:var(--bright);box-shadow:0 0 0 5px rgba(30,114,248,.18);margin:9px 0 0 13px}
+.timeline .z{font-family:var(--display);font-weight:500;font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;color:var(--sky);margin:0 0 6px}
+.timeline h3{font-family:var(--display);font-weight:400;font-size:1.45rem;color:var(--white);margin:0 0 6px;line-height:1.25}
+.timeline p{margin:0;color:var(--mist-70);font-size:.94rem;max-width:62ch}
+@media (max-width:640px){
+  .timeline::before{left:5px}
+  .timeline li{grid-template-columns:28px 1fr;grid-template-areas:"dot t" ". body"}
+  .timeline .dot{grid-area:dot;margin:8px 0 0}
+  .timeline .t{grid-area:t;text-align:left;padding:0 0 6px;font-size:1.1rem}
+  .timeline .body{grid-area:body}
+}
+.zones{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:clamp(40px,6vw,70px)}
+.zone{border:1px solid var(--line);border-radius:16px;padding:clamp(22px,3vw,34px);background:var(--card)}
+.zone.vip{background:linear-gradient(160deg,rgba(30,114,248,.22),rgba(21,41,78,.5));border-color:rgba(30,114,248,.5)}
+.zone h3{font-family:var(--display);font-weight:400;font-size:1.8rem;color:var(--white);margin:0 0 4px}
+.zone .kicker{margin-bottom:12px}
+.zone ul{margin:14px 0 0;padding-left:18px;color:var(--mist-70);font-size:.94rem}
+.zones-note{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:16px;padding:18px 22px}
+.zones-note p{margin:0;font-size:.92rem;color:var(--mist-70)}
+@media (max-width:720px){.zones{grid-template-columns:1fr}}
+
+/* ---------------- Materiales oficiales ---------------- */
+.kit{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.doc{position:relative;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--card-strong);min-height:100%}
+.doc-cover{position:relative;aspect-ratio:16/10;overflow:hidden;background:var(--deep)}
+.doc-cover img{width:100%;height:100%;object-fit:cover;transition:transform .8s}
+.doc:hover .doc-cover img{transform:scale(1.04)}
+.doc-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(11,23,39,.85),rgba(11,23,39,0) 60%)}
+.doc-tag{position:absolute;left:16px;top:16px;z-index:1;font-size:.6rem;font-family:var(--display);font-weight:500;letter-spacing:.26em;text-transform:uppercase;background:rgba(11,23,39,.78);border:1px solid var(--line);color:var(--sky);padding:6px 10px;border-radius:999px}
+.doc-tag.live{color:var(--white);border-color:rgba(30,114,248,.6)}
+.doc-tag.live::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#35d07f;margin-right:8px;vertical-align:1px}
+.doc-body{padding:22px 22px 24px;display:flex;flex-direction:column;gap:10px;flex:1}
+.doc-n{font-family:var(--display);font-weight:500;font-size:.64rem;letter-spacing:.3em;color:var(--bright);margin:0}
+.doc h3{font-family:var(--display);font-weight:400;font-size:1.6rem;color:var(--white);margin:0;line-height:1.15}
+.doc p{margin:0;color:var(--mist-70);font-size:.9rem;line-height:1.6}
+.doc .btn-row{margin-top:auto;padding-top:10px}
+.doc .btn{padding:11px 18px;min-height:42px;font-size:.66rem}
+.doc.featured{grid-column:span 2;flex-direction:row}
+.doc.featured .doc-cover{aspect-ratio:auto;flex:1.2;min-height:340px}
+.doc.featured .doc-body{flex:1;padding:clamp(24px,3vw,38px);justify-content:center}
+.doc.featured h3{font-size:clamp(1.8rem,3vw,2.4rem)}
+.doc-cover.portrait img{object-position:center 22%}
+.doc.soon .doc-cover img{filter:grayscale(.5) brightness(.6)}
+.soon-badge{position:absolute;inset:0;z-index:1;display:grid;place-items:center;text-align:center}
+.soon-badge span{font-family:var(--display);font-style:italic;font-size:1.6rem;color:var(--white)}
+.kit-note{margin:26px 0 0;font-size:.85rem;color:var(--mist-50);font-style:italic}
+@media (max-width:1000px){.kit{grid-template-columns:1fr 1fr}.doc.featured{grid-column:1/-1}}
+@media (max-width:640px){.kit{grid-template-columns:1fr}.doc.featured{flex-direction:column}.doc.featured .doc-cover{min-height:220px;flex:none;aspect-ratio:16/10}}
+
+/* Visor de Gamma */
+.viewer{border:0;padding:0;margin:auto;width:min(1200px,96vw);height:min(92vh,900px);max-width:none;max-height:none;background:var(--night);color:var(--mist);border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6);outline:1px solid var(--line)}
+.viewer::backdrop{background:rgba(5,10,18,.82);backdrop-filter:blur(4px)}
+.viewer-in{display:flex;flex-direction:column;height:100%}
+.viewer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px 12px 22px;border-bottom:1px solid var(--line)}
+.viewer-head h2{font-family:var(--display);font-weight:400;font-size:1.2rem;color:var(--white);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.viewer-head .btn{padding:9px 14px;min-height:38px;font-size:.62rem}
+.icon-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:none;display:grid;place-items:center;cursor:pointer;flex:none}
+.icon-btn:hover{border-color:var(--white)}
+.icon-btn svg{width:18px;height:18px}
+.viewer-body{flex:1;position:relative;background:#0a121e}
+.viewer-body iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.viewer-body img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.viewer-load{position:absolute;inset:0;display:grid;place-items:center;font-style:italic;color:var(--mist-50)}
+@media (max-width:640px){.viewer{width:100vw;height:100svh;border-radius:0}.viewer-head .open-label{display:none}}
+
+/* ---------------- Galería ---------------- */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 26px}
+.chips button{border:1px solid var(--line);background:none;border-radius:999px;padding:8px 16px;font-size:.66rem;font-family:var(--display);font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--mist-70);cursor:pointer;min-height:40px}
+.chips button[aria-pressed="true"]{background:var(--bright);border-color:var(--bright);color:var(--white)}
+.masonry{columns:4 260px;column-gap:12px}
+.masonry figure{margin:0 0 12px;break-inside:avoid;border-radius:12px;overflow:hidden;position:relative;cursor:zoom-in;background:var(--deep)}
+.masonry img{width:100%;height:auto;transition:transform .6s,opacity .4s}
+.masonry figure:hover img{transform:scale(1.03)}
+.masonry figcaption{position:absolute;left:10px;bottom:10px;font-size:.6rem;font-family:var(--display);font-weight:500;letter-spacing:.22em;text-transform:uppercase;background:rgba(11,23,39,.8);padding:5px 9px;border-radius:999px;color:var(--sky)}
+.more-row{display:flex;justify-content:center;margin-top:26px}
+
+/* ---------------- Videos ---------------- */
+.videos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px}
+.video{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:9/16;background:var(--deep);border:1px solid var(--line)}
+.video.wide{aspect-ratio:16/9}
+.video.big{grid-column:1/-1}
+.video video{object-fit:contain;background:#000}
+.video iframe,.video video{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:cover}
+.video button{position:absolute;inset:0;width:100%;border:0;padding:0;background:none;cursor:pointer}
+.video button img{width:100%;height:100%;object-fit:cover;opacity:.75}
+.play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:74px;height:74px;border-radius:50%;background:rgba(30,114,248,.9);display:grid;place-items:center}
+.play svg{width:26px;height:26px;margin-left:4px}
+.video [data-yt],.video [data-mp4]{position:absolute;inset:0}
+.video .v-title{position:absolute;left:0;right:0;bottom:0;padding:18px;background:linear-gradient(0deg,rgba(11,23,39,.95),transparent);font-family:var(--display);color:var(--white);font-size:1.15rem;text-align:left}
+.video-empty{border:1px dashed rgba(106,166,238,.4);border-radius:18px;padding:clamp(34px,6vw,70px);display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;background:var(--card)}
+.video-empty .play{position:static;transform:none;width:64px;height:64px;background:rgba(30,114,248,.2);border:1px solid rgba(30,114,248,.6)}
+.video-empty h3{margin:0 0 6px}
+.video-empty p{margin:0;color:var(--mist-70);font-size:.92rem}
+@media (max-width:860px){.video-empty{grid-template-columns:1fr;text-align:left}}
+
+/* ---------------- Trayectoria ---------------- */
+.editions{display:grid;grid-template-columns:repeat(7,1fr);gap:0;border-top:1px solid var(--line);margin:0;padding:0;list-style:none}
+.edition{padding:26px 18px 10px 0;position:relative}
+.edition+.edition{padding-left:18px;border-left:1px solid var(--line)}
+.edition .yr{font-family:var(--display);font-size:2rem;color:var(--white);line-height:1}
+.edition .num{font-family:var(--display);font-weight:500;font-size:.62rem;letter-spacing:.3em;color:var(--bright);margin:8px 0 12px;text-transform:uppercase}
+.edition p{margin:0;font-size:.84rem;color:var(--mist-70);line-height:1.6}
+.edition a{display:inline-block;margin-top:10px;font-size:.62rem;font-family:var(--display);font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--sky);text-decoration:none}
+.edition.now{background:linear-gradient(180deg,rgba(30,114,248,.18),transparent)}
+.edition.now .yr{color:var(--sky)}
+.bigstats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:clamp(40px,6vw,64px)}
+.bigstats div{border:1px solid var(--line);border-radius:14px;padding:22px 18px;text-align:center;background:var(--card)}
+.bigstats b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(1.8rem,3.4vw,2.6rem);color:var(--white);line-height:1}
+.bigstats span{display:block;margin-top:10px;font-size:.6rem;font-family:var(--display);font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--sky)}
+@media (max-width:1000px){.editions{grid-template-columns:1fr 1fr 1fr}.edition{border-left:0!important;padding-left:0!important;border-bottom:1px solid var(--line)}.bigstats{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:560px){.editions{grid-template-columns:1fr 1fr}.bigstats{grid-template-columns:1fr 1fr}.bigstats div:last-child{grid-column:1/-1}}
+
+/* ---------------- Patrocinio ---------------- */
+.audience{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:clamp(40px,6vw,70px)}
+.aud{border-top:1px solid var(--bright);padding-top:20px}
+.aud b{font-family:var(--display);font-weight:400;font-size:clamp(2.6rem,5vw,3.6rem);color:var(--white);line-height:1}
+.aud h3{font-family:var(--display);font-weight:500;font-size:.68rem;letter-spacing:.26em;text-transform:uppercase;color:var(--sky);margin:12px 0 8px;font-family:var(--serif)}
+.aud p{margin:0;font-size:.9rem;color:var(--mist-70)}
+.reasons{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.reason{border:1px solid var(--line);border-radius:14px;padding:22px;background:var(--card)}
+.reason h3{font-family:var(--display);font-weight:500;font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:var(--white);margin:0 0 8px}
+.reason p{margin:0;font-size:.88rem;color:var(--mist-70);line-height:1.6}
+.ladder{display:flex;flex-wrap:wrap;gap:8px;margin:28px 0}
+.ladder span{border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:.66rem;font-family:var(--display);font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--mist)}
+.ladder span:nth-last-child(-n+2){border-color:rgba(30,114,248,.6);color:var(--white);background:rgba(30,114,248,.14)}
+.spons-cta{display:grid;grid-template-columns:1.2fr .8fr;gap:clamp(30px,5vw,70px);align-items:center;margin-top:clamp(50px,7vw,90px);border:1px solid rgba(30,114,248,.5);border-radius:22px;padding:clamp(28px,5vw,56px);background:linear-gradient(135deg,rgba(30,114,248,.25),rgba(21,41,78,.55) 60%)}
+.alliance{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(30px,5vw,70px);align-items:center;margin-top:clamp(50px,7vw,90px)}
+@media (max-width:900px){.alliance{grid-template-columns:1fr}}
+.dates{list-style:none;margin:0;padding:0}
+.dates li{display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.dates b{font-family:var(--display);font-weight:400;color:var(--white);font-size:1.1rem;white-space:nowrap}
+@media (max-width:900px){.audience,.reasons{grid-template-columns:1fr 1fr}.spons-cta{grid-template-columns:1fr}}
+@media (max-width:560px){.audience,.reasons{grid-template-columns:1fr}}
+
+/* ---------------- Aliados y medios ---------------- */
+.allies{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(20px,3vw,36px)}
+.allies h3{font-family:var(--display);font-weight:500;font-size:.68rem;letter-spacing:.26em;text-transform:uppercase;color:var(--sky);margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.allies p{margin:0;font-size:.88rem;line-height:1.95;color:var(--mist-70)}
+.allies.clamped p{max-height:15.6em;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,#000 70%,transparent);mask-image:linear-gradient(180deg,#000 70%,transparent)}
+.brand-wall{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:clamp(40px,6vw,70px)}
+.brand-wall figure{margin:0;border-radius:12px;overflow:hidden;background:#fff;cursor:zoom-in}
+.brand-wall img{width:100%;height:100%;object-fit:cover;aspect-ratio:4/3}
+.media{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:clamp(40px,6vw,60px)}
+.media div{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--card)}
+.media b{display:block;font-family:var(--display);font-weight:400;font-size:1.08rem;color:var(--white);line-height:1.25}
+.media span{display:block;margin-top:6px;font-size:.78rem;color:var(--mist-70);line-height:1.5}
+@media (max-width:1000px){.allies{grid-template-columns:1fr 1fr}.brand-wall{grid-template-columns:1fr 1fr}.media{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.allies{grid-template-columns:1fr}}
+
+/* ---------------- Reservación y equipo RP ---------------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:0 0 clamp(40px,6vw,70px);padding:0;list-style:none;counter-reset:s}
+.steps li{border:1px solid var(--line);border-radius:16px;padding:24px;background:var(--card);counter-increment:s}
+.steps li::before{content:"0" counter(s);display:block;font-family:var(--display);font-size:2.2rem;color:var(--bright);line-height:1;margin-bottom:14px}
+.steps h3{font-family:var(--display);font-weight:400;font-size:1.3rem;color:var(--white);margin:0 0 8px}
+.steps p{margin:0;font-size:.9rem;color:var(--mist-70)}
+.team{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.person{border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:4px;background:var(--card-strong)}
+.person b{font-family:var(--display);font-weight:400;font-size:1.3rem;color:var(--white);line-height:1.2}
+.person span{font-size:.64rem;font-family:var(--display);font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--sky)}
+.person a{margin-top:12px;display:inline-flex;align-items:center;gap:8px;font-size:.86rem;color:var(--mist);text-decoration:none;border-bottom:1px solid var(--line);align-self:flex-start;padding-bottom:2px}
+.person a:hover{color:var(--white);border-color:var(--bright)}
+.person a svg{width:15px;height:15px}
+.privacy{margin:22px 0 0;font-size:.8rem;color:var(--mist-50);font-style:italic;max-width:80ch}
+@media (max-width:1000px){.team{grid-template-columns:1fr 1fr}.steps{grid-template-columns:1fr}}
+@media (max-width:480px){.team{grid-template-columns:1fr}}
+
+/* ---------------- Cierre ---------------- */
+.closing{text-align:center;position:relative;isolation:isolate;overflow:hidden;padding:clamp(100px,14vw,180px) 0}
+.closing>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;opacity:.55}
+.closing::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(60% 70% at 50% 50%,rgba(11,23,39,.55),rgba(11,23,39,.97))}
+.closing .h2{font-size:clamp(2.6rem,7vw,5.2rem)}
+.closing .btn-row{justify-content:center;margin-top:34px}
+.foot{border-top:1px solid var(--line);padding:30px 0 calc(30px + env(safe-area-inset-bottom,0px))}
+.foot-in{display:flex;flex-wrap:wrap;gap:18px 30px;align-items:center;justify-content:space-between;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mist-50)}
+.foot-in img{width:150px;height:auto}
+.foot-in a{text-decoration:none;color:var(--mist-70)}
+.foot-in a:hover{color:var(--white)}
+
+/* Lightbox */
+.lb{border:0;padding:0;background:transparent;max-width:96vw;max-height:94vh;overflow:visible}
+.lb::backdrop{background:rgba(5,10,18,.94)}
+.lb img{max-width:96vw;max-height:90vh;border-radius:8px}
+.lb .icon-btn{position:fixed;top:16px;right:16px;background:rgba(11,23,39,.8)}
+.lb-nav{position:fixed;top:50%;transform:translateY(-50%);background:rgba(11,23,39,.8)}
+.lb-prev{left:12px}.lb-next{right:12px}
+
+/* Aparición suave */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .9s ease,transform .9s ease}
+.reveal.in{opacity:1;transform:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<header class="bar" id="bar">
+  <div class="wrap bar-in">
+    <a class="back" href="../#exfr" aria-label="Volver a Rancho El Descanso"><img src="../marca/simbolo-oro.png" alt="" width="26" height="26"><span>Rancho El Descanso</span></a>
+    <nav class="bar-nav" aria-label="Secciones de La Experiencia Friesian">
+      <a href="#evento">El evento</a><a href="#programa">Programa</a><a href="#materiales">Materiales</a><a href="#galeria">Galería</a><a href="#trayectoria">Trayectoria</a><a href="#patrocinio">Patrocinio</a>
+    </nav>
+    <a class="btn btn-primary" data-wa-invite href="#" target="_blank" rel="noopener">Solicitar invitación</a>
+  </div>
+</header>
+
+<!-- ============ PORTADA ============ -->
+<section class="hero" aria-labelledby="t-hero">
+  <div class="hero-img"><img data-g="dusse" data-w="1600" alt="Dusse Van, semental Friesian campeón" fetchpriority="high"></div>
+  <div class="hero-tint" aria-hidden="true"></div>
+  <div class="hero-logo-wrap"><img class="hero-logo" src="../marca/logo-horizontal-oro-blanco.png" alt="Rancho El Descanso" width="923" height="267"></div>
+  <p class="hero-vert" aria-hidden="true"><b>Dusse Van</b> · Campeón General KFPS México 2026</p>
+  <div class="wrap hero-in">
+    <h1 id="t-hero" style="margin:0"><span class="spaced pre" style="display:block">La Experiencia</span><span class="h1" style="display:block">Friesian</span></h1>
+    <p class="roman">VII</p>
+    <p class="spaced edic">Edición</p>
+    <hr class="hero-line">
+    <p class="hero-date">20 de noviembre 2027</p>
+    <p class="hero-place">Rancho El Descanso · Guadalajara, México</p>
+    <p class="hero-tag">La experiencia que trasciende</p>
+    <ul class="countdown" id="countdown" aria-label="Cuenta regresiva">
+      <li><b data-cd="d">—</b><span>Días</span></li><li><b data-cd="h">—</b><span>Horas</span></li><li><b data-cd="m">—</b><span>Min</span></li><li><b data-cd="s">—</b><span>Seg</span></li>
+    </ul>
+    <div class="btn-row">
+      <a class="btn btn-primary" data-wa-invite href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Solicitar invitación</a>
+      <a class="btn btn-line" href="#materiales">Materiales oficiales</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EL EVENTO ============ -->
+<section class="sec bg-fluid" id="evento" aria-labelledby="t-evento">
+  <div class="wrap intro">
+    <div class="reveal">
+      <p class="kicker">El evento</p>
+      <h2 class="h2" id="t-evento">La Experiencia</h2>
+      <hr class="rule">
+      <p class="quote">“Un encuentro que no se vende. Se invita.”</p>
+      <p class="lead">La Experiencia Friesian es un evento exclusivo y privado, únicamente por invitación, que congrega a más de 1,000 personalidades del más alto nivel social, cultural y empresarial de México en un entorno elegante y distinguido.</p>
+      <p class="lead">Espectáculo ecuestre de élite, arte plástico contemporáneo, gastronomía premium, música en vivo y experiencias únicas — todo en Rancho El Descanso, avalado por la KFPS Real de Holanda y la GVHS.</p>
+      <ul class="stats">
+        <li><b>+1,000</b><span>Invitados de élite</span></li>
+        <li><b>VII</b><span>Edición</span></li>
+        <li><b>9 h</b><span>De experiencia</span></li>
+      </ul>
+    </div>
+    <figure class="intro-fig reveal" style="margin:0"><img data-g="noche" data-w="1200" alt="Friesian en la pista iluminada durante La Experiencia Friesian" loading="lazy"></figure>
+  </div>
+</section>
+
+<!-- ============ VIDEOS ============ -->
+<section class="sec" id="videos" aria-labelledby="t-vid" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">Videos</p>
+      <h2 class="h2" id="t-vid">Revive la experiencia</h2>
+      <p class="lead">Así se vive La Experiencia Friesian: caballos, arte, música y la noche en Rancho El Descanso.</p>
+    </div>
+    <div id="vids"></div>
+  </div>
+</section>
+
+<!-- ============ CINCO EXPERIENCIAS ============ -->
+<section class="sec" id="experiencias" aria-labelledby="t-xp" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">Lo que vivirás</p>
+      <h2 class="h2" id="t-xp">Cinco experiencias en una</h2>
+      <p class="lead">Cada edición integra cinco mundos en un mismo escenario de lujo.</p>
+    </div>
+    <div class="five">
+      <article class="xp reveal"><img data-g="gypsyShow" data-w="900" alt="Gypsy Vanner en la pista al atardecer" loading="lazy"><div class="xp-body"><p class="xp-n">01</p><h3>Espectáculo ecuestre de élite</h3><p>Dressage, riendas largas y presentación en libertad de los Friesian y Gypsy Vanner más espectaculares de México.</p></div></article>
+      <article class="xp reveal"><img data-g="artista" data-w="900" alt="Artista plástico interviniendo una obra en vivo" loading="lazy"><div class="xp-body"><p class="xp-n">02</p><h3>Arte plástico contemporáneo</h3><p>Una curaduría de artistas de Jalisco, de México y del mundo, con obra original e intervenciones en vivo.</p></div></article>
+      <article class="xp reveal"><img data-g="jardin" data-w="900" alt="Jardín del rancho con stands y pabellón gastronómico" loading="lazy"><div class="xp-body"><p class="xp-n">03</p><h3>Gastronomía &amp; spirits premium</h3><p>Pabellón gastronómico seleccionado, tequilas, whiskies, vinos y catas exclusivas.</p></div></article>
+      <article class="xp reveal"><img data-g="carpa" data-w="900" alt="Carpa principal con música en vivo" loading="lazy"><div class="xp-body"><p class="xp-n">04</p><h3>Música en vivo &amp; Zona VIP</h3><p>Producción musical de alto nivel, grupos en vivo y atención personalizada.</p></div></article>
+      <article class="xp reveal"><img data-g="stand" data-w="900" alt="Activación de marca con caballos en el jardín" loading="lazy"><div class="xp-body"><p class="xp-n">05</p><h3>Happenings de patrocinadores</h3><p>Activaciones de marca integradas al evento.</p></div></article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CAMPEONES ============ -->
+<section class="sec bg-fluid" id="campeones" aria-labelledby="t-champ">
+  <div class="wrap champs">
+    <figure class="champ-fig reveal" style="margin:0"><img data-g="dusse2" data-w="1200" alt="Retrato del semental Friesian Dusse Van" loading="lazy"><figcaption>Dusse Van · Campeón General</figcaption></figure>
+    <div class="reveal">
+      <p class="kicker">Atracciones especiales</p>
+      <h2 class="h2" id="t-champ">Una noche de campeones</h2>
+      <p class="lead">En la Inspección KFPS México 2026, nuestros sementales se llevaron los tres primeros lugares — un hito histórico para la crianza Friesian en México.</p>
+      <ol class="podium" style="margin-top:30px">
+        <li><span class="pos">01</span><div><h3>Dusse Van</h3><p>1er lugar · Campeón General de la Inspección KFPS México</p></div></li>
+        <li><span class="pos">02</span><div><h3>Mens</h3><p>2do lugar · Campeón de Reserva</p></div></li>
+        <li><span class="pos">03</span><div><h3>Ygram</h3><p>3er lugar · Inspección KFPS México</p></div></li>
+      </ol>
+      <div class="also">
+        <div><b>Nico</b><span>El Friesian más querido de México · Permiso de monta KFPS</span></div>
+        <div><b>Areane</b><span>Premio Model — una de las mejores del mundo</span></div>
+        <div><b>Vien Fan</b><span>Premio Crown — 6ª mejor yegua Friesian del mundo</span></div>
+      </div>
+      <p class="champs-note">Más de 30 yeguas de la mejor calidad · Gypsy Vanner Cremello, pioneros en México · Subastas en vivo de arte, experiencias y ejemplares de élite.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROGRAMA ============ -->
+<section class="sec" id="programa" aria-labelledby="t-prog">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">Programa</p>
+      <h2 class="h2" id="t-prog">Recorrido de la tarde a la noche</h2>
+      <p class="lead">Nueve horas, cuatro escenarios. El programa oficial completo, con patrocinadores y artistas invitados, está en la sección de materiales.</p>
+    </div>
+    <ol class="timeline reveal">
+      <li><span class="t">2:00 – 4:00 pm</span><span class="dot"></span><div class="body"><p class="z">Caballerizas · La Cantina</p><h3>Bienvenida en La Cantina</h3><p>Cortesías en un ambiente de elegancia ecuestre, música en vivo, galerías de arte dentro de las caballerizas y exhibición de Gypsy Vanner y Royal Friesian.</p></div></li>
+      <li><span class="t">4:00 – 6:00 pm</span><span class="dot"></span><div class="body"><p class="z">Jardín Central</p><h3>Luxury Hall, subastas y arte en vivo</h3><p>Stands del Luxury Hall, subastas, rifas, intervenciones de artistas, pabellón gastronómico y fotos con los caballos.</p></div></li>
+      <li><span class="t">6:00 – 7:00 pm</span><span class="dot"></span><div class="body"><p class="z">Pista 2 · Picadero</p><h3>Inauguración y Show Estelar de Caballos</h3><p>Protocolo de bienvenida, shows de barrileras y los mejores sementales Friesian y Gypsy Vanner de México: Dusse Van, Ygram, Nico y más.</p></div></li>
+      <li><span class="t">7:15 – 11:00 pm</span><span class="dot"></span><div class="body"><p class="z">Carpa Principal</p><h3>Música en vivo hasta el cierre</h3><p>Dos bloques de música en vivo y artistas plásticos interviniendo durante toda la noche.</p></div></li>
+      <li><span class="t">11:00 pm</span><span class="dot"></span><div class="body"><p class="z">Cierre</p><h3>Fin del evento</h3></div></li>
+    </ol>
+
+    <div class="zones reveal" id="zonas">
+      <div class="zone"><p class="kicker">Tu lugar en el evento</p><h3>Zona Azul</h3><p style="margin:0;color:var(--sky);font-style:italic">Mesa compartida</p><ul><li>Botella de tequila al reservar mesa completa</li><li>Refrescos de cortesía</li></ul></div>
+      <div class="zone vip"><p class="kicker sky">Tu lugar en el evento</p><h3>Zona VIP</h3><p style="margin:0;color:var(--sky);font-style:italic">Vista privilegiada · Atención personalizada</p><ul><li>Mesa para 12 personas</li><li>2 botellas de tequila al reservar mesa completa</li><li>Refrescos de cortesía</li></ul></div>
+      <div class="zones-note"><p>Precios de preventa por etapa, plano de mesas y requisitos de acceso en la invitación oficial. Solo mayores de edad.</p><button class="btn btn-line" type="button" data-open="invitacion">Ver invitación y precios</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MATERIALES OFICIALES ============ -->
+<section class="sec bg-fluid" id="materiales" aria-labelledby="t-kit">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">Materiales oficiales</p>
+      <h2 class="h2" id="t-kit">Todo EXFR 2027 en un solo lugar</h2>
+      <p class="lead">Save the date, invitación, programa, dossier y niveles de patrocinio. Las presentaciones se muestran en vivo: cualquier cambio que se haga en ellas aparece aquí al momento.</p>
+    </div>
+    <div class="kit" id="kit"></div>
+    <p class="kit-note">Si una presentación no carga, usa “Abrir” para verla en pantalla completa.</p>
+  </div>
+</section>
+
+<!-- ============ GALERÍA ============ -->
+<section class="sec" id="galeria" aria-labelledby="t-gal">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">Galería</p>
+      <h2 class="h2" id="t-gal">Momentos de ediciones anteriores</h2>
+      <p class="lead">Imágenes de las ediciones 2016 – 2025.</p>
+    </div>
+    <div class="chips" id="gal-chips" role="group" aria-label="Filtrar por edición"></div>
+    <div class="masonry" id="gal"></div>
+    <div class="more-row"><button class="btn btn-line" type="button" id="gal-more" hidden>Ver más fotos</button></div>
+  </div>
+</section>
+
+<!-- ============ TRAYECTORIA ============ -->
+<section class="sec bg-fluid" id="trayectoria" aria-labelledby="t-tray">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">Trayectoria</p>
+      <h2 class="h2" id="t-tray">Siete ediciones, una tradición</h2>
+      <p class="lead">Del evento ecuestre más importante de México a un referente cultural de lujo.</p>
+    </div>
+    <ol class="editions reveal" id="editions"></ol>
+    <div class="bigstats reveal">
+      <div><b>6</b><span>Ediciones realizadas</span></div>
+      <div><b>+6,000</b><span>Asistentes acumulados</span></div>
+      <div><b>3,000+</b><span>Récord en un día</span></div>
+      <div><b>10+</b><span>Medios de cobertura</span></div>
+      <div><b>50+</b><span>Marcas aliadas</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PATROCINIO ============ -->
+<section class="sec" id="patrocinio" aria-labelledby="t-pat">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">Patrocinio</p>
+      <h2 class="h2" id="t-pat">Una audiencia de valor</h2>
+      <hr class="rule">
+      <p class="quote">“La Experiencia Friesian no se vende. Se invita. Y eso lo cambia todo.”</p>
+      <p class="lead">El asistente a EXFR no es el público general de un evento masivo: es una persona seleccionada — empresario, líder cultural, figura social o referente de opinión — que ya pertenece a la élite de Guadalajara y su área de influencia.</p>
+    </div>
+    <div class="audience reveal">
+      <div class="aud"><b>42%</b><h3>Empresarios &amp; directivos</h3><p>CEOs, directores generales y socios de empresas familiares y corporativos de primer nivel en Jalisco y el occidente de México.</p></div>
+      <div class="aud"><b>28%</b><h3>Figuras sociales &amp; culturales</h3><p>Líderes de opinión, curadores, galeristas y figuras del arte contemporáneo.</p></div>
+      <div class="aud"><b>30%</b><h3>Profesionistas de alto perfil</h3><p>Médicos especialistas, arquitectos, abogados, desarrolladores inmobiliarios y líderes del sector financiero.</p></div>
+    </div>
+    <div class="reasons reveal">
+      <div class="reason"><h3>Perfil A/B+</h3><p>100% del aforo corresponde a niveles socioeconómicos de alto poder adquisitivo.</p></div>
+      <div class="reason"><h3>Solo por invitación</h3><p>No existe boleto al público; cada asistente es validado por el equipo de RP.</p></div>
+      <div class="reason"><h3>Tomadores de decisión</h3><p>Más del 70% tiene capacidad de decisión de compra en categorías premium.</p></div>
+      <div class="reason"><h3>Red de influencia</h3><p>Familias empresariales tradicionales de Jalisco con redes de alcance nacional.</p></div>
+      <div class="reason"><h3>Consumo de lujo</h3><p>Afinidad probada con automóviles premium, viajes, vinos, spirits y moda.</p></div>
+      <div class="reason"><h3>Alta retención</h3><p>El 80% de los invitados ha asistido al menos a dos ediciones.</p></div>
+    </div>
+
+    <div class="alliance reveal">
+      <div>
+        <p class="kicker">La alianza</p>
+        <h2 class="h3">No es un evento al que cualquier marca puede llegar</h2>
+        <p class="lead">Es un espacio curado — y esa exclusividad es, precisamente, lo que lo hace valioso para quien sí forma parte de él. Cada aliado que suma eleva el estándar del conjunto, y ese estándar protege el valor de todos.</p>
+        <p class="lead">Su marca se presenta ante más de 1,000 tomadores de decisión en un entorno donde el consumo de lujo no es aspiracional, es cotidiano. No es publicidad: es posicionamiento.</p>
+      </div>
+      <div class="video wide" id="spons-video"></div>
+    </div>
+
+    <div class="spons-cta reveal">
+      <div>
+        <p class="kicker sky">Niveles de patrocinio 2027</p>
+        <h2 class="h2" style="font-size:clamp(1.45rem,2.8vw,2.2rem)">Su marca no compra un espacio — se asocia a algo que ya tiene prestigio</h2>
+        <div class="ladder"><span>PMC</span><span>Plata</span><span>Oro</span><span>Diamante</span><span>Naming Oficial</span><span>Naming Exclusivo</span></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" type="button" data-open="patrocinios">Ver niveles e inversión</button>
+          <button class="btn btn-line" type="button" data-open="dossier">Dossier de patrocinadores</button>
+        </div>
+      </div>
+      <div>
+        <ul class="dates">
+          <li><span>Formalizar alianza</span><b>20 oct 2027</b></li>
+          <li><span>Fecha máxima de pago</span><b>30 oct 2027</b></li>
+          <li><span>Grabación de contenido en el rancho</span><b>hasta 30 oct</b></li>
+        </ul>
+        <p style="margin:18px 0 0;font-size:.86rem;color:var(--mist-70)">Todos los niveles incluyen presencia digital y en redes sociales. Precios en MXN + IVA.</p>
+        <a class="btn btn-text" data-wa-spons href="#" target="_blank" rel="noopener" style="margin-top:8px">Hablar con Dirección Comercial →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ALIADOS Y MEDIOS ============ -->
+<section class="sec bg-fluid" id="aliados" aria-labelledby="t-ali">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">Aliados</p>
+      <h2 class="h2" id="t-ali">Marcas que han confiado en EXFR</h2>
+      <p class="lead">Lista de referencia 2017 – 2025.</p>
+    </div>
+    <div class="allies clamped reveal" id="allies">
+      <div><h3>Corporativos &amp; automotriz</h3><p>Bentley Guadalajara · BMW JurgenMotors · BMW Vanguardia · Volvo Suecia Car Guadalajara · Tesla Guadalajara · Ford Jalisco Motors · Lexus Grupo OZ · Lincoln Patria · OB Cars · Kings Garage · Polaris</p></div>
+      <div><h3>Lifestyle, lujo &amp; retail</h3><p>El Palacio de Hierro · West Point Guadalajara · Desarrollos Plénitud · IOS Offices · Cavendish · Guanamor · Finestra · Legal &amp; Fixer · Kultec · Jordy Productions · Yeguada la Flor · Ranch &amp; Corral · ArtPark · Dulces de la Rosa · Heineken · Amstel · Ultra · Omolene · Purina · Dispharma RS · PiSA Agropecuaria · Regene Global · JF Soluciones en Aviación · Inverti · Aako · Caballerizas Desmontables · Grupo Herrera Collagen · Cortijo María Teresa · Ground Breaker · Golden Lion Casino</p></div>
+      <div><h3>Gastronómico &amp; spirits</h3><p>Tequila Herradura · Tequila Cascahuín · Maestro Dobel 50 · Glenmorangie · The Macallan · Hennessy · Nespresso · Vinos América · Vino Campero · Casa Madero · Santo Coyote · La Humadera · Corajillo · Sal de Mar · Chin Chin · Doroteo · Mayette · Escala · Wabba · Electrolit · Tajín · Casa San Matías · Tía Trini</p></div>
+      <div><h3>Artistas plásticos</h3><p>Miguel Ángel Martín del Campo · Carolina de León de Arelle · Roberto López Ramírez · Andrés Martín del Campo · Juan Carlos Manjarrez · Juan Carlos Santoscoy · Michelle López Nadie · Galería el Trocadero · Adriana Velarca · Adriana Guzmán · Carine de Limelette · María Bayardo · Carmen Ávalos · José Luis Malo · Armando Mafud · Arturo Gómez · Alan Michaud · Karla de Lara · Arám Cortés · Grana · Jonás · Yuri Zatarain · Waldo Saavedra · Jorge de la Peña</p></div>
+    </div>
+    <div class="more-row"><button class="btn btn-line" type="button" id="allies-more">Ver lista completa</button></div>
+
+    <div class="sec-head reveal" style="margin-top:clamp(60px,8vw,100px);margin-bottom:0">
+      <p class="kicker">Marcas en acción</p>
+      <h2 class="h3">Presencia de patrocinadores en ediciones pasadas</h2>
+    </div>
+    <div class="brand-wall reveal" id="brand-wall"></div>
+
+    <div class="sec-head reveal" style="margin-top:clamp(60px,8vw,100px);margin-bottom:0">
+      <p class="kicker">Medios</p>
+      <h2 class="h3">Cobertura en los medios sociales y de lifestyle más relevantes de México</h2>
+    </div>
+    <div class="media reveal">
+      <div><b>CHIC Magazine</b><span>Nacional · Grupo Milenio · portada y galería</span></div>
+      <div><b>Grupo Milenio</b><span>Nacional · cobertura editorial y perfil del anfitrión</span></div>
+      <div><b>Jalisco Times</b><span>Regional · reportaje de la edición 2025</span></div>
+      <div><b>Televisa Guadalajara</b><span>Regional · noticieros y estilo de vida</span></div>
+      <div><b>GDL Fashion</b><span>Regional · asistentes y tendencias</span></div>
+      <div><b>Maxwell</b><span>Regional · perfil editorial del evento</span></div>
+      <div><b>Gente Bien</b><span>Regional · galería VIP y reseña</span></div>
+      <div><b>Fiancée Bodas</b><span>Regional · certificación KFPS 2017</span></div>
+      <div><b>Revista 101</b><span>Digital · difusión previa y posterior</span></div>
+      <div><b>Club Magazine</b><span>Regional · sección social premium</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESERVACIÓN Y RP ============ -->
+<section class="sec" id="contacto" aria-labelledby="t-rp">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">Para tu reservación</p>
+      <h2 class="h2" id="t-rp">Contacta a tu RP</h2>
+      <p class="lead">Tu RP te dará el acceso a Lippu, nuestra plataforma oficial de reservación. Tu confirmación y boleto digital llegan directamente en Lippu.</p>
+    </div>
+    <ol class="steps reveal">
+      <li><h3>Solicita tu acceso</h3><p>Escríbele a tu RP y pide tu acceso a la reservación.</p></li>
+      <li><h3>Reserva en Lippu</h3><p>Número de personas, zona (Azul o VIP) y pago.</p></li>
+      <li><h3>Síguenos</h3><p>@eldescansogdl en Instagram, TikTok y Facebook.</p></li>
+    </ol>
+    <div class="team reveal" id="team"></div>
+    <p class="privacy">Tus datos se usan únicamente para validar tu invitación y darte acceso a la plataforma. No se comparten con terceros.</p>
+  </div>
+</section>
+
+<!-- ============ CIERRE ============ -->
+<section class="closing" aria-labelledby="t-close">
+  <img data-g="bw" data-w="1800" alt="" loading="lazy">
+  <div class="wrap reveal">
+    <p class="kicker sky">Séptima edición</p>
+    <h2 class="h2" id="t-close">La Experiencia<br>FRIESIAN 2027</h2>
+    <p class="hero-date" style="margin-top:22px">20 · Noviembre · 2027</p>
+    <p class="hero-place">Rancho El Descanso · Guadalajara, Jalisco</p>
+    <p class="quote" style="margin:26px auto 0">Te esperamos.</p>
+    <div class="btn-row">
+      <a class="btn btn-primary" data-wa-invite href="#" target="_blank" rel="noopener">Solicitar invitación</a>
+      <a class="btn btn-line" href="../">Conoce Rancho El Descanso</a>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <img src="../marca/logo-horizontal-oro-blanco.png" alt="Rancho El Descanso" width="923" height="267" loading="lazy">
+    <span>EXFR 2027 · VII Edición · 20 · XI · 2027</span>
+    <span><a href="https://www.instagram.com/eldescansogdl/" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.tiktok.com/@eldescansogdl" target="_blank" rel="noopener">TikTok</a> · <a href="https://www.facebook.com/ranchoeldescanso" target="_blank" rel="noopener">Facebook</a></span>
+  </div>
+</footer>
+
+<dialog class="viewer" id="viewer" aria-labelledby="viewer-title">
+  <div class="viewer-in">
+    <div class="viewer-head">
+      <h2 id="viewer-title">—</h2>
+      <div class="btn-row" style="flex-wrap:nowrap">
+        <a class="btn btn-line" id="viewer-open" href="#" target="_blank" rel="noopener"><span class="open-label">Abrir</span> ↗</a>
+        <button class="icon-btn" type="button" id="viewer-close" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+    </div>
+    <div class="viewer-body" id="viewer-body"></div>
+  </div>
+</dialog>
+
+<dialog class="lb" id="lb" aria-label="Foto ampliada">
+  <img id="lb-img" alt="">
+  <button class="icon-btn" type="button" id="lb-close" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <button class="icon-btn lb-nav lb-prev" type="button" id="lb-prev" aria-label="Anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button class="icon-btn lb-nav lb-next" type="button" id="lb-next" aria-label="Siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 5l7 7-7 7"/></svg></button>
+</dialog>
+
+<script>
+/* =====================================================================
+   CONFIGURACIÓN — aquí se alimenta la página. No hace falta tocar el HTML.
+   ===================================================================== */
+const EXFR = {
+  INICIO: "2027-11-20T14:00:00-06:00",       // sábado 20 de noviembre de 2027, 2:00 pm (Guadalajara)
+  WHATSAPP_INVITACION: "523316045548",       // a quién llega "Solicitar invitación"
+  WHATSAPP_COMERCIAL: "523316045548",        // a quién llegan los patrocinios
+
+  /* Materiales oficiales. Las presentaciones Gamma se ven en vivo (embed): lo que edites en Gamma aparece aquí solo.
+     gamma = el código al final del link de Gamma (gamma.app/docs/Nombre-ESTE-CODIGO).
+     Para el save the date: sube la imagen o PDF a la carpeta exfr/ y pon el nombre en img / archivo. */
+  MATERIALES: [
+    { key:"savethedate", n:"01", titulo:"Save the date", texto:"Aparta la fecha: sábado 20 de noviembre de 2027. Descárgalo y compártelo.",
+      img:"save-the-date-2027.webp",     // imagen que se ve (vacío = aparece como “Muy pronto”)
+      archivo:"save-the-date-2027.jpg" },// archivo que se descarga
+    { key:"invitacion", n:"02", titulo:"Invitación oficial", texto:"El evento, atracciones, caballos élite, zonas y precios de preventa, acceso y cómo reservar con tu RP.",
+      gamma:"tc1jdtkc14ocunf", slug:"La-Experiencia-FRIESIAN-2027-tc1jdtkc14ocunf", portada:"dusse", destacado:true },
+    { key:"programa", n:"03", titulo:"Programa oficial", texto:"Recorrido por escenarios y horarios, patrocinadores y artistas invitados.",
+      gamma:"ngbcui16lzpedy4", slug:"Programa-EXFR27-ngbcui16lzpedy4", portada:"gypsyShow" },
+    { key:"dossier", n:"04", titulo:"Dossier de patrocinadores", texto:"La sede, los ejemplares, el perfil del asistente, trayectoria, aliados y medios.",
+      gamma:"8liica5gxjosk35", slug:"La-Experiencia-Friesian-8liica5gxjosk35", portada:"carpa" },
+    { key:"patrocinios", n:"05", titulo:"Niveles de patrocinio 2027", texto:"De PMC a Naming Exclusivo: inversión y beneficios de cada nivel.",
+      gamma:"lir0r3i58sf5av8", slug:"Niveles-de-Patrocinio-2027-lir0r3i58sf5av8", portada:"marcas" },
+    { key:"video-invitados", n:"06", titulo:"Video para invitados", texto:"El teaser oficial de La Experiencia Friesian.",
+      video:"videos/invitados.mp4", img:"videos/invitados.jpg" },
+    { key:"video-patrocinadores", n:"07", titulo:"Video para patrocinadores", texto:"Las marcas en acción en la edición 2025: activaciones, stands y entrevistas.",
+      video:"videos/patrocinadores.mp4", img:"videos/patrocinadores.jpg", destacado:true }
+  ],
+
+  /* Fotos. id = archivo en el CDN de Gamma (así están hoy). Cuando tengas los originales,
+     súbelos a la carpeta exfr/fotos/ y cambia { id:"..." } por { src:"fotos/archivo.webp" }. */
+  FOTOS: {
+    dusse:    { id:"9f8d00c8941141739d8f12d44c7cd1d5/original/Dusse-Van.jpg" },
+    dusse2:   { id:"358a5d7bcf014b5197b18c20250eb131/original/Dusse-Van.jpg" },
+    noche:    { id:"cbe14359486341e197783883f191d5ee/original/_DSC4807.jpg" },
+    bw:       { id:"70520f8abc31407ca09b75bf106ff1dc/original/_DSC4783bw.jpg" },
+    gypsyShow:{ id:"30980b82c0534e33a767ca19d0cdda8f/optimized/_DSC4749.jpg" },
+    artista:  { id:"952648b1286640eeba0d06ca69af64c2/optimized/_DSC4637.jpg" },
+    jardin:   { id:"4ad05459a7694dc88c707011326d0282/original/d19908e9-2eb5-40d7-91fc-55b1104b4d17.jpg" },
+    carpa:    { id:"8b900a21f73d4aa0a7ad2c4fed9bc0f5/original/ba40b45b-e0e4-44b2-8d89-70dac5ddbadc.jpg" },
+    stand:    { id:"f2ea74f39aee476eac3203250d3b308e/original/4e9657c9-04b8-4b2a-897a-a4f7223f3ae4.jpg" },
+    marcas:   { id:"25c6241a62374291b23ce91da223a4e9/original/2666b24a-647c-4ded-9229-6fe672e955ef.jpg" },
+    retrato:  { id:"91951a5a5f164b3886c416f52178c425/original/WhatsApp-Image-2026-06-29-at-8.08.35-a.-m.-3.jpeg" }
+  },
+
+  /* Galería. ed = año de la edición (sale como filtro). Deja ed vacío si no sabes de qué año es. */
+  GALERIA: [
+    { id:"cbe14359486341e197783883f191d5ee/original/_DSC4807.jpg", alt:"Friesian en la pista de noche", ed:"" },
+    { id:"30980b82c0534e33a767ca19d0cdda8f/optimized/_DSC4749.jpg", alt:"Gypsy Vanner en exhibición con antorchas", ed:"" },
+    { id:"e610a62a3540463daa96d13e8ca464b3/original/d03b374a-3434-418b-be79-dac6bd9a62ca.jpg", alt:"Gypsy Vanner blanco en la pista ante el público", ed:"" },
+    { id:"708281427e3542d0880a81b6d81856ea/original/IMG_5090.jpeg", alt:"Sesión editorial con un Gypsy Vanner Cremello", ed:"" },
+    { id:"8b900a21f73d4aa0a7ad2c4fed9bc0f5/original/ba40b45b-e0e4-44b2-8d89-70dac5ddbadc.jpg", alt:"Carpa principal llena durante el concierto", ed:"" },
+    { id:"952648b1286640eeba0d06ca69af64c2/optimized/_DSC4637.jpg", alt:"Artista plástico trabajando en vivo", ed:"" },
+    { id:"91951a5a5f164b3886c416f52178c425/original/WhatsApp-Image-2026-06-29-at-8.08.35-a.-m.-3.jpeg", alt:"Retrato editorial con un Friesian", ed:"" },
+    { id:"d1a4171665c14b23b418cdab6ad8e06c/original/458b5acf-2beb-43f0-87cc-7a918b8c3ddf.jpg", alt:"Invitados celebrando en la pista de baile", ed:"" },
+    { id:"31c1452bc056422ea91be6ca61378e9e/optimized/_DSC4445.jpg", alt:"Invitados saludándose en la bienvenida", ed:"" },
+    { id:"70520f8abc31407ca09b75bf106ff1dc/original/_DSC4783bw.jpg", alt:"Pista al atardecer en blanco y negro", ed:"" },
+    { id:"56ce5a63b6934c779bd0614eadf5107f/original/e98b58e6-daeb-4249-b132-6553fb1b7390.jpg", alt:"Invitadas con sombrero en el jardín", ed:"" },
+    { id:"4ad05459a7694dc88c707011326d0282/original/d19908e9-2eb5-40d7-91fc-55b1104b4d17.jpg", alt:"Jardín central con stands y autos", ed:"" },
+    { id:"8903defab3664e6ba93871a9afcb27ed/original/WhatsApp-Image-2026-07-10-at-11.24.07-a.-m..jpeg", alt:"Arquitectura del rancho con banderas", ed:"" },
+    { id:"1082a93153b44bb89b9c1ff811ca7152/original/63be2ed1-4624-47d9-9f3a-7babf214f1b5.jpg", alt:"El rancho iluminado de noche", ed:"" },
+    { id:"ed72b727ac8f4766bd1aa93e8ec12578/original/2f0ca174-ba5d-49d5-ac66-f7d5f942e3b6.jpg", alt:"Invitados y obra de arte en la carpa", ed:"" },
+    { id:"165f18cb463e4d4ca6b94d7be3a2c977/original/f727a5d1-3d84-4025-b40a-a56d39f3d5f2.jpg", alt:"Concierto en el escenario", ed:"" }
+  ],
+  GALERIA_INICIAL: 12,   // cuántas fotos se ven antes de "Ver más fotos"
+
+  /* Marcas en acción (fotos de patrocinadores en ediciones pasadas) */
+  MARCAS_FOTOS: [
+    "25c6241a62374291b23ce91da223a4e9/original/2666b24a-647c-4ded-9229-6fe672e955ef.jpg",
+    "f8dc1a9b14294c43acb6492dd82605b2/original/9c1903c2-54b3-4740-80d2-82381de093f2.jpg",
+    "f2ea74f39aee476eac3203250d3b308e/original/4e9657c9-04b8-4b2a-897a-a4f7223f3ae4.jpg",
+    "e9ec9625680c4faeae8f6167b798bb30/optimized/_DSC4550.jpg"
+  ],
+
+  /* Videos. Pon el ID de YouTube (lo que va después de v= o de shorts/), o un .mp4 subido a exfr/videos/.
+     formato: "vertical" (reel/short) u "horizontal" (aftermovie). Vacío = aparece “Muy pronto”. */
+  VIDEOS: [
+    { titulo:"La Experiencia Friesian · video para invitados", mp4:"videos/invitados.mp4", poster:"videos/invitados.jpg", formato:"horizontal", destacado:true },
+    { titulo:"EXFR 2025 · video para patrocinadores", mp4:"videos/patrocinadores.mp4", poster:"videos/patrocinadores.jpg", formato:"horizontal", seccion:"patrocinio" },
+    // Para agregar más: { titulo:"Aftermovie 2025", youtube:"ID_DE_YOUTUBE", formato:"horizontal" }  o  { titulo:"...", mp4:"videos/archivo.mp4", poster:"videos/archivo.jpg", formato:"vertical" }
+  ],
+
+  /* Trayectoria. link = página o álbum de esa edición (opcional). */
+  EDICIONES: [
+    { yr:2016, ed:"I",   txt:"Primera edición. Evento ecuestre privado que reunió por primera vez a la élite de Guadalajara en Rancho El Descanso." },
+    { yr:2017, ed:"II",  txt:"Se consolida el formato: gastronomía premium y arte se integran como pilares permanentes. 700 asistentes." },
+    { yr:2018, ed:"III", txt:"El evento crece y reúne a más de 1,200 personalidades." },
+    { yr:2019, ed:"IV",  txt:"Cobertura en medios escritos, televisivos y digitales. Patrocinadores de marcas premium. 800 asistentes." },
+    { yr:2023, ed:"V",   txt:"Zona VIP diferenciada, pabellón gastronómico más grande y medios nacionales. Aforo récord: 3,000 asistentes." },
+    { yr:2025, ed:"VI",  txt:"22 de noviembre de 2025. Más de 1,000 invitados y un concepto perfectamente definido.", link:"https://ranchoeldescanso.com/exfr/" },
+    { yr:2027, ed:"VII", txt:"La experiencia que trasciende: referente cultural de lujo y máxima experiencia social-ecuestre en México.", now:true }
+  ],
+
+  /* Equipo de Relaciones Públicas */
+  EQUIPO: [
+    { nombre:"Mario Campero", rol:"Anfitrión" },
+    { nombre:"Mónica Valle", rol:"Directora General", wa:"523311471212", tel:"(33) 1147 1212" },
+    { nombre:"Nicolás Campero", rol:"Director Comercial", wa:"523316045548", tel:"(33) 1604 5548" },
+    { nombre:"Leticia Acedo Sahagún", rol:"Relaciones Públicas", wa:"523331896534", tel:"(33) 3189 6534" },
+    { nombre:"Jean Lachapelle", rol:"Relaciones Públicas", wa:"523331325076", tel:"(33) 3132 5076" },
+    { nombre:"Yuliana Garibay", rol:"Ventas", wa:"523351287636", tel:"(33) 5128 7636" },
+    { nombre:"Rulas Rocha", rol:"Project Manager", wa:"523332881534", tel:"(33) 3288 1534" }
+  ]
+};
+
+/* ===================================================================== */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const G_CDN="https://cdn.gamma.app/kbd1m7lh3450u9l/";
+function imgURL(f,w){ if(!f) return ""; if(typeof f==="string") f={id:f};
+  if(f.src) return f.src;
+  return `https://imgproxy.gamma.app/resize/quality:80/resizing_type:fit/width:${w||1200}/${G_CDN}${f.id}`; }
+const foto=(k,w)=>imgURL(EXFR.FOTOS[k],w);
+const wa=(num,txt)=>`https://wa.me/${num}?text=${encodeURIComponent(txt)}`;
+const WA_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>';
+
+/* Fotos fijas */
+$$("img[data-g]").forEach(im=>{ im.src=foto(im.dataset.g,+im.dataset.w||1200); });
+
+/* WhatsApp */
+$$("[data-wa-invite]").forEach(a=>a.href=wa(EXFR.WHATSAPP_INVITACION,"Hola, me gustaría recibir invitación a La Experiencia Friesian 2027 (sábado 20 de noviembre) en Rancho El Descanso."));
+$$("[data-wa-spons]").forEach(a=>a.href=wa(EXFR.WHATSAPP_COMERCIAL,"Hola, me interesa conocer los niveles de patrocinio de La Experiencia Friesian 2027."));
+
+/* Barra superior */
+const bar=$("#bar"); const onScroll=()=>bar.classList.toggle("solid",scrollY>40); addEventListener("scroll",onScroll,{passive:true}); onScroll();
+
+/* Cuenta regresiva */
+(function(){
+  const t=new Date(EXFR.INICIO).getTime(); const el=k=>$(`[data-cd="${k}"]`);
+  const pad=n=>String(n).padStart(2,"0");
+  function tick(){ let d=Math.max(0,t-Date.now());
+    if(d===0){ $("#countdown").outerHTML='<p class="quote" style="margin:30px 0">Hoy es La Experiencia Friesian.</p>'; return; }
+    const D=Math.floor(d/864e5); d-=D*864e5; const H=Math.floor(d/36e5); d-=H*36e5; const M=Math.floor(d/6e4); d-=M*6e4; const S=Math.floor(d/1e3);
+    el("d").textContent=D; el("h").textContent=pad(H); el("m").textContent=pad(M); el("s").textContent=pad(S); }
+  tick(); setInterval(tick,1000);
+})();
+
+/* Materiales */
+(function(){
+  const kit=$("#kit");
+  kit.innerHTML=EXFR.MATERIALES.map(m=>{
+    const listo = m.gamma || m.img;
+    const tag = m.gamma ? '<span class="doc-tag live">En vivo</span>' : m.video ? '<span class="doc-tag">Video</span>' : (m.img ? '<span class="doc-tag">Descargable</span>' : '<span class="doc-tag">Muy pronto</span>');
+    const cover = m.img ? m.img : foto(m.portada,1000);
+    let btns="";
+    if(m.gamma) btns=`<button class="btn btn-primary" type="button" data-open="${esc(m.key)}">Ver</button><a class="btn btn-line" href="https://gamma.app/docs/${esc(m.slug)}" target="_blank" rel="noopener">Abrir ↗</a>`;
+    else if(m.video) btns=`<button class="btn btn-primary" type="button" data-open="${esc(m.key)}">Ver video</button><a class="btn btn-line" href="${esc(m.video)}" download>Descargar</a>`;
+    else if(m.img) btns=`<button class="btn btn-primary" type="button" data-open="${esc(m.key)}">Ver</button>`+(m.archivo||m.img?`<a class="btn btn-line" href="${esc(m.archivo||m.img)}" download>Descargar</a>`:"");
+    else btns=`<a class="btn btn-line" data-wa-invite href="${wa(EXFR.WHATSAPP_INVITACION,"Hola, quiero recibir el save the date de La Experiencia Friesian 2027.")}" target="_blank" rel="noopener">Avísame</a>`;
+    return `<article class="doc reveal${m.destacado?" featured":""}${listo?"":" soon"}">
+      <div class="doc-cover${m.key==="savethedate"?" portrait":""}">${tag}<img src="${esc(cover)}" alt="" loading="lazy">${listo?"":'<div class="soon-badge"><span>Muy pronto</span></div>'}</div>
+      <div class="doc-body"><p class="doc-n">${esc(m.n)}</p><h3>${esc(m.titulo)}</h3><p>${esc(m.texto)}</p><div class="btn-row">${btns}</div></div>
+    </article>`;
+  }).join("");
+})();
+
+/* Visor */
+const viewer=$("#viewer"), vBody=$("#viewer-body");
+function openDoc(key){
+  const m=EXFR.MATERIALES.find(x=>x.key===key); if(!m) return;
+  $("#viewer-title").textContent=m.titulo;
+  if(m.gamma){
+    $("#viewer-open").href=`https://gamma.app/docs/${m.slug}`;
+    vBody.innerHTML=`<p class="viewer-load">Cargando presentación…</p><iframe src="https://gamma.app/embed/${encodeURIComponent(m.gamma)}" title="${esc(m.titulo)}" allow="fullscreen" allowfullscreen loading="eager"></iframe>`;
+  } else if(m.video){
+    $("#viewer-open").href=m.video;
+    vBody.innerHTML=`<video src="${esc(m.video)}" poster="${esc(m.img||"")}" controls autoplay playsinline style="position:absolute;inset:0;width:100%;height:100%;background:#000"></video>`;
+  } else if(m.img){
+    $("#viewer-open").href=m.archivo||m.img;
+    vBody.innerHTML=`<img src="${esc(m.img)}" alt="${esc(m.titulo)}">`;
+  } else return;
+  viewer.showModal(); document.body.style.overflow="hidden";
+}
+function closeDoc(){ viewer.close(); }
+viewer.addEventListener("close",()=>{ vBody.innerHTML=""; document.body.style.overflow=""; });
+$("#viewer-close").addEventListener("click",closeDoc);
+viewer.addEventListener("click",e=>{ if(e.target===viewer) closeDoc(); });
+document.addEventListener("click",e=>{ const b=e.target.closest("[data-open]"); if(b){ e.preventDefault(); openDoc(b.dataset.open); } });
+
+/* Lightbox */
+const lb=$("#lb"); let lbList=[], lbI=0;
+function lbShow(i){ lbI=(i+lbList.length)%lbList.length; const f=lbList[lbI]; $("#lb-img").src=imgURL(f,2000); $("#lb-img").alt=f.alt||""; }
+function lbOpen(list,i){ lbList=list; lbShow(i); lb.showModal(); }
+$("#lb-close").addEventListener("click",()=>lb.close());
+$("#lb-prev").addEventListener("click",()=>lbShow(lbI-1));
+$("#lb-next").addEventListener("click",()=>lbShow(lbI+1));
+lb.addEventListener("click",e=>{ if(e.target===lb) lb.close(); });
+lb.addEventListener("keydown",e=>{ if(e.key==="ArrowLeft") lbShow(lbI-1); if(e.key==="ArrowRight") lbShow(lbI+1); });
+
+/* Galería */
+(function(){
+  const all=EXFR.GALERIA; let filtro="todas", abiertas=false;
+  const eds=[...new Set(all.map(f=>f.ed).filter(Boolean))].sort().reverse();
+  const chips=$("#gal-chips");
+  if(eds.length){ chips.innerHTML=[`<button type="button" data-ed="todas" aria-pressed="true">Todas</button>`,...eds.map(e=>`<button type="button" data-ed="${esc(e)}" aria-pressed="false">${esc(e)}</button>`)].join("");
+    chips.addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; filtro=b.dataset.ed; chips.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b)); render(); }); }
+  else chips.remove();
+  function render(){
+    const list=all.filter(f=>filtro==="todas"||f.ed===filtro);
+    const vis=abiertas?list:list.slice(0,EXFR.GALERIA_INICIAL);
+    $("#gal").innerHTML=vis.map((f,i)=>`<figure data-i="${i}"><img src="${esc(imgURL(f,700))}" alt="${esc(f.alt)}" loading="lazy">${f.ed?`<figcaption>${esc(f.ed)}</figcaption>`:""}</figure>`).join("");
+    $("#gal").onclick=e=>{ const fg=e.target.closest("figure"); if(fg) lbOpen(list,+fg.dataset.i); };
+    const more=$("#gal-more"); more.hidden=abiertas||list.length<=EXFR.GALERIA_INICIAL;
+  }
+  $("#gal-more").addEventListener("click",()=>{ abiertas=true; render(); });
+  render();
+})();
+
+/* Marcas en acción */
+(function(){
+  const list=EXFR.MARCAS_FOTOS.map(id=>({id,alt:"Marca patrocinadora en La Experiencia Friesian"}));
+  const w=$("#brand-wall");
+  w.innerHTML=list.map((f,i)=>`<figure data-i="${i}"><img src="${esc(imgURL(f,700))}" alt="${esc(f.alt)}" loading="lazy"></figure>`).join("");
+  w.onclick=e=>{ const fg=e.target.closest("figure"); if(fg) lbOpen(list,+fg.dataset.i); };
+})();
+
+/* Videos */
+(function(){
+  const v=EXFR.VIDEOS.filter(x=>(x.youtube||x.mp4)&&(x.seccion||"videos")==="videos"); const box=$("#vids");
+  if(!v.length){
+    box.innerHTML=`<div class="video-empty reveal"><span class="play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span>
+      <div><h3 class="h3">Videos de las ediciones anteriores, muy pronto</h3><p>Mientras tanto, mira los shows, el arte y los mejores momentos en nuestras redes.</p></div>
+      <div class="btn-row"><a class="btn btn-line" href="https://www.tiktok.com/@eldescansogdl" target="_blank" rel="noopener">TikTok</a><a class="btn btn-line" href="https://www.instagram.com/eldescansogdl/" target="_blank" rel="noopener">Instagram</a></div></div>`;
+    return;
+  }
+  box.className="videos";
+  box.innerHTML=v.map(x=>{ const cls=`video${x.formato==="horizontal"?" wide":""}${x.destacado?" big":""} reveal`;
+    const poster=x.poster?(EXFR.FOTOS[x.poster]?foto(x.poster,1200):x.poster):(x.youtube?`https://i.ytimg.com/vi/${x.youtube}/hqdefault.jpg`:"");
+    const src=x.mp4?`data-mp4="${esc(x.mp4)}"`:`data-yt="${esc(x.youtube)}"`;
+    return `<div class="${cls}"><button type="button" ${src} aria-label="Reproducir ${esc(x.titulo)}">${poster?`<img src="${esc(poster)}" alt="" loading="lazy">`:""}<span class="play"><svg viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span><span class="v-title">${esc(x.titulo)}</span></button></div>`;
+  }).join("");
+})();
+document.addEventListener("click",e=>{ const b=e.target.closest(".video [data-yt], .video [data-mp4]"); if(!b) return;
+  if(b.dataset.mp4) b.outerHTML=`<video src="${esc(b.dataset.mp4)}" controls autoplay playsinline></video>`;
+  else b.outerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(b.dataset.yt)}?autoplay=1&rel=0" title="Video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`; });
+
+/* Video de patrocinadores dentro de Patrocinio */
+(function(){ const x=EXFR.VIDEOS.find(v=>v.seccion==="patrocinio"&&(v.mp4||v.youtube)); const box=$("#spons-video"); if(!box) return;
+  if(!x){ box.closest(".alliance").style.gridTemplateColumns="1fr"; box.remove(); return; }
+  const src=x.mp4?`data-mp4="${esc(x.mp4)}"`:`data-yt="${esc(x.youtube)}"`;
+  box.innerHTML=`<button type="button" ${src} aria-label="Reproducir ${esc(x.titulo)}"><img src="${esc(x.poster||"")}" alt="" loading="lazy"><span class="play"><svg viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span><span class="v-title">${esc(x.titulo)}</span></button>`;
+})();
+
+/* Trayectoria */
+$("#editions").innerHTML=EXFR.EDICIONES.map(e=>`<li class="edition${e.now?" now":""}"><div class="yr">${e.yr}</div><p class="num">Edición ${esc(e.ed)}</p><p>${esc(e.txt)}</p>${e.link?`<a href="${esc(e.link)}" target="_blank" rel="noopener">Ver edición ↗</a>`:""}</li>`).join("");
+
+/* Aliados: ver lista completa */
+$("#allies-more").addEventListener("click",function(){ $("#allies").classList.remove("clamped"); this.parentElement.remove(); });
+
+/* Equipo RP */
+$("#team").innerHTML=EXFR.EQUIPO.map(p=>`<div class="person"><b>${esc(p.nombre)}</b><span>${esc(p.rol)}</span>${p.wa?`<a href="${wa(p.wa,`Hola ${p.nombre.split(" ")[0]}, me interesa La Experiencia Friesian 2027 (20 de noviembre).`)}" target="_blank" rel="noopener">${WA_SVG}${esc(p.tel)}</a>`:""}</div>`).join("");
+
+/* Aparición suave */
+(function(){
+  const els=$$(".reveal");
+  if(!("IntersectionObserver" in window)){ els.forEach(e=>e.classList.add("in")); return; }
+  const io=new IntersectionObserver(es=>es.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); } }),{rootMargin:"0px 0px -8% 0px"});
+  els.forEach(e=>io.observe(e));
+})();
+</script>
+</body>
+</html>
