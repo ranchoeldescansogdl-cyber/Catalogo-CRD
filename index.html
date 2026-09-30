@@ -350,6 +350,16 @@ section[id],main[id]{scroll-margin-top:20px}
 .mare-ask{display:flex;justify-content:space-between;align-items:center;margin:14px 20px 0;padding:14px 0 16px;border-top:1px solid var(--rule);font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);font-weight:500}
 .mare-ask span{color:var(--gold-deep);font-size:1.1rem;transition:transform .25s ease}
 .mare:hover .mare-ask span{transform:translateX(4px)}
+.mare-ask{text-decoration:none}
+.mare-ask:hover,.mare-ask:focus-visible{color:var(--gold-deep)}
+/* Yeguas: fotos y videos desde Drive */
+.mare > .plate{aspect-ratio:4/3;border-radius:0}
+.mare > .plate[data-open]{cursor:zoom-in}
+.mare .carrusel .sl-dots{bottom:12px}
+.plate-play::after{content:"";position:absolute;inset:0;z-index:2;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='rgba(0,0,0,.55)' stroke='%23ceb35c'/%3E%3Cpath d='M10 8l6 4-6 4z' fill='%23ceb35c'/%3E%3C/svg%3E") center/54px no-repeat}
+.mare-more{all:unset;cursor:pointer;margin:12px 20px 0;color:var(--gold-deep);font-size:.9rem;text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:1px;align-self:flex-start}
+.mare-more:hover,.mare-more:focus-visible{color:var(--ink)}
+.mare-sheet{padding:18px 0 0}
 
 /* ---------- Eventos ---------- */
 .events-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(28px,5vw,64px);align-items:center}
@@ -1037,7 +1047,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
 
     <article data-doc="terminos">
       <h3>Términos y condiciones</h3>
-      <p class="legal-date">Vigentes desde el 28 de septiembre de 2026.</p>
+      <p class="legal-date">Vigentes desde el 30 de septiembre de 2026.</p>
       <p><span data-legal-titular></span> ("el Rancho"), con domicilio en San Miguel Cuyutlán, Tlajomulco de Zúñiga, Jalisco, México, ofrece en este sitio la venta de caballos Friesian y Gypsy Vanner, la reserva de potros, servicios de reproducción equina (maquila o monta), renta del rancho para eventos y sesiones fotográficas.</p>
       <h4>Precios y pagos</h4>
       <ul>
@@ -1045,6 +1055,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
         <li>Los pagos en línea se procesan con Stripe. El Rancho no recibe ni guarda los datos de tu tarjeta.</li>
         <li>Los estimados de eventos que da la página son orientativos; el precio final es el de la propuesta formal que te enviamos por WhatsApp.</li>
         <li>Todas nuestras ventas y servicios son facturables. Para recibir tu CFDI, envíanos tus datos fiscales dentro del mismo mes del pago.</li>
+        <li><strong>No hay reembolsos.</strong> Todo pago hecho al Rancho se conserva a tu favor: en sesiones y eventos puedes reagendar, y en caballos, potros y maquilas puedes usarlo para cambiar de ejemplar. Los detalles están en <a href="#cancelaciones">Cancelaciones y reembolsos</a>.</li>
       </ul>
       <h4>Apartados y reservas</h4>
       <ul>
@@ -1054,6 +1065,12 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
         <li><strong>Potros 2027:</strong> la reserva de $10,000 MXN asegura tu lugar en la lista de espera y se abona íntegra al precio del potro. Según el plan que elijas, al precio del potro se suma 5% (pagos de $20,000 mensuales), 10% ($15,000) o 15% ($10,000). Si al destete queda saldo, el potro permanece en el Rancho y la pensión corre por tu cuenta hasta liquidarlo.</li>
         <li><strong>Maquilas:</strong> la garantía de preñez se mantiene hasta que la yegua quede cargada y hasta 4 meses después. La pensión de la yegua durante su estancia se cobra aparte.</li>
       </ul>
+      <h4>Ingreso al Rancho</h4>
+      <ul>
+        <li>El Rancho es un lugar privado. Nos reservamos el derecho de admisión.</li>
+        <li>Toda persona que ingrese (clientes, invitados y proveedores) debe identificarse con una identificación oficial cuando el personal del Rancho lo solicite. Quien no se identifique no podrá ingresar.</li>
+        <li><strong>Está estrictamente prohibido ingresar con mascotas o cualquier otro animal</strong>, incluidos eventos y sesiones fotográficas. Los únicos animales permitidos son los del Rancho.</li>
+      </ul>
       <h4>Uso de las instalaciones</h4>
       <p>El acceso a caballerizas y a los caballos es siempre con personal del Rancho. Las indicaciones de seguridad del personal son obligatorias para clientes, invitados y proveedores. El cliente responde por los daños que él, sus invitados o proveedores causen a las instalaciones.</p>
       <h4>Contacto</h4>
@@ -1062,37 +1079,39 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
 
     <article data-doc="cancelaciones" hidden>
       <h3>Cancelaciones y reembolsos</h3>
-      <p class="legal-date">Vigentes desde el 28 de septiembre de 2026.</p>
+      <p class="legal-date">Vigentes desde el 30 de septiembre de 2026.</p>
+      <p><strong>No hay reembolsos.</strong> Una vez que un pago entra al Rancho (anticipo, apartado, reserva, abono o liquidación), no se devuelve en efectivo ni a tu tarjeta. Lo que pagaste se conserva a tu favor como se explica abajo.</p>
       <h4>Eventos</h4>
       <ul>
-        <li>El anticipo no es reembolsable, porque la fecha se retira de la venta para otros clientes.</li>
-        <li>Puedes cambiar la fecha una vez, avisando con al menos 30 días de anticipación y sujeto a disponibilidad, dentro de los 12 meses siguientes. Si la nueva fecha tiene otra tarifa, se ajusta la diferencia.</li>
+        <li>Si no puedes hacer tu evento en la fecha apartada, puedes reagendarlo, sujeto a disponibilidad. Avísanos con al menos 30 días de anticipación; la nueva fecha debe quedar dentro de los 12 meses siguientes.</li>
+        <li>Si la nueva fecha tiene otra tarifa, se ajusta la diferencia.</li>
       </ul>
       <h4>Sesiones fotográficas</h4>
       <ul>
-        <li>Puedes reprogramar una vez sin costo, avisando con al menos 72 horas de anticipación.</li>
-        <li>Si cancelas con menos de 72 horas o no te presentas, el anticipo no es reembolsable.</li>
-        <li>Si la sesión no puede hacerse por lluvia o por una causa del Rancho, se reprograma sin costo o se reembolsa el anticipo completo, como prefieras.</li>
+        <li>Puedes reagendar tu sesión, sujeto a disponibilidad, avisando con al menos 72 horas de anticipación.</li>
+        <li>Si avisas con menos de 72 horas o no te presentas, se pierde el anticipo.</li>
+        <li>Si la sesión no puede hacerse por lluvia o por una causa del Rancho, se reagenda sin costo.</li>
       </ul>
-      <h4>Caballos y potros</h4>
+      <h4>Caballos, potros y maquilas</h4>
       <ul>
-        <li>El apartado de un caballo no es reembolsable si el comprador desiste. Si el examen veterinario de precompra, hecho dentro del plazo de apartado, muestra un hallazgo relevante no informado por el Rancho, se reembolsa el 100%.</li>
-        <li>La reserva de potro no es reembolsable; si el potro que nace no es el que buscas, conservas tu lugar para el siguiente nacimiento.</li>
+        <li><strong>Caballos:</strong> si desistes de la compra, lo que pagaste (apartado o abonos) puedes usarlo para cambiar a otro ejemplar del Rancho. Si el nuevo cuesta más, pagas la diferencia; si cuesta menos, el saldo queda a tu favor para otra compra o servicio del Rancho.</li>
+        <li><strong>Potros:</strong> si el potro que nace no es el que buscas, pasas al siguiente nacimiento o a otro ejemplar con lo que llevas pagado.</li>
+        <li><strong>Maquilas:</strong> si la yegua no queda cargada, aplica la garantía de preñez. Lo pagado puede usarse para cambiar de semental o de ejemplar, sujeto a disponibilidad.</li>
       </ul>
-      <h4>Cómo se hacen los reembolsos</h4>
-      <p>Cuando proceda un reembolso, se hace al mismo medio de pago en un plazo de hasta 10 días hábiles. Si pagaste con tarjeta, el tiempo en que se refleja depende de tu banco. Antes de iniciar una disputa o contracargo con tu banco, escríbenos: casi siempre se resuelve más rápido directamente.</p>
+      <h4>Aclaraciones</h4>
+      <p>Si tienes cualquier duda sobre un pago, escríbenos antes de iniciar una disputa o contracargo con tu banco: casi siempre se resuelve más rápido directamente.</p>
     </article>
 
     <article data-doc="aviso-de-privacidad" hidden>
       <h3>Aviso de privacidad</h3>
-      <p class="legal-date">Última actualización: 28 de septiembre de 2026.</p>
+      <p class="legal-date">Última actualización: 30 de septiembre de 2026.</p>
       <p><span data-legal-titular></span>, con domicilio en San Miguel Cuyutlán, Tlajomulco de Zúñiga, Jalisco, México, es responsable del tratamiento de tus datos personales conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares.</p>
       <h4>Datos que recabamos</h4>
-      <p>Nombre, teléfono, correo electrónico, los datos de tu evento, sesión o compra y, si pides factura, tus datos fiscales. No recabamos datos personales sensibles. Los datos de tu tarjeta los captura directamente Stripe; el Rancho no los recibe.</p>
+      <p>Nombre, teléfono, correo electrónico, los datos de tu evento, sesión o compra y, si pides factura, tus datos fiscales. Para ingresar al Rancho podemos pedirte una identificación oficial; solo la revisamos para permitir el acceso. No recabamos datos personales sensibles. Los datos de tu tarjeta los captura directamente Stripe; el Rancho no los recibe.</p>
       <h4>Para qué los usamos</h4>
-      <p>Finalidades necesarias: contactarte, cotizar, agendar, cobrar, facturar y dar seguimiento a tu servicio o compra. Finalidad adicional: enviarte novedades del rancho, caballos en venta y eventos. Si no quieres esta última, avísanos por WhatsApp o correo y dejamos de enviártela sin afectar tu servicio.</p>
+      <p>Finalidades necesarias: contactarte, cotizar, agendar, cobrar, facturar, dar seguimiento a tu servicio o compra y controlar el acceso al Rancho. Finalidad adicional: enviarte novedades del rancho, caballos en venta y eventos. Si no quieres esta última, avísanos por WhatsApp o correo y dejamos de enviártela sin afectar tu servicio.</p>
       <h4>Con quién los compartimos</h4>
-      <p>Solo con los proveedores necesarios para dar el servicio: Stripe (procesamiento de pagos), Koalendar (agenda), Meta/WhatsApp (mensajería) y nuestro proveedor de facturación ante el SAT. No vendemos tus datos.</p>
+      <p>Solo con los proveedores necesarios para dar el servicio: Stripe (procesamiento de pagos), Google (agenda y registros internos), Vercel (alojamiento de este sitio), Meta/WhatsApp (mensajería) y nuestro proveedor de facturación ante el SAT. Algunos de ellos guardan la información fuera de México. No vendemos tus datos.</p>
       <h4>Tus derechos</h4>
       <p>Puedes acceder, rectificar, cancelar u oponerte al uso de tus datos (derechos ARCO), o revocar tu consentimiento, escribiéndonos por WhatsApp al <span data-phone-label></span><span data-legal-email></span>. Te respondemos en un máximo de 20 días hábiles.</p>
       <h4>Cookies</h4>
@@ -1124,8 +1143,8 @@ const CONFIG = {
     maquila: ""               //   reservar monta / maquila
   },
   LEGAL: {                    // Aparece en aviso de privacidad y términos
-    titular: "Rancho El Descanso",   // nombre o razón social del titular del RFC que cobra
-    email: ""                 // correo para derechos ARCO y facturación. Vacío = solo WhatsApp
+    titular: "Criadero Rancho El Descanso",   // razón social del titular del RFC que cobra
+    email: "ranchoeldescansogdl@gmail.com"    // correo para derechos ARCO y facturación. Vacío = solo WhatsApp
   },
   STRIPE: {                   // Pagos con Stripe Checkout vía /api/checkout (Vercel). La llave secreta vive solo en Vercel.
     api: /github\.io$/.test(location.hostname) ? "" : "/api/checkout", // GitHub Pages no tiene /api: ahí los pagos van a WhatsApp. Vacío = todos a WhatsApp
@@ -1558,11 +1577,13 @@ async function loadMares(){
   const list=rows.filter(r=>si(col(r,"publicar lista espera"))).map(r=>{
     const d=parseDate(col(r,"parto estimado"));
     const [pred,predm]=splitPred(col(r,"predicados yegua")).map(x=>x.replace(/\s+/g," ").trim());
-    return {madre:col(r,"nombre yegua")||col(r,"yegua"), raza:col(r,"raza"), semental:col(r,"semental"), dato:col(r,"dato para web"), destacado:col(r,"destacado"), publicar:true,
+    return {id:col(r,"yegua id"), madre:col(r,"nombre yegua")||col(r,"yegua"), raza:col(r,"raza"), semental:col(r,"semental"), dato:col(r,"dato para web"), destacado:col(r,"destacado"), publicar:true,
+      foto:col(r,"foto yegua"), video:col(r,"video yegua"),
       alzada:col(r,"alzada yegua"), capa:col(r,"capa yegua"), pred, predm, padre:col(r,"padre yegua"), madreMadre:col(r,"madre yegua"),
       parto:d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`:""};
   });
   VIENTRES.length=0; VIENTRES.push(...list); renderMares();
+  if(location.hash.startsWith("#/yegua/")) route();
 }
 
 /* ================== VISTA ================== */
@@ -1673,6 +1694,8 @@ function closeFicha(){
 function route(){
   const st=location.hash.match(/^#\/semental\/(.+)/);
   if(st){ const s=SEMENTALES.find(x=>slug(x.nombre)===decodeURIComponent(st[1])); if(s) return openStud(s); }
+  const yg=location.hash.match(/^#\/yegua\/(.+)/);
+  if(yg){ const v=VIENTRES.find(x=>x.publicar&&mareSlug(x)===decodeURIComponent(yg[1])); if(v) return openMare(v); }
   const m=location.hash.match(/^#\/(.+)/);
   if(m){ const h=HORSES.find(x=>x.id===m[1]); if(h) return openFicha(h); }
   const d=$("#ficha"); if(d.open) d.close();
@@ -1817,27 +1840,98 @@ function mareInfo(v){
   if(specs.length) out.push(`<dl class="mare-specs">${specs.map(([k,x])=>`<dt>${k}</dt><dd>${esc(x)}</dd>`).join("")}</dl>`);
   return out.join("");
 }
+const mareSlug = v => slug(v.madre);
 function renderMares(){
   const box=$("#mares"); if(!box) return;
   const first=VIENTRES.filter(v=>v.publicar&&v.parto).map(v=>v.parto).sort()[0];
   const ss=$("#season-start"); if(ss&&first) ss.textContent=`La temporada de nacimientos inicia en ${mesTxt(first)}.`;
   const list=VIENTRES.filter(v=>v.publicar&&(!mareFilter||v.raza===mareFilter))
     .sort((a,b)=>(a.parto||"9999").localeCompare(b.parto||"9999"));
+  const chev=d=>`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="${d}"/></svg>`;
   box.innerHTML=list.map(v=>{
-    const madre=displayName(v.madre);
+    const madre=displayName(v.madre), mid=mareSlug(v);
     const cuando=v.parto?`Parto estimado: ${mesTxt(v.parto)}`:"Fecha de parto por confirmar";
     const msg=`Hola, me interesa apartar el potro ${(v.parto||"").slice(0,4)||"2027"} de ${madre} × ${v.semental} (${v.raza}). ¿Cómo funciona la lista de espera?`;
-    return `<a class="mare" href="${waLink(msg)}" target="_blank" rel="noopener" aria-label="${esc(madre)} por ${esc(v.semental)}. ${esc(cuando)}. Preguntar por esta cruza">
+    const {fotos,vids}=studMedia({foto:v.foto, video:v.video});
+    const alt=i=>`${esc(madre)}, yegua ${esc(v.raza)}${fotos.length>1?`, foto ${i+1} de ${fotos.length}`:""}`;
+    const slide=(f,i)=>`<img class="plate-bg" src="${esc(f)}" alt="" aria-hidden="true" loading="lazy"><img src="${esc(f)}" alt="${alt(i)}" loading="lazy">`;
+    const nV=vids.filter(x=>x.src).length;
+    const badge=nV?`<span class="stud-media"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z"/></svg>${nV===1?"1 video":nV+" videos"}</span>`:"";
+    const vthumb=vids.find(x=>x.th);
+    const img=fotos.length>1?`<div class="plate carrusel" data-open="${mid}"><div class="slides">${fotos.map((f,i)=>`<div class="slide">${slide(f,i)}</div>`).join("")}</div><button type="button" class="sl-btn sl-prev" aria-label="Foto anterior">${chev("M10 3L5 8l5 5")}</button><button type="button" class="sl-btn sl-next" aria-label="Foto siguiente">${chev("M6 3l5 5-5 5")}</button><div class="sl-dots" aria-hidden="true">${fotos.map((f,i)=>`<i${i?"":' class="on"'}></i>`).join("")}</div>${badge}</div>`
+      :fotos[0]?`<div class="plate" data-open="${mid}">${slide(fotos[0],0)}${badge}</div>`
+      :vthumb?`<div class="plate plate-play" data-open="${mid}"><img class="plate-bg" src="${esc(vthumb.th)}" alt="" aria-hidden="true" loading="lazy"><img src="${esc(vthumb.th)}" alt="Video de ${esc(madre)}" loading="lazy">${badge}</div>`:"";
+    const media=fotos.length||nV;
+    return `<article class="mare${img?" has-media":""}" id="yegua-${mid}">
+      ${img}
       <div class="mare-top">
         <div class="mare-meta"><span class="mare-breed">${esc(v.raza)}</span><span class="mare-date">${esc(v.parto?"Parto · "+mesTxt(v.parto):"Parto por confirmar")}</span></div>
         <p class="mare-name">${esc(madre)}</p>
         <p class="mare-sire"><em>×</em><b>${esc(v.semental)}</b></p>
       </div>
       <div class="mare-body">${mareInfo(v)}</div>
-      <span class="mare-ask">Apartar esta cruza <span aria-hidden="true">→</span></span>
-    </a>`;}).join("") || `<p class="empty">No hay yeguas publicadas con este filtro.</p>`;
+      ${media?`<button type="button" class="mare-more" data-open="${mid}">${nV?"Ver fotos y videos":"Ver fotos"}</button>`:""}
+      <a class="mare-ask" href="${waLink(msg)}" target="_blank" rel="noopener" aria-label="Apartar la cruza de ${esc(madre)} por ${esc(v.semental)}. ${esc(cuando)}">Apartar esta cruza <span aria-hidden="true">→</span></a>
+    </article>`;}).join("") || `<p class="empty">No hay yeguas publicadas con este filtro.</p>`;
+  box.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",e=>{
+    if(e.target.closest(".sl-btn")) return;
+    location.hash="#/yegua/"+el.dataset.open;
+  }));
+  box.querySelectorAll(".carrusel").forEach(c=>{
+    const tr=c.querySelector(".slides"), dots=[...c.querySelectorAll(".sl-dots i")];
+    const go=d=>{ const n=dots.length, i=Math.round(tr.scrollLeft/tr.clientWidth); tr.scrollTo({left:((i+d+n)%n)*tr.clientWidth,behavior:"smooth"}); };
+    c.querySelector(".sl-prev").onclick=()=>go(-1);
+    c.querySelector(".sl-next").onclick=()=>go(1);
+    tr.addEventListener("scroll",()=>{ const i=Math.round(tr.scrollLeft/tr.clientWidth); dots.forEach((d,k)=>d.classList.toggle("on",k===i)); },{passive:true});
+  });
   if(window.maresMore) maresMore(list.length);
   document.querySelectorAll("#f-mares button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===mareFilter));
+}
+// Ficha de la yegua: todas sus fotos y videos (carpeta de Drive → CABALLOS CRD → X PARIR)
+function openMare(v){
+  const d=$("#ficha"), {fotos,vids}=studMedia({foto:v.foto, video:v.video}), madre=displayName(v.madre);
+  const items=[...fotos.map(f=>({t:"img",src:f,th:f})), ...vids.filter(x=>x.src).map(x=>({t:"vid",src:x.src,th:x.th}))];
+  const extLinks=vids.filter(x=>x.link);
+  const alt=`${madre}, yegua ${v.raza}`;
+  const view=i=>{ const it=items[i]; if(!it) return `<div class="plate" role="img" aria-label="${esc(madre)}, foto próximamente"><span class="plate-mark"></span><span class="plate-note">Foto próximamente</span></div>`;
+    return it.t==="img"?`<div class="plate"><img class="plate-bg" src="${esc(it.src)}" alt="" aria-hidden="true"><img src="${esc(it.src)}" alt="${esc(alt)}"></div>`
+      :`<div class="plate plate-vid"><iframe src="${esc(it.src)}" title="Video de ${esc(madre)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`; };
+  const nF=items.filter(x=>x.t==="img").length, nV=items.length-nF;
+  const cuenta=[nF&&(nF===1?"1 foto":nF+" fotos"), nV&&(nV===1?"1 video":nV+" videos")].filter(Boolean).join(" · ");
+  const msg=`Hola, me interesa apartar el potro ${(v.parto||"").slice(0,4)||"2027"} de ${madre} × ${v.semental} (${v.raza}). ¿Cómo funciona la lista de espera?`;
+  d.innerHTML=`
+  <div class="sheet">
+    <div class="sheet-media">
+      <div id="cover">${view(0)}</div>
+      ${items.length>1?`<div class="thumbs">${items.map((it,i)=>`<button type="button" data-i="${i}" aria-current="${i===0}" aria-label="${it.t==="vid"?"Video":"Foto"} ${i+1}"${it.t==="vid"?' class="th-vid"':""}><img src="${esc(it.th)}" alt="" onerror="this.style.visibility='hidden'"></button>`).join("")}</div>`:""}
+      ${cuenta?`<p class="media-count">${cuenta}</p>`:""}
+      ${extLinks.map(x=>`<a class="video-link" href="${esc(x.link)}" target="_blank" rel="noopener">Ver video de ${esc(madre)}</a>`).join("")}
+    </div>
+    <div class="sheet-body">
+      <button class="close" type="button" aria-label="Cerrar ficha"><svg viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.6"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+      <h2 class="sheet-name" id="ficha-nombre">${esc(madre)}</h2>
+      <p class="sheet-meta">Yegua ${esc(v.raza)} · cargada de ${esc(v.semental)}</p>
+      <p class="sheet-dep">${esc(v.parto?"Parto estimado: "+mesTxt(v.parto):"Fecha de parto por confirmar")}</p>
+      <div class="sheet-actions">
+        <a class="btn btn-dark" href="${waLink(msg)}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Apartar esta cruza</a>
+        <button class="btn btn-line" type="button" id="share">Copiar enlace</button>
+      </div>
+      <div class="mare-body mare-sheet">${mareInfo(v)}</div>
+    </div>
+  </div>`;
+  d.querySelector(".close").onclick=()=>closeFicha();
+  d.querySelectorAll(".thumbs button").forEach(b=>b.onclick=()=>{
+    $("#cover",d).innerHTML=view(+b.dataset.i);
+    d.querySelectorAll(".thumbs button").forEach(x=>x.setAttribute("aria-current",x===b));
+  });
+  $("#share",d).onclick=async e=>{
+    try{ await navigator.clipboard.writeText(location.href); e.target.textContent="Enlace copiado"; }
+    catch{ e.target.textContent="No se pudo copiar"; }
+  };
+  document.title=`${madre}, yegua ${v.raza} · Potros 2027 | Rancho El Descanso`;
+  track("ViewContent",{content_name:madre,content_category:"yegua "+v.raza});
+  if(!d.open) d.showModal();
+  d.scrollTop=0;
 }
 document.querySelectorAll("#f-mares button").forEach(b=>b.onclick=()=>{mareFilter=b.dataset.v;renderMares();});
 renderStuds(); renderMares();
@@ -2143,6 +2237,7 @@ function vistaDeHash(h){
   if(VISTAS[h]) return h;
   if(VISTA_ALIAS[h]) return VISTA_ALIAS[h];
   if(h.startsWith("/semental/")||h.startsWith("sem-")) return "sementales";
+  if(h.startsWith("/yegua/")||h.startsWith("yegua-")) return "potros";
   if(h.startsWith("/")||(typeof LEGAL_DOCS!=="undefined"&&LEGAL_DOCS.includes(h))) return null;
   const el=document.getElementById(h), c=el&&el.closest("[data-view]");
   return c?c.dataset.view.split(" ")[0]:null;
