@@ -122,7 +122,7 @@ async function cargoPotro(body, T) {
 async function cargoEvento(body, T) {
   const tipo = norm(body.evento);
   if (!TIPO_LBL[tipo]) throw new UserError("Tipo de evento no válido.");
-  const inv = Math.min(500, Math.max(0, Math.round(numv(body.inv))));
+  const inv = Math.max(0, Math.round(numv(body.inv)));
   const hx = Math.min(12, Math.max(0, Math.round(numv(body.hx))));
   const iva = body.iva === true || body.iva === "true";
   const fecha = isoDate(body.fecha);
