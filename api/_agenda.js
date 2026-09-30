@@ -1,8 +1,8 @@
 /* Rancho El Descanso · conexión con la Agenda (Google Calendar vía Apps Script).
    El calendario "Rancho El Descanso · Agenda" es la fuente de verdad de sesiones y eventos.
-   AGENDA_URL = URL del Apps Script publicado como aplicación web (termina en /exec). Vacío = agenda apagada:
-   la página no muestra horarios y las sesiones se agendan por WhatsApp. */
-const AGENDA_URL = process.env.AGENDA_URL || "";
+   AGENDA_URL = Apps Script "Agenda Rancho El Descanso" (cuenta nicolas@legaius.com) publicado como aplicación web.
+   Si la URL queda vacía, la página no muestra horarios y las sesiones se agendan por WhatsApp. */
+const AGENDA_URL = process.env.AGENDA_URL || "https://script.google.com/macros/s/AKfycbzccWMScnT9y-jZXQzTsIza4bSk8pBUKE7a0SxZvqmlVfoJA5nC0tkvtr1EKBUwfsgV/exec";
 
 const SLOTS = {"10-14": [10, 14], "14-18": [14, 18]};
 /* Qué horarios ofrece cada paquete (0 = domingo … 6 = sábado) */
