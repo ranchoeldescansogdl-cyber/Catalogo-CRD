@@ -695,7 +695,7 @@ footer p{margin:6px 0 0}
     <p class="exfr-quote">“No es un evento de caballos. Es el evento social del año.”</p>
     <ul class="exfr-stats"><li><b>+1,000</b><span>Invitados</span></li><li><b>VII</b><span>Edición</span></li><li><b>9 h</b><span>De experiencia</span></li></ul>
     <ul class="feature-facts"><li>Espectáculo ecuestre de élite</li><li>Arte plástico en vivo</li><li>Gastronomía y spirits premium</li><li>Música en vivo y Zona VIP</li><li>Happenings de patrocinadores</li></ul>
-    <p class="exfr-note">Con los campeones de la <strong>Inspección KFPS México 2026</strong>: Dusse Van (Campeón General), Mens (Campeón de Reserva) e Ygram (3er lugar), además de Nico y las yeguas premiadas Areane (Model) y Vien Fan (Crown). Zona Azul y Zona VIP · solo mayores de edad.</p>
+    <p class="exfr-note">Con los campeones de la <strong>Inspección KFPS México 2026</strong>: Dusse Van (Campeón General), Mens (Campeón de Reserva) e Ygram (3er lugar), además de Nico y las yeguas premiadas Areane (Model) y Vien Fan (Kroon). Zona Azul y Zona VIP · solo mayores de edad.</p>
     <div class="actions">
       <a class="btn btn-wa" data-wa-exfr href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Solicitar invitación</a>
       <a class="btn btn-ghost" href="https://ranchoeldescanso.com/exfr/" target="_blank" rel="noopener">Ver la edición 2025</a>
@@ -804,7 +804,7 @@ footer p{margin:6px 0 0}
         <li>Todos los precios están en pesos mexicanos (MXN). Maquilas, sesiones de fotos y eventos se cotizan más IVA; el precio publicado de los caballos y potros es el precio final.</li>
         <li>Los pagos en línea se procesan con Stripe. El Rancho no recibe ni guarda los datos de tu tarjeta.</li>
         <li>Los estimados de eventos que da la página son orientativos; el precio final es el de la propuesta formal que te enviamos por WhatsApp.</li>
-        <li>Todas nuestras ventas y servicios son facturables. Para recibir tu CFDI envíanos tus datos fiscales dentro del mismo mes del pago.</li>
+        <li>Todas nuestras ventas y servicios son facturables. Para recibir tu CFDI, envíanos tus datos fiscales dentro del mismo mes del pago.</li>
       </ul>
       <h4>Apartados y reservas</h4>
       <ul>
@@ -822,7 +822,7 @@ footer p{margin:6px 0 0}
 
     <article data-doc="cancelaciones" hidden>
       <h3>Cancelaciones y reembolsos</h3>
-      <p class="legal-date">Vigente desde el 28 de septiembre de 2026.</p>
+      <p class="legal-date">Vigentes desde el 28 de septiembre de 2026.</p>
       <h4>Eventos</h4>
       <ul>
         <li>El anticipo no es reembolsable, porque la fecha se retira de la venta para otros clientes.</li>
@@ -830,7 +830,7 @@ footer p{margin:6px 0 0}
       </ul>
       <h4>Sesiones fotográficas</h4>
       <ul>
-        <li>Puedes reprogramar una vez sin costo avisando con al menos 72 horas de anticipación.</li>
+        <li>Puedes reprogramar una vez sin costo, avisando con al menos 72 horas de anticipación.</li>
         <li>Si cancelas con menos de 72 horas o no te presentas, el anticipo no es reembolsable.</li>
         <li>Si la sesión no puede hacerse por lluvia o por una causa del Rancho, se reprograma sin costo o se reembolsa el anticipo completo, como prefieras.</li>
       </ul>
@@ -1171,7 +1171,9 @@ const VIENTRES = [
 
 /* ================== UTILIDADES ================== */
 const $ = (s, el=document) => el.querySelector(s);
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ACC={alazan:"alazán",campeon:"campeón",subcampeon:"subcampeón"};
+const acc = s => String(s ?? "").replace(/(\d)\s?°/g,"$1º").replace(/\b(alazan|subcampeon|campeon)\b/gi, w => { const r=ACC[w.toLowerCase()]; return w===w.toUpperCase()?r.toUpperCase():w[0]===w[0].toUpperCase()?r[0].toUpperCase()+r.slice(1):r; });
+const esc = s => acc(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const norm = s => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
 
 function parseCSV(text){
@@ -1221,10 +1223,10 @@ function age(d){
   const y=Math.floor(m/12); return y===1?"1 año":`${y} años`;
 }
 const fmtDate = d => d ? d.toLocaleDateString("es-MX",{day:"numeric",month:"long",year:"numeric"}) : "";
-function alz(s){ const n=parseFloat(String(s||"").replace(",",".")); if(!n) return ""; return (n>10?n/100:n).toFixed(2).replace(/\.?0+$/,"") + " m"; }
+function alz(s){ const n=parseFloat(String(s||"").replace(",",".")); if(!n) return ""; return (n>10?n/100:n).toFixed(2) + " m"; }
 
 // Nombres: el Excel los trae en mayúsculas; aquí solo se ajustan para lectura
-const LOWER=new Set(["van","de","der","den","fan","'e","e","v.d.","vd","'t","y","van't","van´t","van`t","van’t"]);
+const LOWER=new Set(["van","de","der","den","fan","of","the","'e","e","v.d.","vd","'t","y","van't","van´t","van`t","van’t"]);
 const KEEP=/^(CA|RD|F\.?G\.?V\.?|II|III|IV|J|Z|K|AA|AAA|VB|STB|([A-Za-z]\.){2,}[A-Za-z]?\.?)$/;
 function displayName(s){
   const ws=String(s||"").replace(/[´`]/g,"’").replace(/([A-Za-z])(\d{3})\b/g,"$1 $2").trim().split(/\s+/);
@@ -1315,7 +1317,7 @@ async function loadMares(){
     const d=parseDate(col(r,"parto estimado"));
     const [pred,predm]=splitPred(col(r,"predicados yegua")).map(x=>x.replace(/\s+/g," ").trim());
     return {madre:col(r,"nombre yegua")||col(r,"yegua"), raza:col(r,"raza"), semental:col(r,"semental"), dato:col(r,"dato para web"), publicar:true,
-      alzada:col(r,"alzada yegua"), pred, predm, padre:col(r,"padre yegua"), madreMadre:col(r,"madre yegua"),
+      alzada:col(r,"alzada yegua"), capa:col(r,"capa yegua"), pred, predm, padre:col(r,"padre yegua"), madreMadre:col(r,"madre yegua"),
       parto:d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`:""};
   });
   VIENTRES.length=0; VIENTRES.push(...list); renderMares();
@@ -1478,7 +1480,7 @@ function openStud(s){
       ${s.promo?`<span class="sheet-promo">${esc(s.promo)}</span>`:""}
       ${s.predicado?`<p class="stud-pred">${esc(s.predicado)}</p>`:""}
       ${s.nota?`<p class="stud-note">${esc(s.nota)}</p>`:""}
-      <dl class="fees"><div><dt>${lbl}</dt><dd>${s.antes_misma?`<s>${money(s.antes_misma)}</s>`:""}${money(s.misma)}<small>+ IVA</small></dd></div>${s.otra!=null?`<div><dt>Yegua de otra raza</dt><dd>${s.antes_otra?`<s>${money(s.antes_otra)}</s>`:""}${money(s.otra)}<small>+ IVA</small></dd></div>`:""}</dl>
+      <dl class="fees"><div><dt>${lbl}</dt><dd>${s.antes_misma&&s.antes_misma!==s.misma?`<s>${money(s.antes_misma)}</s>`:""}${money(s.misma)}<small>+ IVA</small></dd></div>${s.otra!=null?`<div><dt>Yegua de otra raza</dt><dd>${s.antes_otra&&s.antes_otra!==s.otra?`<s>${money(s.antes_otra)}</s>`:""}${money(s.otra)}<small>+ IVA</small></dd></div>`:""}</dl>
       <div class="sheet-actions">
         <a class="btn btn-dark" href="${CONFIG.KOALENDAR.maquila?esc(CONFIG.KOALENDAR.maquila):waLink(msg)}" target="_blank" rel="noopener">Reservar monta con ${esc(s.nombre)}</a>
         <button class="btn btn-line" type="button" id="share">Copiar enlace</button>
@@ -1538,7 +1540,7 @@ function renderStuds(){
         ${s.predicado?`<p class="stud-pred">${esc(s.predicado)}</p>`:""}
         ${s.nota?`<p class="stud-note">${esc(s.nota)}</p>`:""}
         ${preds.length?`<p class="stud-lbl">Línea materna</p><ul class="preds">${preds.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:""}
-        <dl class="fees"><div><dt>${lbl}</dt><dd>${s.antes_misma?`<s>${money(s.antes_misma)}</s>`:""}${money(s.misma)}<small>+ IVA</small></dd></div>${s.otra!=null?`<div><dt>Yegua de otra raza</dt><dd>${s.antes_otra?`<s>${money(s.antes_otra)}</s>`:""}${money(s.otra)}<small>+ IVA</small></dd></div>`:""}</dl>
+        <dl class="fees"><div><dt>${lbl}</dt><dd>${s.antes_misma&&s.antes_misma!==s.misma?`<s>${money(s.antes_misma)}</s>`:""}${money(s.misma)}<small>+ IVA</small></dd></div>${s.otra!=null?`<div><dt>Yegua de otra raza</dt><dd>${s.antes_otra&&s.antes_otra!==s.otra?`<s>${money(s.antes_otra)}</s>`:""}${money(s.otra)}<small>+ IVA</small></dd></div>`:""}</dl>
         <a class="btn btn-gold-line btn-sm" href="${CONFIG.KOALENDAR.maquila?esc(CONFIG.KOALENDAR.maquila):waLink(msg)}" target="_blank" rel="noopener">Reservar monta</a>
         <button type="button" class="stud-more" data-open="${sid}">${vids.length?"Ver fotos y videos":"Ver ficha completa"}</button>
       </article>`;}).join("")}</div></div>`;
@@ -1564,7 +1566,7 @@ function mareInfo(v){
   if(linea.length) out.push(`<div><span class="mare-lbl">Línea materna</span><ul class="mare-line">${linea.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`);
   const specs=[];
   const alt=alz(v.alzada); if(alt) specs.push(["Alzada",alt]);
-  if(v.raza!=="Friesian"&&v.dato) specs.push(["Capa",displayName(v.dato)]);
+  const capa=v.capa||(v.raza!=="Friesian"?v.dato:""); if(v.raza!=="Friesian"&&capa) specs.push(["Capa",displayName(capa)]);
   if(v.padre) specs.push(["Padre",displayName(v.padre)]);
   if(v.madreMadre) specs.push(["Madre",displayName(v.madreMadre)]);
   if(specs.length) out.push(`<dl class="mare-specs">${specs.map(([k,x])=>`<dt>${k}</dt><dd>${esc(x)}</dd>`).join("")}</dl>`);
@@ -1677,7 +1679,7 @@ function renderCot(){
   rows.push([`Anticipo para apartar (${Math.round((q.fila.anticipo||0.10)*100)}%)`, money(q.anticipo)]);
   br.innerHTML=rows.map(([a,b])=>`<li><span>${esc(a)}</span><span>${esc(b)}</span></li>`).join("");
   if(q.avail){ av.hidden=false; av.className="q-avail "+q.avail.cls; av.textContent=q.avail.txt; } else av.hidden=true;
-  const msg=`Hola, cotizé mi evento en la página de Rancho El Descanso y quiero la propuesta formal.\nTipo: ${lbl}\nInvitados: ${q.inv}\nFecha: ${q.fecha?q.txtDia:"por definir"}\nHoras extra: ${q.hx}\nFactura: ${q.iva?"sí":"no"}\nEstimado en página: ${money(q.total)} (anticipo ${money(q.anticipo)})`;
+  const msg=`Hola, coticé mi evento en la página de Rancho El Descanso y quiero la propuesta formal.\nTipo: ${lbl}\nInvitados: ${q.inv}\nFecha: ${q.fecha?q.txtDia:"por definir"}\nHoras extra: ${q.hx}\nFactura: ${q.iva?"sí":"no"}\nEstimado en página: ${money(q.total)} (anticipo ${money(q.anticipo)})`;
   $("#q-wa").href=waLink(msg);
   const puedePagar = PAGO_ON("evento_anticipo") && q.fecha && (!q.avail || q.avail.cls==="ok");
   pay.hidden=!puedePagar;
