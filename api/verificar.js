@@ -1,8 +1,17 @@
 /* Rancho El Descanso · confirma con Stripe un pago de la página.
    GET /api/verificar?id=cs_...  →  datos del pago tal como los tiene Stripe (no confía en nada de quien pregunta).
-   Lo usa el Apps Script de la Maestra antes de marcar un caballo como Apartado. */
+   Lo usan los Apps Script de la Maestra (Pagos web) y de la Agenda.
+   Con RANCHO_TOKEN en Vercel exige el header x-rancho-token (trae datos del cliente: nombre, correo, teléfono). */
+const crypto = require("crypto");
+function tokenOk(req) {
+  const t = process.env.RANCHO_TOKEN;
+  if (!t) return true; // aún sin configurar
+  const a = Buffer.from(String(req.headers["x-rancho-token"] || "")), b = Buffer.from(t);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
+  if (!tokenOk(req)) return res.status(401).json({error: "no autorizado"});
   const id = String((req.query && req.query.id) || "");
   if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(id)) return res.status(400).json({error: "id no válido"});
   if (!process.env.STRIPE_SECRET_KEY) return res.status(503).json({error: "sin llave"});
@@ -10,7 +19,7 @@ module.exports = async (req, res) => {
     headers: {Authorization: "Bearer " + process.env.STRIPE_SECRET_KEY, "Stripe-Version": "2026-08-26.dahlia"}
   });
   const s = await r.json();
-  if (!r.ok) return res.status(404).json({error: (s.error && s.error.message) || "no encontrado"});
+  if (!r.ok) return res.status(404).json({error: "no encontrado"});
   const m = s.metadata || {}, c = s.customer_details || {};
   return res.status(200).json({
     id: s.id,
@@ -27,6 +36,7 @@ module.exports = async (req, res) => {
     monto: (s.amount_total || 0) / 100,
     moneda: String(s.currency || "").toUpperCase(),
     nombre: c.name || "", email: c.email || "", telefono: c.phone || "",
-    creado: s.created
+    creado: s.created,
+    ip: m.ip || ""
   });
 };
