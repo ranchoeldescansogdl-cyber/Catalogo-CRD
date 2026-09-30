@@ -85,16 +85,17 @@ button{font:inherit;color:inherit}
 .back:hover{color:var(--white)}
 .back img{width:26px;height:26px}
 .bar-nav{display:flex;gap:clamp(14px,2vw,28px);font-size:.68rem;font-family:var(--display);font-weight:500;letter-spacing:.24em;text-transform:uppercase}
-.bar-nav a{text-decoration:none;color:var(--mist-70)}
+.bar-nav a{text-decoration:none;color:var(--mist-70);white-space:nowrap}
 .bar-nav a:hover{color:var(--white)}
-.bar .btn{padding:10px 18px;min-height:40px;font-size:.66rem}
-@media (max-width:1020px){.bar-nav{display:none}}
+.bar .btn{padding:10px 18px;min-height:40px;font-size:.66rem;white-space:nowrap}
+@media (max-width:1180px){.bar-nav{display:none}}
+@media (max-width:1640px){.back span{display:none}}
 @media (max-width:520px){.back span{display:none}}
 
 /* ---------------- Portada (misma composición que el save the date) ---------------- */
 .hero{min-height:100svh;display:flex;align-items:flex-end;justify-content:center;position:relative;isolation:isolate;overflow:hidden;background:var(--night);text-align:center}
 .hero-img{position:absolute;inset:0;z-index:-3;background:var(--night)}
-.hero-img img{position:absolute;left:50%;top:0;height:92%;width:auto;max-width:none;transform:translateX(-58%);filter:grayscale(1) contrast(1.15) brightness(.78);-webkit-mask-image:radial-gradient(70% 75% at 55% 40%,#000 55%,transparent 100%);mask-image:radial-gradient(70% 75% at 55% 40%,#000 55%,transparent 100%)}
+.hero-img img{position:absolute;left:50%;top:0;height:92%;width:auto;max-width:none;transform:translateX(-58%);filter:grayscale(1) contrast(1.15) brightness(.78);-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 22%,#000 72%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 22%,#000 72%,transparent 100%)}
 .hero-tint{position:absolute;inset:0;z-index:-2;background:linear-gradient(180deg,#1E72F8 0%,#1B53A6 45%,#0B1727 100%);mix-blend-mode:multiply;opacity:.95}
 .hero::before{content:"";position:absolute;inset:0;z-index:-1;background:
   radial-gradient(40% 45% at 62% 34%,rgba(30,114,248,.35),transparent 70%),
