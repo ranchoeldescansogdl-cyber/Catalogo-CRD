@@ -15,6 +15,13 @@ const HORARIOS = {
 const MIN_HORAS = 24;       // se reserva con mínimo 24 h de anticipación
 const TOTAL_SI_MENOS = 48;  // con menos de 48 h se paga el total al reservar
 
+/* 1 oct 2026: la sesión dura 3 h desde que llegan. Dentro del bloque eligen llegar a la hora de inicio
+   o hasta 1 h después (cada 30 min), para que les alcancen sus 3 h. Si llegan más tarde, no se extiende
+   (o pagan hora extra). Máximo 8 personas en total contando al titular (fotógrafo, maquillista, familia). */
+const SESION_HORAS = 3;
+const LLEGADAS = {"10-14": ["10:00", "10:30", "11:00"], "14-18": ["14:00", "14:30", "15:00"]};
+const MAX_PERSONAS = 8;
+
 const inicioMX = (fecha, h) => new Date(`${fecha}T${String(h).padStart(2, "0")}:00:00-06:00`);
 const diaSemana = fecha => new Date(fecha + "T12:00:00Z").getUTCDay();
 
@@ -29,14 +36,15 @@ async function disponibilidad({fresco = false} = {}) {
   cache = {t: Date.now(), v: j};
   return j;
 }
-async function post(accion, session_id) {
+async function post(accion, session_id, extra) {
   if (!AGENDA_URL) return {ok: true, apagada: true};
   const r = await fetch(AGENDA_URL, {method: "POST", headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({accion, session_id, token: process.env.RANCHO_TOKEN || undefined}), redirect: "follow"});
+    body: JSON.stringify({...(extra || {}), accion, session_id, token: process.env.RANCHO_TOKEN || undefined}), redirect: "follow"});
   const txt = await r.text();
   try { return JSON.parse(txt); } catch (e) { throw new Error("Agenda respondió " + r.status + ": " + txt.slice(0, 200)); }
 }
-const apartar = id => post("apartar", id);
+/* extra.ine = {nombre, tipo, datos(base64)}: identificación del titular de la sesión; el Apps Script la guarda en Drive */
+const apartar = (id, extra) => post("apartar", id, extra);
 const confirmar = id => post("confirmar", id);
 
 /* ¿El día/horario está libre? dias = respuesta de disponibilidad().dias */
@@ -46,4 +54,4 @@ function libre(dias, fecha, horario) {
   return !x.d && !(x.s || []).includes(horario);  // sesión: sin evento ese día y horario libre
 }
 
-module.exports = {AGENDA_URL, SLOTS, HORARIOS, MIN_HORAS, TOTAL_SI_MENOS, inicioMX, diaSemana, disponibilidad, apartar, confirmar, libre};
+module.exports = {AGENDA_URL, SLOTS, HORARIOS, MIN_HORAS, TOTAL_SI_MENOS, SESION_HORAS, LLEGADAS, MAX_PERSONAS, inicioMX, diaSemana, disponibilidad, apartar, confirmar, libre};

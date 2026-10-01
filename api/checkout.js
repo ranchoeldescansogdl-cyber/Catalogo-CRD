@@ -6,8 +6,13 @@
      {tipo:"caballo", id:"<id del caballo en la página>"}
      {tipo:"potro"}
      {tipo:"evento", evento:"boda|xv|social|corporativo", inv:120, hx:1, iva:true, fecha:"2026-11-14"}
-     {tipo:"sesion", paquete:"manana|tarde|produccion", fecha:"2026-11-14", horario:"10-14|14-18", iva:false}
+     {tipo:"sesion", paquete:"manana|tarde|produccion", fecha:"2026-11-14", horario:"10-14|14-18", iva:false,
+      llegada:"10:30", titular:"Nombre como en la identificación", acompanantes:["Nombre 1", …],
+      ine:{nombre:"ine.jpg", tipo:"image/jpeg", datos:"<base64>"}, ine_ok:true}
    Sesiones y eventos revisan la Agenda (Google Calendar) y apartan el horario 35 min mientras se paga.
+   1 oct 2026: días festivos (api/_festivos.js) sin sesiones ni apartado de eventos en línea (se pregunta por WhatsApp).
+   Sesiones piden hora de llegada, acompañantes con nombre (máx. 8 personas en total) e identificación del titular;
+   la identificación viaja al Apps Script de la Agenda, que la guarda en una carpeta privada de Drive.
    Responde {url} (página de pago de Stripe) o {error}. */
 
 const HOJAS = {
@@ -91,6 +96,7 @@ const hoyMX = () => new Date(Date.now() - 6 * 36e5).toISOString().slice(0, 10); 
 
 class UserError extends Error {}
 const AG = require("./_agenda");
+const FEST = require("./_festivos");
 const crypto = require("crypto");
 
 /* Freno contra abuso (30 sep 2026): máximo de intentos de pago por IP en 10 min, por instancia.
@@ -151,6 +157,7 @@ async function cargoEvento(body, T) {
   if (!fecha) throw new UserError("Elige la fecha de tu evento.");
   if (fecha < hoyMX()) throw new UserError("Esa fecha ya pasó.");
   if (fecha > maxFecha()) throw new UserError("Para fechas tan lejanas escríbenos por WhatsApp.");
+  if (FEST.festivo(fecha)) throw new UserError(`Esa fecha es día festivo (${FEST.festivo(fecha)}). Escríbenos por WhatsApp para saber si ese día está habilitado.`);
   const fila = T.find(t => t.servicio === "evento" && t.tipo === tipo && inv >= t.min && inv <= t.max);
   if (!fila || !fila.precio) throw new UserError("Este evento requiere cotización personalizada. Escríbenos por WhatsApp.");
   if (AG.AGENDA_URL) {
@@ -189,7 +196,9 @@ async function cargoSesion(body, T) {
   const fecha = isoDate(body.fecha), horario = String(body.horario || "");
   if (!fecha) throw new UserError("Elige la fecha de tu sesión.");
   if (fecha > maxFecha()) throw new UserError("Para fechas tan lejanas escríbenos por WhatsApp.");
+  if (FEST.festivo(fecha)) throw new UserError(`Ese día es festivo (${FEST.festivo(fecha)}) y no hay sesiones en línea. Escríbenos por WhatsApp para saber si está habilitado.`);
   if (!AG.HORARIOS[paquete](AG.diaSemana(fecha)).includes(horario)) throw new UserError("Ese horario no está disponible para este paquete.");
+  const extra = datosSesion(body, horario);
   const inicio = AG.inicioMX(fecha, AG.SLOTS[horario][0]);
   const horas = (inicio - Date.now()) / 36e5;
   if (horas < AG.MIN_HORAS) throw new UserError(`Las sesiones se reservan con mínimo ${AG.MIN_HORAS} horas de anticipación. Escríbenos por WhatsApp.`);
@@ -210,9 +219,43 @@ async function cargoSesion(body, T) {
     nombre: `${completo ? "Pago total" : "Anticipo"} · ${PAQ_LBL[paquete]} · ${txt}`,
     descripcion: completo ? `Pago total por reservar con menos de ${AG.TOTAL_SI_MENOS} h. Total ${money(total)} MXN ${iva ? "con IVA" : "+ IVA"}.`
                           : `Total ${money(total)} MXN ${iva ? "con IVA" : "+ IVA"}. El resto (${money(total - monto)}) se paga 2 días antes de la sesión.`,
-    meta: {paquete, fecha, horario, factura: iva ? "si" : "no", total: String(total), resta: String(total - monto)},
-    agenda: true
+    meta: {paquete, fecha, horario, factura: iva ? "si" : "no", total: String(total), resta: String(total - monto),
+      llegada: extra.llegada, titular: extra.titular, personas: String(extra.acompanantes.length + 1),
+      acompanantes: extra.acompanantes.join(" · ").slice(0, 500)},
+    agenda: true, ine: extra.ine
   };
+}
+
+/* Datos de acceso de la sesión: hora de llegada, titular, acompañantes e identificación */
+const limpiaNombre = v => String(v || "").replace(/[\u0000-\u001f\u007f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, 60);
+const nombreOk = n => n.length >= 3 && /\p{L}{2,}/u.test(n);
+const INE_MAX = 3 * 1024 * 1024; // 3 MB (la página comprime las fotos; un PDF debe venir ya ligero)
+function tipoArchivo(buf) {
+  if (buf.length > 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return {tipo: "image/jpeg", ext: "jpg"};
+  if (buf.length > 8 && buf.slice(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return {tipo: "image/png", ext: "png"};
+  if (buf.length > 12 && buf.slice(0, 4).toString("latin1") === "RIFF" && buf.slice(8, 12).toString("latin1") === "WEBP") return {tipo: "image/webp", ext: "webp"};
+  if (buf.length > 5 && buf.slice(0, 5).toString("latin1") === "%PDF-") return {tipo: "application/pdf", ext: "pdf"};
+  return null;
+}
+function datosSesion(body, horario) {
+  const llegada = String(body.llegada || "");
+  if (!(AG.LLEGADAS[horario] || []).includes(llegada)) throw new UserError("Elige tu hora de llegada.");
+  const titular = limpiaNombre(body.titular);
+  if (!nombreOk(titular)) throw new UserError("Escribe el nombre completo del titular, como aparece en su identificación.");
+  const lista = Array.isArray(body.acompanantes) ? body.acompanantes : [];
+  if (lista.length > AG.MAX_PERSONAS - 1) throw new UserError(`Máximo ${AG.MAX_PERSONAS} personas en total, contando al titular. Para grupos más grandes escríbenos por WhatsApp.`);
+  const acompanantes = lista.map(limpiaNombre);
+  if (acompanantes.some(n => !nombreOk(n))) throw new UserError("Escribe el nombre de cada acompañante.");
+  if (!(body.ine_ok === true || body.ine_ok === "true")) throw new UserError("Acepta el uso de tu identificación para el control de acceso.");
+  const ine = body.ine || {};
+  const b64 = String(ine.datos || "").replace(/^data:[^,]*,/, "");
+  if (!b64) throw new UserError("Sube la identificación oficial del titular (INE, pasaporte o licencia).");
+  if (b64.length > Math.ceil(INE_MAX / 3) * 4 + 4 || !/^[A-Za-z0-9+/]+={0,2}$/.test(b64)) throw new UserError("La identificación pesa demasiado. Sube una foto o un PDF de menos de 3 MB.");
+  const buf = Buffer.from(b64, "base64");
+  if (buf.length < 2000) throw new UserError("La identificación no se ve bien. Sube una foto clara o un PDF.");
+  const t = tipoArchivo(buf);
+  if (!t) throw new UserError("La identificación debe ser foto (JPG, PNG o WEBP) o PDF.");
+  return {llegada, titular, acompanantes, ine: {nombre: `identificacion.${t.ext}`, tipo: t.tipo, datos: buf.toString("base64")}};
 }
 async function expirar(id) {
   try {
@@ -289,8 +332,13 @@ module.exports = async (req, res) => {
     if (c.agenda && AG.AGENDA_URL) {
       // Aparta el horario en la Agenda mientras paga; si alguien lo ganó en ese instante, cancela la liga
       // Falla cerrado: si la Agenda no responde, no se cobra (se evita apartar dos veces el mismo horario)
-      const h = await AG.apartar(id).catch(e => { console.error("Agenda apartar:", e); return {ok: false}; });
+      const h = await AG.apartar(id, c.ine ? {ine: c.ine} : undefined).catch(e => { console.error("Agenda apartar:", e); return {ok: false}; });
+      // Si mandamos identificación, la Agenda debe confirmar que la guardó (h.ine); si no, no se cobra
+      if (!h.ok && h.error === "ine") h.sinIne = true;
+      if (h.ok && c.ine && h.ine !== true && !h.repetido) { console.error("Agenda no guardó la identificación:", JSON.stringify(h)); h.ok = false; h.sinIne = true; }
       if (!h.ok) { await expirar(id); throw new UserError(h.conflicto ? "Ese horario se acaba de ocupar. Elige otro."
+        : h.festivo ? `Ese día es festivo (${h.festivo}). Escríbenos por WhatsApp para saber si está habilitado.`
+        : h.sinIne ? "No pudimos guardar tu identificación. Intenta de nuevo en unos minutos o escríbenos por WhatsApp."
         : h.limite ? "Hay muchas reservas en proceso en este momento. Intenta en unos minutos o escríbenos por WhatsApp."
         : "No pudimos apartar el horario. Escríbenos por WhatsApp."); }
     }
