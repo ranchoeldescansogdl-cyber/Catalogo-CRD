@@ -759,14 +759,19 @@ const EXFR = {
 
   /* Galería. ed = año de la edición (sale como filtro). Deja ed vacío si no sabes de qué año es. */
   GALERIA: [
-    { id:"cbe14359486341e197783883f191d5ee/original/_DSC4807.jpg", alt:"Friesian en la pista de noche", ed:"" },
-    { id:"30980b82c0534e33a767ca19d0cdda8f/optimized/_DSC4749.jpg", alt:"Gypsy Vanner en exhibición con antorchas", ed:"" },
-    { id:"e610a62a3540463daa96d13e8ca464b3/original/d03b374a-3434-418b-be79-dac6bd9a62ca.jpg", alt:"Gypsy Vanner blanco en la pista ante el público", ed:"" },
+    { src:"../galope.webp", alt:"Gypsy Vanner cremello galopando en la pista de noche", ed:"" },
+    { src:"fotos/pista-bienvenida.webp", alt:"Bienvenida en la pista al atardecer, con los invitados en las gradas", ed:"" },
+    { src:"fotos/silueta-friesian.webp", alt:"Silueta de un Friesian en la pista, con la carpa iluminada al fondo", ed:"" },
+    { src:"fotos/friesian-noche.webp", alt:"Friesian en exhibición nocturna, iluminado sobre la pista", ed:"" },
+    { src:"fotos/gypsy-pista.webp", alt:"Gypsy Vanner cremello en la pista ante los invitados", ed:"" },
+    { src:"fotos/carpa-noche.webp", alt:"La carpa principal iluminada de noche", ed:"" },
+    { src:"fotos/escenario.webp", alt:"Música en vivo en el escenario", ed:"" },
+    { src:"fotos/arte-en-vivo.webp", alt:"Arte plástico en vivo frente al escenario", ed:"" },
+    { src:"fotos/invitados.webp", alt:"Invitados celebrando en la pista de baile", ed:"" },
+    { src:"fotos/carpa-llena.webp", alt:"Carpa llena durante el concierto, vista desde producción", ed:"" },
     { id:"708281427e3542d0880a81b6d81856ea/original/IMG_5090.jpeg", alt:"Sesión editorial con un Gypsy Vanner Cremello", ed:"" },
-    { id:"8b900a21f73d4aa0a7ad2c4fed9bc0f5/original/ba40b45b-e0e4-44b2-8d89-70dac5ddbadc.jpg", alt:"Carpa principal llena durante el concierto", ed:"" },
     { id:"952648b1286640eeba0d06ca69af64c2/optimized/_DSC4637.jpg", alt:"Artista plástico trabajando en vivo", ed:"" },
     { id:"91951a5a5f164b3886c416f52178c425/original/WhatsApp-Image-2026-06-29-at-8.08.35-a.-m.-3.jpeg", alt:"Retrato editorial con un Friesian", ed:"" },
-    { id:"d1a4171665c14b23b418cdab6ad8e06c/original/458b5acf-2beb-43f0-87cc-7a918b8c3ddf.jpg", alt:"Invitados celebrando en la pista de baile", ed:"" },
     { id:"31c1452bc056422ea91be6ca61378e9e/optimized/_DSC4445.jpg", alt:"Invitados saludándose en la bienvenida", ed:"" },
     { id:"70520f8abc31407ca09b75bf106ff1dc/original/_DSC4783bw.jpg", alt:"Pista al atardecer en blanco y negro", ed:"" },
     { id:"56ce5a63b6934c779bd0614eadf5107f/original/e98b58e6-daeb-4249-b132-6553fb1b7390.jpg", alt:"Invitadas con sombrero en el jardín", ed:"" },
@@ -774,12 +779,16 @@ const EXFR = {
     { id:"8903defab3664e6ba93871a9afcb27ed/original/WhatsApp-Image-2026-07-10-at-11.24.07-a.-m..jpeg", alt:"Arquitectura del rancho con banderas", ed:"" },
     { id:"1082a93153b44bb89b9c1ff811ca7152/original/63be2ed1-4624-47d9-9f3a-7babf214f1b5.jpg", alt:"El rancho iluminado de noche", ed:"" },
     { id:"ed72b727ac8f4766bd1aa93e8ec12578/original/2f0ca174-ba5d-49d5-ac66-f7d5f942e3b6.jpg", alt:"Invitados y obra de arte en la carpa", ed:"" },
-    { id:"165f18cb463e4d4ca6b94d7be3a2c977/original/f727a5d1-3d84-4025-b40a-a56d39f3d5f2.jpg", alt:"Concierto en el escenario", ed:"" }
   ],
   GALERIA_INICIAL: 12,   // cuántas fotos se ven antes de "Ver más fotos"
 
   /* Marcas en acción (fotos de patrocinadores en ediciones pasadas) */
   MARCAS_FOTOS: [
+    { src:"fotos/marca-carpa.webp" },
+    { src:"fotos/marca-friesian.webp" },
+    { src:"fotos/marca-escenario.webp" },
+    { src:"fotos/marca-gypsy.webp" },
+    { src:"fotos/marca-arte.webp" },
     "25c6241a62374291b23ce91da223a4e9/original/2666b24a-647c-4ded-9229-6fe672e955ef.jpg",
     "f8dc1a9b14294c43acb6492dd82605b2/original/9c1903c2-54b3-4740-80d2-82381de093f2.jpg",
     "f2ea74f39aee476eac3203250d3b308e/original/4e9657c9-04b8-4b2a-897a-a4f7223f3ae4.jpg",
@@ -922,7 +931,7 @@ lb.addEventListener("keydown",e=>{ if(e.key==="ArrowLeft") lbShow(lbI-1); if(e.k
 
 /* Marcas en acción */
 (function(){
-  const list=EXFR.MARCAS_FOTOS.map(id=>({id,alt:"Marca patrocinadora en La Experiencia Friesian"}));
+  const list=EXFR.MARCAS_FOTOS.map(x=>({...(typeof x==="string"?{id:x}:x),alt:"Marca patrocinadora en La Experiencia Friesian"}));
   const w=$("#brand-wall");
   w.innerHTML=list.map((f,i)=>`<figure data-i="${i}"><img src="${esc(imgURL(f,700))}" alt="${esc(f.alt)}" loading="lazy"></figure>`).join("");
   w.onclick=e=>{ const fg=e.target.closest("figure"); if(fg) lbOpen(list,+fg.dataset.i); };
