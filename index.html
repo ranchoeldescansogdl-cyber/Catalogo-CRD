@@ -740,6 +740,84 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
   .visit-inner{flex-direction:column;align-items:flex-start}
   .visit-reel{width:min(64vw,300px);margin:0}
 }
+.editorial{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:stretch}
+.ed-intro{grid-column:1;grid-row:1}
+.ed-feature{grid-column:2;grid-row:1/3;aspect-ratio:auto;min-height:100%}
+.ed-grid{grid-column:1;grid-row:2;display:flex!important;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.ed-grid::-webkit-scrollbar{display:none}
+.ed-grid figure{flex:0 0 auto;height:clamp(220px,22vw,300px);aspect-ratio:4/5;scroll-snap-align:start}
+@media (max-width:860px){.editorial{grid-template-columns:minmax(0,1fr)}.ed-intro,.ed-grid,.ed-feature{grid-column:1;grid-row:auto}.ed-feature{aspect-ratio:4/5;min-height:0;max-height:70vh}.ed-grid figure{height:260px}}
+/* ===== Rediseño Sesiones + Eventos: fotos junto a la reserva, galerías en carrusel ===== */
+.reel{display:flex!important;gap:clamp(10px,1.4vw,18px);overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.reel::-webkit-scrollbar{display:none}
+.shoots.reel{margin-top:18px}
+.shoots.reel figure,.shoots.reel figure:first-child{flex:0 0 auto;height:clamp(280px,30vw,420px);aspect-ratio:4/5;grid-column:auto;scroll-snap-align:start}
+.shoots.reel figure.wide,.shoots.reel figure.wide:first-child{aspect-ratio:3/2;position:relative}
+.shoots.reel figure.wide img{object-position:50% 55%}
+.shoots.reel figcaption{position:absolute;left:0;right:0;bottom:0;padding:34px 16px 14px;color:#fff;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(0deg,rgba(0,0,0,.6),transparent)}
+.reel-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-top:clamp(48px,6vw,80px)}
+.reel-head h3{font-family:var(--display);font-weight:400;font-size:clamp(1.5rem,3vw,2.1rem);margin:0}
+.reel-head .eyebrow{margin-bottom:6px}
+.reel-nav{display:flex;gap:10px;flex:none}
+.reel-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--rule);background:var(--paper);color:var(--ink);display:grid;place-items:center;cursor:pointer;padding:0;transition:border-color .2s,color .2s,background .2s}
+.reel-btn:hover{border-color:var(--gold);color:var(--gold-deep)}
+.reel-btn svg{width:18px;height:18px}
+.editorial .reel-btn{background:transparent;border-color:var(--rule-dark);color:var(--paper)}
+.editorial .reel-btn:hover{border-color:var(--gold);color:var(--gold)}
+.editorial .reel-nav{margin-top:22px}
+
+.ses-stage{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:clamp(28px,4.5vw,64px);align-items:start;margin-top:clamp(28px,4vw,48px)}
+.ses-visual{position:sticky;top:24px;padding:0 13% 13% 0}
+.ses-visual::before{content:"";position:absolute;left:-14px;top:-14px;width:62%;height:56%;border:1px solid var(--gold);border-radius:2px;pointer-events:none}
+.ses-fade{position:relative;aspect-ratio:4/5;overflow:hidden;border-radius:2px;background:#111}
+.ses-fade img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;animation:sesFade 25s linear infinite both;animation-delay:calc(var(--i) * 5s - 1s)}
+@keyframes sesFade{0%{opacity:0;transform:scale(1.06)}4%{opacity:1}20%{opacity:1}24%{opacity:0;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+.ses-chip{position:absolute;margin:0;overflow:hidden;border-radius:2px;border:6px solid var(--paper);box-shadow:0 18px 40px -18px rgba(0,0,0,.55);background:var(--mist)}
+.ses-chip img{width:100%;height:100%;object-fit:cover;display:block}
+.ses-chip-a{right:0;bottom:0;width:42%;aspect-ratio:4/5}
+.ses-chip-b{right:3%;top:9%;width:28%;aspect-ratio:1}
+.ses-tag{position:absolute;left:0;bottom:calc(13% + 14px);margin:0;padding:8px 14px;max-width:52%;background:rgba(10,10,10,.78);color:var(--gold-light);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;border-radius:0 2px 2px 0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.ses-step{display:flex;align-items:center;gap:12px;margin:0;font-family:var(--display);font-size:1.25rem}
+.ses-step span{width:32px;height:32px;border-radius:50%;border:1px solid var(--gold);display:grid;place-items:center;font-size:.95rem;color:var(--gold-deep)}
+.ses-book .packs{grid-template-columns:1fr;gap:12px;margin-top:16px}
+.ses-book .pack{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 22px;padding:18px 20px}
+.ses-book .pack>*{grid-column:1;margin:0}
+.ses-book .pack .pack-price{grid-column:2;grid-row:1/span 3;text-align:right;align-self:start;margin:0}
+.ses-book .pack .btn{grid-column:2;grid-row:4/span 3;align-self:end;justify-self:end;margin:0}
+.ses-book .pack:hover{border-color:var(--gold)}
+.ses-book .quote{grid-template-columns:1fr;margin-top:18px;gap:22px}
+
+.ev-stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,3.5vw,48px);align-items:start;margin-top:clamp(36px,5vw,60px)}
+.ev-stage .ev-gallery{position:sticky;top:24px;margin:0;grid-template-columns:1fr 1fr;grid-auto-rows:clamp(100px,10.5vw,150px)}
+.ev-stage .ev-a{grid-column:1;grid-row:1/3}.ev-stage .ev-b{grid-column:2;grid-row:1/2}.ev-stage .ev-c{grid-column:2;grid-row:2/4}
+.ev-stage .ev-d{grid-column:1;grid-row:3/5}.ev-stage .ev-e{grid-column:2;grid-row:4/5}.ev-stage .ev-f{grid-column:1/3;grid-row:5/7}
+.ev-stage .quote{margin-top:0;grid-template-columns:1fr;gap:26px}
+@media (min-width:861px){
+  .etypes{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .etype,.etype:not(:nth-child(3n+1)){padding:18px 18px 20px 0;border-left:0}
+  .etype+.etype,.etype+.etype:not(:nth-child(3n+1)){padding-left:18px;border-left:1px solid var(--rule)}
+  .etype h3{font-size:1.15rem}.etype p{font-size:.9rem}
+}
+@media (max-width:860px){
+  .ses-stage,.ev-stage{grid-template-columns:minmax(0,1fr)}
+  .ses-book,.ses-visual,.ev-stage>*{min-width:0}
+  .ses-visual{position:relative;top:auto;padding:0 16% 12% 0;max-width:560px}
+  .ses-fade{aspect-ratio:1}
+  .ses-visual::before{left:-8px;top:-8px}
+  .ses-tag{max-width:64%;font-size:.66rem;padding:6px 10px}
+  .ses-book .packs{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;gap:12px;margin:14px calc(-1 * var(--pad)) 0;padding:0 var(--pad) 4px;scroll-padding:0 var(--pad)}
+  .ses-book .packs::-webkit-scrollbar{display:none}
+  .ses-book .pack{flex:0 0 84%;scroll-snap-align:start;display:flex;flex-direction:column}
+  .ses-book .pack .btn{align-self:flex-start;margin-top:10px}
+  .ses-book .pack .pack-price{text-align:left}
+  .ev-stage .ev-gallery{position:relative;top:auto;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin:0 calc(-1 * var(--pad));padding:0 var(--pad);scroll-padding:0 var(--pad)}
+  .ev-stage .ev-gallery::-webkit-scrollbar{display:none}
+  .ev-stage .ev-gallery figure{flex:0 0 80%;height:250px;scroll-snap-align:start}
+  .shoots.reel{margin-left:calc(-1 * var(--pad));margin-right:calc(-1 * var(--pad));padding:0 var(--pad);scroll-padding:0 var(--pad)}
+  .shoots.reel figure,.shoots.reel figure:first-child{height:300px}
+  .reel-head .reel-nav{display:none}
+}
+@media (prefers-reduced-motion:reduce){.ses-fade img{animation:none}.ses-fade img:first-child{opacity:1}}
 </style>
 <link rel="stylesheet" href="/lux.css">
 </head>
@@ -892,7 +970,8 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
     <div class="etype"><h3>Sociales y privados</h3><p>Aniversarios, reuniones familiares y celebraciones especiales.</p></div>
     <div class="etype"><h3>Marcas y exhibiciones</h3><p>Activaciones de marca, exhibiciones artísticas y producciones.</p></div>
   </div>
-  <div class="ev-gallery" aria-label="Eventos en Rancho El Descanso">
+  <div class="ev-stage">
+  <div class="ev-gallery" id="ev-reel" data-reel aria-label="Eventos en Rancho El Descanso">
     <figure class="ev-a"><img src="fotos/vista-valle.webp" alt="Ceremonia de boda en el jardín con vista al valle y a la pista" loading="lazy"><figcaption>Ceremonias con vista al valle</figcaption></figure>
     <figure class="ev-b"><img src="fotos/jardin.webp" alt="Invitados de una boda en el jardín, junto al muro de piedra" loading="lazy"><figcaption>Jardines entre los árboles</figcaption></figure>
     <figure class="ev-c"><img src="fotos/ev-centro-mesa.webp" alt="Centro de mesa con flores secas y velas" loading="lazy"><figcaption>Cada detalle, a tu gusto</figcaption></figure>
@@ -938,6 +1017,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
       </div>
     </div>
   </div>
+  </div>
 
 </section>
 
@@ -950,7 +1030,16 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
     </div>
     <a class="btn btn-line" data-wa-shoot href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Tengo una duda</a>
   </div>
-  <div class="packs" id="packs"><p class="loading">Cargando paquetes…</p></div>
+  <div class="ses-stage">
+    <div class="ses-visual">
+      <div class="ses-fade"><img src="fotos/ses-friesian-retrato.webp" alt="Retrato editorial con un Friesian negro" style="object-position:50% 20%;--i:0"><img src="fotos/boda-cremello.webp" alt="Sesión de novia con un Gypsy Vanner cremello" style="object-position:50% 35%;--i:1" loading="lazy"><img src="fotos/miss-corona.webp" alt="Miss Universe Jalisco recargada sobre un Friesian" style="object-position:60% 30%;--i:2" loading="lazy"><img src="fotos/ses-cremello-capa.webp" alt="Sesión editorial con un Gypsy Vanner cremello y capa blanca" style="object-position:50% 35%;--i:3" loading="lazy"><img src="fotos/novia-friesian.webp" alt="Novia junto a un Friesian frente a la caballeriza" style="object-position:50% 40%;--i:4" loading="lazy"></div>
+      <figure class="ses-chip ses-chip-a"><img src="fotos/ed-pista-amarillo.webp" alt="Sesión de moda con vestido amarillo en la pista de arena" loading="lazy" style="object-position:50% 55%"></figure>
+      <figure class="ses-chip ses-chip-b"><img src="fotos/ses-sombrero.webp" alt="Retrato con sombrero junto a la crin de un Gypsy Vanner" loading="lazy" style="object-position:60% 30%"></figure>
+      <p class="ses-tag">Friesian · Gypsy Vanner · escenarios de piedra, madera y acero</p>
+    </div>
+    <div class="ses-book">
+      <p class="ses-step"><span>1</span>Elige tu paquete</p>
+      <div class="packs" id="packs"><p class="loading">Cargando paquetes…</p></div>
   <div class="quote" id="agendar" aria-labelledby="t-agendar" hidden>
     <div>
       <h3 id="t-agendar">Aparta tu sesión</h3>
@@ -999,8 +1088,14 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
       </div>
     </div>
   </div>
-  <figure class="shoot-hero"><img src="fotos/ses-pista-noche.webp" alt="Producción de moda de noche en la pista con jinetes, un Gypsy Vanner y un Friesian" loading="lazy"><figcaption>Producciones de moda y marca en la pista</figcaption></figure>
-  <div class="shoots">
+    </div>
+  </div>
+  <div class="reel-head">
+    <div><p class="eyebrow">Galería</p><h3>Así se viven las sesiones en el rancho</h3></div>
+    <div class="reel-nav"><button type="button" class="reel-btn" data-reel-prev="ses-reel" aria-label="Fotos anteriores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><button type="button" class="reel-btn" data-reel-next="ses-reel" aria-label="Fotos siguientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div>
+  </div>
+  <div class="shoots reel" id="ses-reel" data-reel>
+    <figure class="wide"><img src="fotos/ses-pista-noche.webp" alt="Producción de moda de noche en la pista con jinetes, un Gypsy Vanner y un Friesian" loading="lazy"><figcaption>Producciones de moda y marca en la pista</figcaption></figure>
     <figure><img src="fotos/ses-friesian-retrato.webp" alt="Retrato editorial con un Friesian negro" loading="lazy" style="object-position:50% 20%"></figure>
     <figure><img src="fotos/boda-cremello.webp" alt="Sesión de novia con un Gypsy Vanner cremello" loading="lazy"></figure>
     <figure><img src="fotos/ses-porton.webp" alt="Sesión de moda en el portón con un Gypsy Vanner y un Friesian" loading="lazy"></figure>
@@ -1025,9 +1120,10 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
       <p>La pista de arena, el pasillo de caballerizas, la talabartería y el mirador al valle son escenarios por sí solos. Piedra, madera y acero que hacen resaltar cualquier color: ideales para producciones de moda, marcas, revistas y portafolios.</p>
       <ul class="ed-spots"><li>Pista de arena</li><li>Pasillo de caballerizas</li><li>Talabartería</li><li>Mirador al valle</li></ul>
       <a class="btn btn-gold-line" data-wa-shoot href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Cotiza tu producción</a>
+      <div class="reel-nav"><button type="button" class="reel-btn" data-reel-prev="ed-reel" aria-label="Escenarios anteriores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><button type="button" class="reel-btn" data-reel-next="ed-reel" aria-label="Escenarios siguientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div>
     </div>
     <figure class="ed-feature"><img src="fotos/ed-pista-amarillo.webp" alt="Modelo con vestido amarillo de tul y sombrero negro en la pista de arena, con polvo levantado al viento" loading="lazy" width="853" height="1280" style="object-position:50% 60%"><figcaption>Pista de arena</figcaption></figure>
-    <div class="ed-grid">
+    <div class="ed-grid" id="ed-reel" data-reel>
       <figure><img src="fotos/ed-pasillo-fucsia.webp" alt="Modelo con vestido fucsia de lentejuelas al fondo del pasillo de caballerizas con piso de piedra" loading="lazy" width="853" height="1280" style="object-position:50% 55%"><figcaption>Pasillo de caballerizas</figcaption></figure>
       <figure><img src="fotos/ed-talabarteria.webp" alt="Modelo con vestido negro de lentejuelas en la talabartería, entre monturas y troncos" loading="lazy" width="853" height="1280" style="object-position:50% 45%"><figcaption>Talabartería</figcaption></figure>
       <figure><img src="fotos/ed-pista-sombrero.webp" alt="Modelo con vestido amarillo y sombrero negro en la pista, frente al muro de piedra y los árboles" loading="lazy" width="853" height="1280" style="object-position:50% 35%"><figcaption>Pista de arena</figcaption></figure>
@@ -2705,6 +2801,21 @@ Promise.all([load(),PAGO_LISTO]).then(([list])=>{
     card.querySelector("[data-push-no]").addEventListener("click",()=>{ card.hidden=true; guardar("crd-avisos-no","1"); });
   }
 })();
+</script>
+<script>
+/* Carruseles (sesiones, escenarios, eventos en celular): flechas + avance automático suave */
+(()=>{const quieto=matchMedia("(prefers-reduced-motion: reduce)").matches;
+document.querySelectorAll("[data-reel]").forEach(r=>{
+  const paso=()=>{const f=r.querySelector("figure");const g=parseFloat(getComputedStyle(r).columnGap)||14;return f?f.getBoundingClientRect().width+g:r.clientWidth*.8;};
+  const fin=()=>r.scrollLeft>=r.scrollWidth-r.clientWidth-6;
+  const ir=d=>{ if(r.scrollWidth<=r.clientWidth+4) return; if(d>0&&fin()) r.scrollTo({left:0,behavior:"smooth"}); else r.scrollBy({left:d*paso(),behavior:quieto?"auto":"smooth"}); };
+  let pausa=false,h=0,vis=false; const esperar=()=>{pausa=true;clearTimeout(h);h=setTimeout(()=>pausa=false,9000);};
+  document.querySelectorAll(`[data-reel-prev="${r.id}"]`).forEach(b=>b.addEventListener("click",()=>{ir(-1);esperar();}));
+  document.querySelectorAll(`[data-reel-next="${r.id}"]`).forEach(b=>b.addEventListener("click",()=>{ir(1);esperar();}));
+  ["pointerdown","touchstart","wheel","focusin","mouseenter"].forEach(e=>r.addEventListener(e,esperar,{passive:true}));
+  new IntersectionObserver(es=>{vis=es[0].isIntersecting;},{threshold:.35}).observe(r);
+  if(!quieto) setInterval(()=>{ if(vis&&!pausa&&!document.hidden&&!document.documentElement.classList.contains("lux-lock")) ir(1); },4200);
+});})();
 </script>
 <script src="/lux.js" defer></script>
 </body>
