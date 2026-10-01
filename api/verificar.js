@@ -34,6 +34,8 @@ module.exports = async (req, res) => {
     paquete: m.paquete || "", horario: m.horario || "",
     llegada: m.llegada || "", titular: m.titular || "", personas: m.personas || "", acompanantes: m.acompanantes || "",
     total: m.total || m.estimado_total || "", resta: m.resta || "",
+    saldo_de: m.saldo_de || "", cobro_saldo: m.cobro_saldo || "",
+    atendio: m.atendio || "", atendio_clave: m.atendio_clave || "",
     estado: s.status || "", vence: s.expires_at || null,
     monto: (s.amount_total || 0) / 100,
     moneda: String(s.currency || "").toUpperCase(),

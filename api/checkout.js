@@ -13,6 +13,10 @@
    1 oct 2026: días festivos (api/_festivos.js) sin sesiones ni apartado de eventos en línea (se pregunta por WhatsApp).
    Sesiones piden hora de llegada, acompañantes con nombre (máx. 8 personas en total) e identificación del titular;
    la identificación viaja al Apps Script de la Agenda, que la guarda en una carpeta privada de Drive.
+   1 oct 2026: todo pago lleva atendio ("nicolas" | "nadie" | "otro:Nombre"): quién del Rancho atendió (comisiones);
+   GET /api/checkout devuelve {modo, vendedores} para armar la lista en la página.
+   1 oct 2026: sesiones con anticipo guardan la tarjeta (customer_creation + setup_future_usage) y el aviso en el botón
+   de pago dice que el resto se cobra solo a esa tarjeta 2 días antes; el cobro lo hace api/saldo.js.
    Responde {url} (página de pago de Stripe) o {error}. */
 
 const HOJAS = {
@@ -20,6 +24,9 @@ const HOJAS = {
   tarifas: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRB8_wzp7c5W-OLs1YFFBOiRt_oZ2rF0aHFIOxfKPxHYnICNrDL6UW78rzFp49r-6L08MyMNiRSMq8h/pub?gid=1137766291&single=true&output=csv",
   fechas: "" // pestaña FECHAS WEB publicada como CSV (igual que en index.html). Vacío = no revisa disponibilidad
 };
+
+/* ¿Quién te atendió? (1 oct 2026): obligatorio en todo pago, para comisiones. Respaldo si la Agenda no responde */
+const VENDEDORES_FALLBACK = [{clave: "nicolas", nombre: "Nicolás Campero"}, {clave: "monica", nombre: "Mónica Valle"}, {clave: "yuliana", nombre: "Yuliana Garibay"}];
 
 /* Respaldo si la pestaña TARIFAS no responde (mismos valores que index.html, 28 sep 2026) */
 const TARIFAS_FALLBACK = [
@@ -95,6 +102,39 @@ const tarifaDe = (T, servicio, tipo) => T.find(t => t.servicio === servicio && t
 const hoyMX = () => new Date(Date.now() - 6 * 36e5).toISOString().slice(0, 10); // fecha de hoy en Guadalajara (UTC-6)
 
 class UserError extends Error {}
+
+let cacheVend = {t: 0, v: null};
+async function loadVendedores() {
+  // La lista vive en la pestaña EQUIPO de la Maestra (columna "Sale en ¿Quién te atendió?"); la entrega el Apps Script de la Agenda
+  if (cacheVend.v && Date.now() - cacheVend.t < 5 * 60e3) return cacheVend.v;
+  let list = [];
+  try {
+    if (AG.AGENDA_URL) {
+      const r = await fetch(AG.AGENDA_URL + "?accion=vendedores", {redirect: "follow"});
+      const j = await r.json();
+      list = (j && j.ok && Array.isArray(j.vendedores) ? j.vendedores : [])
+        .map(v => ({clave: String(v.clave || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 30), nombre: String(v.nombre || "").trim().slice(0, 60)}))
+        .filter(v => v.clave && v.nombre);
+    }
+  } catch (e) { console.warn("Vendedores:", e.message); }
+  if (!list.length) list = VENDEDORES_FALLBACK;
+  cacheVend = {t: Date.now(), v: list};
+  return list;
+}
+/* "nicolas" | "nadie" | "otro:Nombre" → {atendio (nombre legible), atendio_clave} */
+async function atendioDe(v) {
+  v = String(v || "").trim();
+  if (!v) throw new UserError("Dinos quién del Rancho te atendió para continuar.");
+  if (v === "nadie") return {atendio: "Nadie (llegó por su cuenta)", atendio_clave: "nadie"};
+  if (v.startsWith("otro:")) {
+    const n = v.slice(5).replace(/[\u0000-\u001f\u007f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, 60);
+    if (n.length < 3) throw new UserError("Escribe el nombre de quien te atendió.");
+    return {atendio: n + " (escrito por el cliente)", atendio_clave: "otro"};
+  }
+  const x = (await loadVendedores()).find(p => p.clave === v.toLowerCase());
+  if (!x) throw new UserError("Elige de nuevo quién te atendió.");
+  return {atendio: x.nombre, atendio_clave: x.clave};
+}
 const AG = require("./_agenda");
 const FEST = require("./_festivos");
 const crypto = require("crypto");
@@ -221,8 +261,11 @@ async function cargoSesion(body, T) {
                           : `Total ${money(total)} MXN ${iva ? "con IVA" : "+ IVA"}. El resto (${money(total - monto)}) se paga 2 días antes de la sesión.`,
     meta: {paquete, fecha, horario, factura: iva ? "si" : "no", total: String(total), resta: String(total - monto),
       llegada: extra.llegada, titular: extra.titular, personas: String(extra.acompanantes.length + 1),
-      acompanantes: extra.acompanantes.join(" · ").slice(0, 500)},
-    agenda: true, ine: extra.ine
+      acompanantes: extra.acompanantes.join(" · ").slice(0, 500), cobro_saldo: !completo && total - monto > 0 ? "auto" : ""},
+    agenda: true, ine: extra.ine,
+    // 1 oct 2026: con anticipo, la tarjeta queda guardada y el resto se cobra solo 2 días antes (api/saldo.js)
+    guardarTarjeta: !completo && total - monto > 0,
+    aviso: !completo && total - monto > 0 ? `Al pagar autorizas que el resto (${money(total - monto)} MXN) se cobre automáticamente a esta misma tarjeta 2 días antes de tu sesión.` : ""
   };
 }
 
@@ -289,7 +332,11 @@ async function crearSesion(c, origin) {
     metadata: {tipo: c.pago, ref: c.ref, ...c.meta},
     // Sesiones y eventos solo con tarjeta: un pago diferido (OXXO) llegaría después de que venza el apartado del horario
     payment_method_types: c.agenda ? {0: "card"} : undefined,
-    payment_intent_data: {description: c.nombre.slice(0, 250), metadata: {tipo: c.pago, ref: c.ref, ...c.meta}}
+    payment_intent_data: {description: c.nombre.slice(0, 250), metadata: {tipo: c.pago, ref: c.ref, ...c.meta},
+      setup_future_usage: c.guardarTarjeta ? "off_session" : undefined},
+    // Sesión con anticipo: se crea el cliente en Stripe para guardar la tarjeta y cobrar el resto 2 días antes
+    customer_creation: c.guardarTarjeta ? "always" : undefined,
+    custom_text: c.aviso ? {submit: {message: c.aviso.slice(0, 1200)}} : undefined
   };
   const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
@@ -306,7 +353,7 @@ module.exports = async (req, res) => {
   /* Modo de cobro según la llave en Vercel: sk_live_ = cobros reales, sk_test_ = solo pruebas (?prueba en la URL), sin llave = WhatsApp */
   const key = process.env.STRIPE_SECRET_KEY || "";
   const modo = key.startsWith("sk_live_") || key.startsWith("rk_live_") ? "live" : key ? "test" : "off";
-  if (req.method === "GET") return res.status(200).json({modo});
+  if (req.method === "GET") return res.status(200).json({modo, vendedores: await loadVendedores().catch(() => VENDEDORES_FALLBACK)});
   if (req.method !== "POST") { res.setHeader("Allow", "GET, POST"); return res.status(405).json({error: "Método no permitido."}); }
   if (modo === "off") return res.status(503).json({error: "Pagos en línea aún no configurados.", sinLlave: true});
   const ip = ipDe(req);
@@ -324,7 +371,7 @@ module.exports = async (req, res) => {
             : null;
     if (!c) throw new UserError("Tipo de pago no válido.");
     if (!(c.monto >= 10)) throw new UserError("El monto no es válido. Escríbenos por WhatsApp.");
-    c.meta = {...c.meta, ip: ipHash(ip)};
+    c.meta = {...c.meta, ...(await atendioDe(body.atendio)), ip: ipHash(ip)};
     const host = String(req.headers["x-forwarded-host"] || req.headers.host || "");
     const origin = process.env.SITE_URL ? process.env.SITE_URL.replace(/\/$/, "")
       : /^[a-z0-9-]+\.vercel\.app$/i.test(host) ? `https://${host}` : "https://rancho-el-descanso.vercel.app";

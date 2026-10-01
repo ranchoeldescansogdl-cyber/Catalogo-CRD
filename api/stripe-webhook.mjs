@@ -5,9 +5,12 @@
       y marca el caballo como Apartado + anota el pago en la pestaña PAGOS WEB.
    Con RANCHO_TOKEN en Vercel, cada llamada a los Apps Script lleva ese token (ellos lo exigen si lo tienen).
    Eventos en Stripe: checkout.session.completed y checkout.session.async_payment_succeeded.
+   1 oct 2026: tipo "saldo_sesion" (resto de una sesión pagado con la liga de api/saldo.js) marca el pago original;
+   si la hoja no lo acepta no se reintenta.
    30 sep 2026: antes era stripe-webhook.js (req.body ya venía convertido en objeto y la firma no se podía verificar). */
 import crypto from "node:crypto";
 import AG from "./_agenda.js";
+import SALDO from "./saldo.js";
 
 const SHEETS_URL = process.env.SHEETS_WEBHOOK_URL || "https://script.google.com/macros/s/AKfycbznKKk_OWX00_w2SF4_bitIeuE_YsSQ29eu3TnmzhcrR-w3qDMsMXdS2Q7UmSX_Zj-H/exec";
 const TOLERANCIA_SEG = 300;
@@ -43,6 +46,12 @@ export default {
     // Sesiones y eventos: la Agenda (Google Calendar) convierte el apartado en cita y avisa por correo.
     // Si falla no detiene lo demás: el Apps Script de la Agenda reintenta solo cada 15 min.
     const tipoPago = (obj.metadata && obj.metadata.tipo) || "";
+    // 1 oct 2026: el cliente pagó el resto de su sesión con la liga → se marca el pago original en Stripe;
+    // el Apps Script de la Agenda lo detecta en su siguiente revisión y marca la cita como "Saldo pagado"
+    if (tipoPago === "saldo_sesion") {
+      try { const r = await SALDO.registrarPagoLiga(obj.id); if (!r.ok) console.error("Saldo liga: no se pudo registrar", obj.id); }
+      catch (e) { console.error("Saldo liga:", e); }
+    }
     if (tipoPago === "sesion" || tipoPago === "evento") {
       try { const a = await AG.confirmar(obj.id); if (!a.ok) console.error("Agenda:", JSON.stringify(a)); }
       catch (e) { console.error("Agenda confirmar:", e); }
@@ -52,7 +61,11 @@ export default {
         body: JSON.stringify({session_id: obj.id, token: process.env.RANCHO_TOKEN || undefined}), redirect: "follow"});
       const txt = await r.text();
       let j = {}; try { j = JSON.parse(txt); } catch (e) {}
-      if (!r.ok || j.ok === false) { console.error("Hoja:", r.status, txt.slice(0, 300)); return json({error: "hoja"}, 500); }
+      if (!r.ok || j.ok === false) {
+        console.error("Hoja:", r.status, txt.slice(0, 300));
+        if (tipoPago === "saldo_sesion") return json({ok: true, hoja: false}); // el resto ya quedó en Stripe y en la Agenda
+        return json({error: "hoja"}, 500);
+      }
       return json({ok: true});
     } catch (e) {
       console.error(e);
