@@ -176,17 +176,19 @@ const Amb = (function(){
     return dur;
   }
   const EVENTOS=[["paso",5],["relincho",4],["trote",3],["establo",3],["resoplido",3],["galope",1]];
-  const TROZOS={paso:[0,12,24,36,48,60,72],trote:[0,10,20,30,40,50,60],establo:[0,12,24,34]};
+  /* tramos medidos en cada grabación: donde los caballos pasan cerca */
+  const TROZOS={paso:[18,30],trote:[24,26],establo:[10,16]};
   async function realLoop(){
     if(!playing) return;
     if(ctx.state!=="running") return later(realLoop,4000);
     let r=Math.random()*EVENTOS.reduce((t,x)=>t+x[1],0), ev="paso"; for(const [k,w] of EVENTOS){ if((r-=w)<0){ ev=k; break; } }
+    if(!realLoop.n){ ev="relincho"; } else if(realLoop.n===1){ ev="paso"; } realLoop.n=(realLoop.n||0)+1;
     let dur=3; const lado=R(-.9,.9);
     try{
-      if(ev==="paso")      dur=playBuf(await sample("paso",pick(TROZOS.paso),12),{nivel:R(.12,.18),pan:lado,pan2:-lado*R(.4,.9),dist:R(.3,.6),fi:2,fo:3});
-      else if(ev==="trote") dur=playBuf(await sample("trote",pick(TROZOS.trote),10),{nivel:R(.11,.16),pan:lado,pan2:-lado,dist:R(.35,.65),fi:1.5,fo:2.5});
+      if(ev==="paso")      dur=playBuf(await sample("paso",...TROZOS.paso),{nivel:R(.14,.2),pan:lado*.6,pan2:-lado*.6,dist:R(.25,.5),fi:2.5,fo:4,rate:R(.97,1.02)});
+      else if(ev==="trote") dur=playBuf(await sample("trote",...TROZOS.trote),{nivel:R(.14,.2),pan:lado*.7,pan2:-lado*.7,dist:R(.3,.55),fi:2,fo:4,rate:R(.97,1.03)});
       else if(ev==="relincho") dur=playBuf(await sample(pick(["relincho1","relincho1","relincho2","relincho3"])),{nivel:R(.15,.24),pan:R(-.8,.8),dist:R(.35,.75),rate:R(.95,1.03)});
-      else if(ev==="establo") dur=playBuf(await sample("establo",pick(TROZOS.establo),12),{nivel:R(.14,.2),pan:R(-.5,.5),dist:.3,fi:2,fo:3});
+      else if(ev==="establo") dur=playBuf(await sample("establo",...TROZOS.establo),{nivel:R(.15,.22),pan:R(-.5,.5),dist:.3,fi:1,fo:2});
       else if(ev==="resoplido") dur=playBuf(await sample("resoplido"),{nivel:R(.14,.2),pan:R(-.7,.7),dist:R(.2,.5)});
       else dur=playBuf(await sample("galope"),{nivel:R(.12,.17),pan:lado,pan2:-lado*.5,dist:R(.45,.75),fo:.6});
     }catch(e){ return horseLoop(); }               // sin conexión al sonido: cascos generados
@@ -224,7 +226,7 @@ const Amb = (function(){
     gustLoop();
     later(birdLoop,R(1200,2600));
     later(realLoop,R(5000,9000));
-    ["relincho1","resoplido","paso@24"].forEach(k=>{ const [a,b]=k.split("@"); sample(a,b!=null?+b:undefined,12).catch(()=>{}); });
+    sample("relincho1").catch(()=>{}); sample("resoplido").catch(()=>{}); sample("paso",...TROZOS.paso).catch(()=>{});
   }
   function fade(to,sec){ const now=ctx.currentTime; master.gain.cancelScheduledValues(now); master.gain.setValueAtTime(Math.max(master.gain.value,0.0001),now); master.gain.setTargetAtTime(Math.max(to,0.0001),now,sec/3.2); }
   return {
