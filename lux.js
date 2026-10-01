@@ -199,14 +199,30 @@ const Amb = (function(){
   function musica(){
     if(SONIDO_REAL) return;
     if(!music){
-      music=new Audio(); music.crossOrigin="anonymous"; music.loop=true; music.preload="auto"; music.src=API+"musica";
+      music=new Audio(); music.crossOrigin="anonymous"; music.setAttribute("playsinline",""); music.loop=true; music.preload="auto"; music.src=API+"musica";
       try{ const src=ctx.createMediaElementSource(music); musicG=ctx.createGain(); musicG.gain.value=0.0001; src.connect(musicG); musicG.connect(master); }catch(e){ musicG=null; }
     }
     const p=music.play(); if(p&&p.catch) p.catch(()=>{});
     if(musicG){ const t=ctx.currentTime; musicG.gain.cancelScheduledValues(t); musicG.gain.setValueAtTime(Math.max(musicG.gain.value,0.0001),t); musicG.gain.setTargetAtTime(MUSICA_VOL,t+3,5); }
   }
+  /* iPhone/iPad: sin esto el sonido sale mudo si el interruptor de silencio está activado
+     (sobre todo en la app instalada). "playback" lo trata como música, igual que un video. */
+  let llave=null;
+  function desbloquearIOS(){
+    try{ if(navigator.audioSession) navigator.audioSession.type="playback"; }catch(e){}
+    try{
+      if(!llave){
+        const sr=8000, n=sr/2, b=new ArrayBuffer(44+n*2), v=new DataView(b), w=(o,t)=>{ for(let i=0;i<t.length;i++) v.setUint8(o+i,t.charCodeAt(i)); };
+        w(0,"RIFF"); v.setUint32(4,36+n*2,true); w(8,"WAVEfmt "); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+        v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,"data"); v.setUint32(40,n*2,true);
+        llave=new Audio(URL.createObjectURL(new Blob([b],{type:"audio/wav"}))); llave.loop=true; llave.setAttribute("playsinline",""); llave.volume=0.01;
+      }
+      const p=llave.play(); if(p&&p.catch) p.catch(()=>{});
+    }catch(e){}
+  }
   function build(){
     const AC=W.AudioContext||W.webkitAudioContext; if(!AC) return false;
+    try{ if(navigator.audioSession) navigator.audioSession.type="playback"; }catch(e){}
     ctx=new AC();
     master=ctx.createGain(); master.gain.value=0.0001;
     const comp=ctx.createDynamicsCompressor(); comp.threshold.value=-18; comp.ratio.value=3;
@@ -232,15 +248,19 @@ const Amb = (function(){
   return {
     get on(){ return playing; },
     play(first){
+      desbloquearIOS();
       if(!ctx && !build()) return false;
+      if(ctx.state!=="running") ctx.resume().catch(()=>{});   // se pide dentro del toque (iPhone lo exige)
       musica();
-      const go=()=>{ if(!playing){ playing=true; timers.forEach(clearTimeout); timers=[]; startLayers(); } fade(VOLUMEN, first?SUBIDA_SEG:7); };
-      if(ctx.state!=="running") ctx.resume().then(go).catch(()=>{}); else go();
+      if(!playing){ playing=true; timers.forEach(clearTimeout); timers=[]; startLayers(); }
+      fade(VOLUMEN, first?SUBIDA_SEG:7);
       started=true; return true;
     },
-    stop(){ if(!ctx) return; playing=false; timers.forEach(clearTimeout); timers=[]; fade(0,1.4); setTimeout(()=>{ if(!playing){ ctx.suspend(); if(file) file.pause(); if(music) music.pause(); } },1700); },
-    pause(){ if(ctx&&playing){ ctx.suspend(); if(music) music.pause(); } },
-    resume(){ if(ctx&&playing){ ctx.resume(); if(music) music.play().catch(()=>{}); } },
+    stop(){ if(!ctx) return; playing=false; timers.forEach(clearTimeout); timers=[]; fade(0,1.4); setTimeout(()=>{ if(!playing){ ctx.suspend(); if(file) file.pause(); if(music) music.pause(); if(llave) llave.pause(); } },1700); },
+    /* si el teléfono pausó el audio (llamada, otra app, bloqueo), lo reanuda con el siguiente toque */
+    revivir(){ if(!ctx||!playing||d.hidden) return; if(ctx.state!=="running") ctx.resume().catch(()=>{}); if(music&&music.paused) music.play().catch(()=>{}); if(llave&&llave.paused) llave.play().catch(()=>{}); },
+    pause(){ if(ctx&&playing){ ctx.suspend(); if(music) music.pause(); if(llave) llave.pause(); } },
+    resume(){ if(ctx&&playing){ ctx.resume().catch(()=>{}); if(music) music.play().catch(()=>{}); if(llave) llave.play().catch(()=>{}); } },
     get started(){ return started; }
   };
 })();
@@ -257,6 +277,7 @@ function soundButton(){
 }
 function setBtn(on){ if(!btn) return; btn.setAttribute("aria-pressed",String(on)); btn.querySelector(".lbl").textContent=on?"Sonido del rancho":"Escuchar el rancho"; btn.setAttribute("aria-label",on?"Silenciar el sonido del rancho":"Activar el sonido del rancho"); }
 d.addEventListener("visibilitychange",()=>{ d.hidden?Amb.pause():Amb.resume(); });
+["pointerdown","touchend","keydown"].forEach(t=>W.addEventListener(t,()=>Amb.revivir(),{passive:true,capture:true}));
 /* Si ya lo tenía encendido, vuelve a sonar con el primer toque o clic (el navegador no deja antes) */
 function armarReanudar(){
   if(ls.get("crd-sonido")!=="on") { if(btn && !ls.get("crd-sonido")) btn.classList.add("hint"); return; }
