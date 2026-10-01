@@ -1706,7 +1706,9 @@ function prepare(rows){
     const est=norm(h.estatus);
     if(est==="apartado") h.promo="Apartado";
     if(est==="vendido") h.promo="Vendido";
-    return {...h, disponible:!(est==="apartado"||est==="vendido"), nombreVis:displayName(h.nombre), id:slug(h.nombre), nac, precioN:parseMoney(h.precio),
+    const vendido=est==="vendido";   // vendido: nunca se publica el precio
+    if(vendido) h.precio="";
+    return {...h, vendido, disponible:!(est==="apartado"||vendido), nombreVis:displayName(h.nombre), id:slug(h.nombre), nac, precioN:vendido?null:parseMoney(h.precio),
       fotos:links(h.foto).map(driveImg), videos:links(h.video),
       predms:String(h.predm||"").split("/").map(x=>x.trim()).filter(Boolean)};
   });
@@ -1783,7 +1785,7 @@ function plate(h, idx=0){
   return `<div class="${cls}" role="img" aria-label="${esc(h.nombreVis)}, foto próximamente">${badge}<span class="plate-mark"></span><span class="plate-note">Foto próximamente</span></div>`;
 }
 const metaLine = h => [h.raza, h.sexo? h.sexo.toLowerCase():"", age(h.nac)].filter(Boolean).join(", ");
-const priceText = h => h.precioN ? money(h.precioN) : "Precio a consultar";
+const priceText = h => h.vendido ? "" : (h.precioN ? money(h.precioN) : "Precio a consultar");
 
 function render(){
   let list=HORSES.filter(h=>(!state.raza||h.raza===state.raza)&&(!state.sexo||h.sexo===state.sexo));
@@ -1804,7 +1806,7 @@ function render(){
         <h2 class="card-name">${esc(h.nombreVis)}</h2>
         <p class="card-meta">${esc(metaLine(h))}</p>
         ${h.destacado?`<p class="card-note">${esc(h.destacado)}</p>`:""}
-        <p class="card-price">${esc(priceText(h))}</p>
+        ${h.vendido?"":`<p class="card-price">${esc(priceText(h))}</p>`}
       </div>
     </a>`).join("");
 }
@@ -1837,8 +1839,8 @@ function openFicha(h){
       <p class="sheet-meta">${esc(metaLine(h))}</p>
       ${h.destacado?`<p class="sheet-note">${esc(h.destacado)}</p>`:""}
       ${h.promo?`<span class="sheet-promo">${esc(h.promo)}</span>`:""}
-      <p class="sheet-price">${esc(priceText(h))}${h.precioN?"<small>MXN</small>":""}</p>
-      <p class="sheet-dep">Facturamos si lo requieres.</p>
+      ${h.vendido?"":`<p class="sheet-price">${esc(priceText(h))}${h.precioN?"<small>MXN</small>":""}</p>
+      <p class="sheet-dep">Facturamos si lo requieres.</p>`}
       <div class="sheet-actions">
         <a class="btn btn-dark" href="${waLink(msg)}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Preguntar por ${esc(h.nombreVis)}</a>
         <button class="btn btn-line" type="button" id="share">Copiar enlace</button>
