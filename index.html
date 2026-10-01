@@ -488,6 +488,18 @@ section[id],main[id]{scroll-margin-top:20px}
 #gracias p{color:var(--muted);line-height:1.6;margin:0 0 20px}
 #gracias .g-mark{width:56px;height:56px;border-radius:50%;border:1px solid var(--gold);color:var(--gold-deep);display:grid;place-items:center;margin:0 auto}
 #gracias .g-actions{display:flex;flex-direction:column;gap:10px;align-items:center}
+/* ---------- ¿Quién te atendió? (antes de cualquier pago; comisiones) ---------- */
+#atendio{max-width:min(480px,100vw)}
+#atendio form{padding:clamp(24px,5vw,40px)}
+#atendio h3{font-family:var(--display);font-weight:400;font-size:1.7rem;margin:0 0 6px}
+#atendio .at-sub{color:var(--muted);margin:0 0 18px;line-height:1.5}
+#atendio .at-ops{display:grid;gap:8px;margin:0 0 14px}
+#atendio .at-op{display:flex;align-items:center;gap:12px;border:1px solid var(--rule);border-radius:10px;padding:12px 14px;cursor:pointer}
+#atendio .at-op:has(input:checked){border-color:var(--gold);background:var(--mist)}
+#atendio .at-op input{accent-color:var(--gold-deep);width:18px;height:18px;margin:0}
+#atendio .at-otro{width:100%;box-sizing:border-box;border:1px solid var(--rule);border-radius:10px;padding:12px 14px;font:inherit;margin:0 0 14px}
+#atendio .at-err{color:#b3261e;margin:0 0 12px;font-size:.95rem}
+#atendio .at-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 /* ---------- Agenda (sin uso: Koalendar abre en pestaña nueva) ---------- */
 #cal{max-width:min(960px,100vw);width:100%}
 #cal .cal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--rule)}
@@ -957,7 +969,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
         </label>
         <label class="chk small"><input type="checkbox" id="s-ine-acepto"> Autorizo que el rancho guarde mi identificación solo para el control de acceso. Se borra 30 días después de la sesión.</label>
       </form>
-      <p class="q-fine">Reservas con mínimo 24 horas de anticipación. Apartas con el anticipo y el resto se paga 2 días antes; si reservas con menos de 48 horas, pagas el total al reservar. Domingos y días festivos no hay sesiones en línea; pregúntanos por WhatsApp.</p>
+      <p class="q-fine">Reservas con mínimo 24 horas de anticipación. Apartas con el anticipo y el resto se cobra solo a la misma tarjeta 2 días antes; si reservas con menos de 48 horas, pagas el total al reservar. Domingos y días festivos no hay sesiones en línea; pregúntanos por WhatsApp.</p>
     </div>
     <div class="qr" aria-live="polite">
       <p class="q-lbl">Tu sesión</p>
@@ -1132,7 +1144,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
     </div>
     <div class="team" aria-label="Equipo">
       <div class="person"><p class="person-name">Nicolás Campero</p><p class="person-role">Director Comercial y de Ventas</p><p><a data-wa href="#" target="_blank" rel="noopener">WhatsApp <span data-phone-label></span></a></p></div>
-      <div class="person"><p class="person-name">Mónica Valle</p><p class="person-role">Directora General</p><p><a href="https://wa.me/523311471212" target="_blank" rel="noopener">WhatsApp +52 33 1147 1212</a></p></div>
+      <div class="person"><p class="person-name">Mónica Valle</p><p class="person-role">Directora General y Ventas</p><p><a href="https://wa.me/523311471212" target="_blank" rel="noopener">WhatsApp +52 33 1147 1212</a></p></div>
       <div class="person"><p class="person-name">Yuliana Garibay</p><p class="person-role">Ventas</p><p><a href="https://wa.me/523351287636" target="_blank" rel="noopener">WhatsApp +52 33 5128 7636</a></p></div>
     </div>
   </div>
@@ -1160,6 +1172,19 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
     </div>
   </div>
 </dialog>
+<dialog id="atendio" aria-labelledby="at-title">
+  <form method="dialog" novalidate>
+    <h3 id="at-title">¿Quién te atendió?</h3>
+    <p class="at-sub">Antes de pagar, dinos quién del Rancho te atendió.</p>
+    <div class="at-ops" id="at-ops" role="radiogroup" aria-labelledby="at-title"></div>
+    <input class="at-otro" id="at-otro" type="text" maxlength="60" placeholder="Nombre de quien te atendió" hidden autocomplete="off">
+    <p class="at-err" id="at-err" role="alert" hidden></p>
+    <div class="at-actions">
+      <button class="btn btn-line" type="button" id="at-cancel">Cancelar</button>
+      <button class="btn btn-dark" type="submit" id="at-ok">Continuar al pago</button>
+    </div>
+  </form>
+</dialog>
 <dialog id="legal" aria-labelledby="legal-title">
   <div class="legal-head">
     <div class="legal-tabs" role="tablist" aria-label="Documentos legales">
@@ -1179,7 +1204,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
       <h4>Precios y pagos</h4>
       <ul>
         <li>Todos los precios están en pesos mexicanos (MXN). Maquilas, sesiones de fotos y eventos se cotizan más IVA; el precio publicado de los caballos es el precio final; el de los potros se fija al mes de nacidos.</li>
-        <li>Los pagos en línea se procesan con Stripe. El Rancho no recibe ni guarda los datos de tu tarjeta.</li>
+        <li>Los pagos en línea se procesan con Stripe. El Rancho no recibe ni guarda los datos de tu tarjeta. En las sesiones fotográficas apartadas con anticipo, Stripe conserva tu tarjeta de forma segura solo para cobrar el resto de esa sesión.</li>
         <li>Los estimados de eventos que da la página son orientativos; el precio final es el de la propuesta formal que te enviamos por WhatsApp.</li>
         <li>Todas nuestras ventas y servicios son facturables. Para recibir tu CFDI, envíanos tus datos fiscales dentro del mismo mes del pago.</li>
         <li><strong>No hay reembolsos.</strong> Todo pago hecho al Rancho se conserva a tu favor: en sesiones y eventos puedes reagendar, y en caballos, potros y maquilas puedes usarlo para cambiar de ejemplar. Los detalles están en <a href="#cancelaciones">Cancelaciones y reembolsos</a>.</li>
@@ -1187,7 +1212,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
       <h4>Apartados y reservas</h4>
       <ul>
         <li><strong>Eventos:</strong> la fecha queda apartada al recibir el anticipo del 10% y la confirmación del Rancho. El saldo y sus fechas de pago se establecen en la propuesta formal.</li>
-        <li><strong>Sesiones fotográficas:</strong> se reservan con mínimo 24 horas de anticipación y se apartan con un anticipo de $2,500 MXN al agendar; el resto se paga 2 días antes de la sesión. Si reservas con menos de 48 horas, se paga el total al reservar. Al reservar indicas tu hora de llegada (desde el inicio de tu horario y hasta una hora después), el nombre del titular y de cada acompañante, y subes la identificación oficial del titular. La sesión dura 3 horas a partir de la hora de llegada que elegiste; si llegas más tarde no se extiende, salvo que contrates horas extra. Máximo 8 personas en total contando al titular (fotógrafo, maquillista y familia incluidos); solo ingresan las personas registradas.</li>
+        <li><strong>Sesiones fotográficas:</strong> se reservan con mínimo 24 horas de anticipación y se apartan con un anticipo de $2,500 MXN al agendar. Al pagar el anticipo autorizas que el resto se cobre automáticamente a esa misma tarjeta 2 días antes de la sesión. Si ese cargo no pasa, te mandamos por WhatsApp o correo una liga para pagarlo; la sesión debe quedar pagada antes de empezar. Si reservas con menos de 48 horas, se paga el total al reservar. Al reservar indicas tu hora de llegada (desde el inicio de tu horario y hasta una hora después), el nombre del titular y de cada acompañante, y subes la identificación oficial del titular. La sesión dura 3 horas a partir de la hora de llegada que elegiste; si llegas más tarde no se extiende, salvo que contrates horas extra. Máximo 8 personas en total contando al titular (fotógrafo, maquillista y familia incluidos); solo ingresan las personas registradas.</li>
         <li><strong>Días festivos:</strong> en días festivos (oficiales, Jueves y Viernes Santo, 24 y 31 de diciembre) no se reservan sesiones ni se apartan eventos en línea; pregúntanos por WhatsApp si ese día está habilitado.</li>
         <li><strong>Caballos en venta:</strong> el 10% del precio publicado aparta el caballo durante 15 días naturales. En ese plazo se liquida el saldo o se acuerda por escrito otro esquema.</li>
         <li><strong>Potros 2027:</strong> la reserva de $10,000 MXN asegura tu lugar en la lista de espera y se abona íntegra al precio del potro. Según el plan que elijas, al precio del potro se suma 5% (pagos de $20,000 mensuales), 10% ($15,000) o 15% ($10,000). Si al destete queda saldo, el potro permanece en el Rancho y la pensión corre por tu cuenta hasta liquidarlo.</li>
@@ -2195,12 +2220,46 @@ const PRUEBA_PAGOS = new URLSearchParams(location.search).has("prueba");
 let MODO_PAGO = "off";
 async function estadoPago(){
   if(!CONFIG.STRIPE.api) return;
-  try{ const r=await fetch(CONFIG.STRIPE.api,{cache:"no-store"}); if(r.ok) MODO_PAGO=(await r.json()).modo||"off"; }catch(e){}
+  try{ const r=await fetch(CONFIG.STRIPE.api,{cache:"no-store"}); if(r.ok){ const j=await r.json(); MODO_PAGO=j.modo||"off";
+    if(Array.isArray(j.vendedores)&&j.vendedores.length) VENDEDORES=j.vendedores; } }catch(e){}
 }
 const PAGO_ON = k => !!(CONFIG.STRIPE.api && CONFIG.STRIPE[k] && (MODO_PAGO==="live" || (MODO_PAGO==="test" && PRUEBA_PAGOS)));
 /* Abre Stripe Checkout. El servidor calcula el monto con la hoja. Si falla, manda a WhatsApp. */
+/* ¿Quién te atendió? (1 oct 2026): obligatorio antes de cualquier pago, para asignar comisiones.
+   La lista viene del servidor (GET /api/checkout → vendedores; pestaña VENDEDORES de la hoja o respaldo).
+   Liga personal de cada vendedor: /?v=<clave> (ej. ?v=yuliana) deja su nombre preseleccionado. */
+let VENDEDORES=[{clave:"nicolas",nombre:"Nicolás Campero"},{clave:"monica",nombre:"Mónica Valle"},{clave:"yuliana",nombre:"Yuliana Garibay"}];
+const ATENDIO_KEY="crd_atendio";
+(function(){ try{ const v=(new URLSearchParams(location.search).get("v")||"").toLowerCase().replace(/[^a-z0-9_-]/g,"").slice(0,30);
+  if(v) localStorage.setItem(ATENDIO_KEY,JSON.stringify({v:v,t:Date.now()})); }catch(e){} })();
+function atendioGuardado(){ try{ const o=JSON.parse(localStorage.getItem(ATENDIO_KEY)||"null"); if(o&&Date.now()-o.t<60*864e5) return o; }catch(e){} return null; }
+function preguntarAtendio(){
+  const d=$("#atendio"); if(!d||!d.showModal) return Promise.resolve("nadie");
+  return new Promise(res=>{
+    const prev=atendioGuardado(), sel=prev?(prev.v||""):"";
+    const ops=[...VENDEDORES.map(x=>[x.clave,x.nombre]),["nadie","Nadie, llegué por mi cuenta"],["otro","Otra persona"]];
+    $("#at-ops").innerHTML=ops.map(([k,n])=>`<label class="at-op"><input type="radio" name="atendio" value="${esc(k)}"${k===sel?" checked":""}> <span>${esc(n)}</span></label>`).join("");
+    const otro=$("#at-otro"), err=$("#at-err"); otro.value=prev&&prev.otro?prev.otro:""; err.hidden=true;
+    const sync=()=>{ const v=(d.querySelector("input[name=atendio]:checked")||{}).value; otro.hidden=v!=="otro"; if(v==="otro") otro.focus(); };
+    $("#at-ops").onchange=sync; sync();
+    let listo=false;
+    d.querySelector("form").onsubmit=e=>{ e.preventDefault();
+      const v=(d.querySelector("input[name=atendio]:checked")||{}).value;
+      if(!v){ err.textContent="Elige una opción para continuar."; err.hidden=false; return; }
+      const t=otro.value.replace(/\s+/g," ").trim();
+      if(v==="otro"&&t.length<3){ err.textContent="Escribe el nombre de quien te atendió."; err.hidden=false; otro.focus(); return; }
+      try{ localStorage.setItem(ATENDIO_KEY,JSON.stringify({v:v,otro:v==="otro"?t:"",t:Date.now()})); }catch(e){}
+      listo=true; d.close(); res(v==="otro"?"otro:"+t:v); };
+    $("#at-cancel").onclick=()=>d.close();
+    d.addEventListener("close",()=>{ if(!listo) res(null); },{once:true});
+    d.showModal();
+  });
+}
 async function pagar(btn,payload,waFallback){
-  if(btn.dataset.busy) return; btn.dataset.busy="1";
+  if(btn.dataset.busy) return;
+  const atendio=await preguntarAtendio(); if(!atendio) return; // canceló: se queda donde estaba
+  payload={...payload,atendio};
+  btn.dataset.busy="1";
   const txt=btn.innerHTML; btn.textContent="Abriendo pago seguro…"; btn.setAttribute("aria-busy","true");
   let j={};
   try{
@@ -2240,7 +2299,7 @@ function renderPacks(){
       <p class="pack-dur">${p.horas?`${p.horas} hora${p.horas>1?"s":""}`:""}${prod?" · medio día":""}</p>
       <p class="pack-price">${prod?"Desde ":""}${money(p.precio)}<small>MXN + IVA</small></p>
       <p class="pack-desc">${esc(p.nota||"")}</p>
-      ${prod?"":`<p class="pack-dep">Apartas con ${money(dep)} al agendar; el resto 2 días antes de la sesión.</p>`}
+      ${prod?"":`<p class="pack-dep">Apartas con ${money(dep)} al agendar; el resto se cobra solo a tu tarjeta 2 días antes.</p>`}
       ${btn}
     </article>`;
   }).join("");
@@ -2297,7 +2356,7 @@ function renderAgendar(){
   const rows=[[`${lbl}${fila.horas?` · ${fila.horas} h`:""}`,money(fila.precio)]];
   if(iva) rows.push(["IVA 16%","+"+money(total-fila.precio)]);
   rows.push(completo?["Pagas hoy el total (faltan menos de 48 h)",money(total)]:["Anticipo para apartar",money(dep)]);
-  if(!completo) rows.push(["Resto, 2 días antes de la sesión",money(total-dep)]);
+  if(!completo) rows.push(["Resto, se cobra solo a tu tarjeta 2 días antes",money(total-dep)]);
   $("#s-break").innerHTML=rows.map(([a,b])=>`<li><span>${esc(a)}</span><span>${esc(b)}</span></li>`).join("");
   if(estado){ av.hidden=false; av.className="q-avail "+estado.cls; av.textContent=estado.txt; } else av.hidden=true;
   const acomp=acompNombres(), tit=$("#s-tit").value.trim();
@@ -2397,15 +2456,28 @@ function wirePotros(){
   });
 }
 
-/* Regreso de Stripe. /api/checkout manda al cliente de vuelta a /?pago=evento|caballo|potro&ref={CHECKOUT_SESSION_ID} */
+/* Regreso de Stripe. /api/checkout manda al cliente de vuelta a /?pago=evento|caballo|potro|sesion&ref={CHECKOUT_SESSION_ID}; api/saldo.js a /?pago=saldo */
 const GRACIAS = {
   evento:["Recibimos tu anticipo","Te escribimos por WhatsApp el mismo día para confirmar tu fecha y enviarte la propuesta formal de tu evento."],
   caballo:["Tu caballo quedó apartado","Recibimos tu anticipo. El apartado dura 15 días; te escribimos por WhatsApp para coordinar la visita, el examen y el saldo."],
-  sesion:["Tu sesión quedó apartada","Recibimos tu pago y tu horario ya está en nuestra agenda. Te escribimos por WhatsApp para afinar detalles; si pagaste anticipo, el resto se paga 2 días antes. Llega a la hora que elegiste con tu identificación original; solo ingresan las personas que registraste."],
-  potro:["Tu lugar en la lista está reservado","Recibimos tu reserva de potro 2027. Te escribimos por WhatsApp para confirmar tu lugar en la lista."]
+  sesion:["Tu sesión quedó apartada","Recibimos tu pago y tu horario ya está en nuestra agenda. Te escribimos por WhatsApp para afinar detalles; si pagaste anticipo, el resto se cobra automáticamente a la misma tarjeta 2 días antes. Llega a la hora que elegiste con tu identificación original; solo ingresan las personas que registraste."],
+  potro:["Tu lugar en la lista está reservado","Recibimos tu reserva de potro 2027. Te escribimos por WhatsApp para confirmar tu lugar en la lista."],
+  saldo:["Tu sesión quedó pagada","Recibimos el resto de tu sesión. Llega a la hora que elegiste con tu identificación original; solo ingresan las personas que registraste."]
+};
+/* Liga del resto de una sesión (api/saldo.js) cuando no hay nada que cobrar: /?saldo=pagado|no-valido|error */
+const SALDO_MSG = {
+  pagado:["Tu sesión ya está pagada","Ya recibimos el resto de tu sesión; no tienes nada pendiente."],
+  "no-valido":["Liga no válida","Esta liga de pago no es válida. Escríbenos por WhatsApp y te mandamos la correcta."],
+  error:["No pudimos abrir el pago","Intenta de nuevo en unos minutos o escríbenos por WhatsApp."]
 };
 function initGracias(){
-  const q=new URLSearchParams(location.search), tipo=q.get("pago"); const d=$("#gracias");
+  const q=new URLSearchParams(location.search), tipo=q.get("pago"), sal=q.get("saldo"); const d=$("#gracias");
+  if(d&&!tipo&&SALDO_MSG[sal]){
+    $("#g-title").textContent=SALDO_MSG[sal][0]; $("#g-text").textContent=SALDO_MSG[sal][1];
+    $("#g-wa").href=waLink("Hola, tengo una duda con el pago del resto de mi sesión. Mi nombre es: ");
+    $("#g-close").addEventListener("click",()=>d.close()); d.addEventListener("close",()=>history.replaceState(null,"",location.pathname+location.hash));
+    d.showModal(); return;
+  }
   if(!d||!tipo||!GRACIAS[tipo]) return;
   const ref=(q.get("ref")||"").replace(/[^A-Za-z0-9_-]/g,"").slice(-12);
   $("#g-title").textContent=GRACIAS[tipo][0]; $("#g-text").textContent=GRACIAS[tipo][1]+" El comprobante de Stripe llega a tu correo.";
