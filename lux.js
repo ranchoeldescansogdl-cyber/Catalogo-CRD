@@ -325,7 +325,7 @@ function intro(){
    3. APARICIONES AL BAJAR
    ================================================================= */
 const SEL_TXT = ".sec-title,.sec-lede,.eyebrow,.rb-label,.rb-title,.rb-lede,.rb-btn,.rb-facts > div,.etype,.visit-box,.miss-text,.perks li,.app-list li,.community-inner > div > *,.app-inner > div > *:not([hidden]),.xp-text > *,.cap-num,.stud-card,.mare,.card,.pack,.quote,.how,.shoots-head > *,.events-top > div > *";
-const SEL_FIG = ".tile,.topic,.events-top figure,.ev-gallery figure,.shoots figure,.shoot-hero,.miss figure,.gallery figure,.xp-strip a,.xp-poster,.visit-reel";
+const SEL_FIG = ".tile,.topic,.events-top figure,.ev-gallery figure,.shoots figure,.shoot-hero,.editorial figure,.miss figure,.gallery figure,.xp-strip a,.xp-poster,.visit-reel";
 let io=null;
 function marcar(root){
   (root||d).querySelectorAll(SEL_TXT).forEach(el=>{ if(!el.classList.contains("lux-r")&&!el.closest(".lux-f,.hero,.lux-lb,dialog")) { el.classList.add("lux-r"); io.observe(el); } });
@@ -375,7 +375,7 @@ function portada(){
 /* =================================================================
    5. GALERÍA A PANTALLA COMPLETA (se desliza con el dedo)
    ================================================================= */
-const GRUPOS = [".ev-gallery",".shoots",".miss",".gallery",".strip"];
+const GRUPOS = [".ev-gallery",".shoots",".editorial",".miss",".gallery",".strip"];
 function galeria(){
   const lb=d.createElement("div"); lb.className="lux-lb"; lb.setAttribute("role","dialog"); lb.setAttribute("aria-modal","true"); lb.setAttribute("aria-label","Galería");
   const ic={x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6L6 18"/></svg>',p:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 5l-7 7 7 7"/></svg>',n:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5l7 7-7 7"/></svg>'};

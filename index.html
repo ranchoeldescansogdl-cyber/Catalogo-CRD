@@ -704,6 +704,21 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
 .shoot-hero img{width:100%;height:100%;object-fit:cover;object-position:50% 55%}
 .shoot-hero figcaption{position:absolute;left:0;right:0;bottom:0;padding:40px clamp(16px,2.4vw,28px) 18px;color:#fff;font-size:.9rem;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(0deg,rgba(0,0,0,.6),transparent)}
 @media (max-width:760px){.shoot-hero{aspect-ratio:4/3}.shoot-hero img{object-position:62% 55%}}
+/* ---------- Sesiones: escenarios editoriales (moda sin caballo) ---------- */
+.editorial{margin-top:clamp(56px,7vw,90px);background:var(--ink);color:var(--paper);border-radius:2px;padding:clamp(22px,4vw,56px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(22px,4vw,56px);align-items:center}
+.editorial .eyebrow{color:var(--gold)}
+.ed-intro h3{font-family:var(--display);font-weight:400;font-size:clamp(1.8rem,3.6vw,2.6rem);line-height:1.08;margin:0 0 14px}
+.ed-intro p{margin:0 0 22px;color:rgba(255,255,255,.78);max-width:46ch}
+.ed-spots{display:flex;flex-wrap:wrap;gap:10px 24px;margin:0 0 26px;padding:0;list-style:none;color:rgba(255,255,255,.9);font-size:.95rem}
+.ed-spots li::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);margin-right:10px;vertical-align:middle}
+.ed-feature{position:relative;margin:0;aspect-ratio:4/5;overflow:hidden;border-radius:2px;background:#1E1E1E}
+.ed-feature img,.ed-grid img{width:100%;height:100%;object-fit:cover}
+.ed-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(10px,1.4vw,18px)}
+.ed-grid figure{position:relative;margin:0;aspect-ratio:4/5;overflow:hidden;border-radius:2px;background:#1E1E1E}
+.ed-grid img{transition:transform 1.6s cubic-bezier(.2,.7,.1,1)}
+.ed-grid figure:hover img{transform:scale(1.04)}
+.editorial figcaption{position:absolute;left:0;right:0;bottom:0;padding:30px 14px 12px;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.92);background:linear-gradient(0deg,rgba(0,0,0,.62),transparent)}
+@media (max-width:860px){.editorial{grid-template-columns:1fr}.ed-feature{aspect-ratio:4/5;max-height:78vh}.ed-grid{grid-template-columns:1fr 1fr}.editorial figcaption{font-size:.68rem;letter-spacing:.07em;padding:24px 10px 9px}}
 .miss{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;grid-template-rows:auto clamp(260px,30vw,460px);gap:clamp(10px,1.4vw,18px);margin-top:clamp(40px,6vw,72px)}
 .miss-text{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 24px}
 .miss-text .eyebrow{margin:0}
@@ -1002,6 +1017,26 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
     <figure><img src="fotos/ses-trenza.webp" alt="Retrato con trenza junto a un Friesian" loading="lazy" style="object-position:50% 20%"></figure>
     <figure><img src="fotos/ses-sombrero-negro.webp" alt="Sesión con sombrero negro bajo los árboles junto a un Friesian" loading="lazy" style="object-position:50% 30%"></figure>
     <figure><img src="fotos/ses-montura.webp" alt="Sesión de moda en la caballeriza con montura charra" loading="lazy" style="object-position:60% 35%"></figure>
+  </div>
+  <div class="editorial" aria-labelledby="t-editorial">
+    <div class="ed-intro">
+      <p class="eyebrow">Escenarios del rancho</p>
+      <h3 id="t-editorial">Moda y editorial, con o sin caballo</h3>
+      <p>La pista de arena, el pasillo de caballerizas, la talabartería y el mirador al valle son escenarios por sí solos. Piedra, madera y acero que hacen resaltar cualquier color: ideales para producciones de moda, marcas, revistas y portafolios.</p>
+      <ul class="ed-spots"><li>Pista de arena</li><li>Pasillo de caballerizas</li><li>Talabartería</li><li>Mirador al valle</li></ul>
+      <a class="btn btn-gold-line" data-wa-shoot href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Cotiza tu producción</a>
+    </div>
+    <figure class="ed-feature"><img src="fotos/ed-pista-amarillo.webp" alt="Modelo con vestido amarillo de tul y sombrero negro en la pista de arena, con polvo levantado al viento" loading="lazy" width="853" height="1280" style="object-position:50% 60%"><figcaption>Pista de arena</figcaption></figure>
+    <div class="ed-grid">
+      <figure><img src="fotos/ed-pasillo-fucsia.webp" alt="Modelo con vestido fucsia de lentejuelas al fondo del pasillo de caballerizas con piso de piedra" loading="lazy" width="853" height="1280" style="object-position:50% 55%"><figcaption>Pasillo de caballerizas</figcaption></figure>
+      <figure><img src="fotos/ed-talabarteria.webp" alt="Modelo con vestido negro de lentejuelas en la talabartería, entre monturas y troncos" loading="lazy" width="853" height="1280" style="object-position:50% 45%"><figcaption>Talabartería</figcaption></figure>
+      <figure><img src="fotos/ed-pista-sombrero.webp" alt="Modelo con vestido amarillo y sombrero negro en la pista, frente al muro de piedra y los árboles" loading="lazy" width="853" height="1280" style="object-position:50% 35%"><figcaption>Pista de arena</figcaption></figure>
+      <figure><img src="fotos/ed-sillon-mirador.webp" alt="Modelo con vestido negro sentada en un sillón de piel con el valle al atardecer de fondo" loading="lazy" width="853" height="1280" style="object-position:50% 40%"><figcaption>Mirador al valle</figcaption></figure>
+      <figure><img src="fotos/ed-caballeriza-paja.webp" alt="Modelo con vestido fucsia recostada en una paca de paja junto al muro de piedra de la caballeriza" loading="lazy" width="853" height="1280" style="object-position:65% 60%"><figcaption>Caballerizas</figcaption></figure>
+      <figure><img src="fotos/ed-mirador.webp" alt="Modelo con vestido negro recargada en un poste de acero con herraduras, en la terraza de piedra frente al valle" loading="lazy" width="1280" height="853" style="object-position:48% 50%"><figcaption>Mirador al valle</figcaption></figure>
+      <figure><img src="fotos/ed-caballeriza-fucsia.webp" alt="Modelo con vestido fucsia recargada en la puerta de madera de una caballeriza de piedra" loading="lazy" width="853" height="1280" style="object-position:50% 45%"><figcaption>Caballerizas</figcaption></figure>
+      <figure><img src="fotos/ed-talabarteria-2.webp" alt="Modelo con vestido negro posando entre las monturas de la talabartería" loading="lazy" width="1067" height="1600" style="object-position:50% 40%"><figcaption>Talabartería</figcaption></figure>
+    </div>
   </div>
   <div class="miss">
     <div class="miss-text"><p class="eyebrow">Han posado aquí</p><p class="miss-lede">Reinas de belleza de todo México eligen el rancho y a nuestros Friesian para sus sesiones. En estas fotos, Miss Universe Jalisco.</p></div>
