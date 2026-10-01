@@ -1,0 +1,144 @@
+/* =====================================================================
+   Rancho El Descanso · capa de experiencia (lux)
+   Intro, sonido ambiente, apariciones al bajar, parallax, galería a
+   pantalla completa, cursor y barra de avance. Todo es opcional: si
+   el navegador no tiene JavaScript, la página se ve igual que antes.
+   ===================================================================== */
+:root{--lux-gold:#CEB35C;--lux-ink:#0B0B0B;--lux-ease:cubic-bezier(.16,.84,.24,1)}
+
+/* ---------- Apariciones al bajar ---------- */
+html.lux .lux-r{opacity:0;transform:translate3d(0,42px,0);transition:opacity 1.1s var(--lux-ease),transform 1.3s var(--lux-ease);transition-delay:var(--d,0s)}
+html.lux .lux-r.in{opacity:1;transform:none}
+html.lux .lux-f{clip-path:inset(14% 0 0 0);opacity:0;transition:clip-path 1.5s var(--lux-ease),opacity 1s var(--lux-ease);transition-delay:var(--d,0s)}
+html.lux .lux-f > img,html.lux .lux-f > a > img,html.lux a.lux-f > img{transform:scale(1.18);transition:transform 2.2s var(--lux-ease)!important;transition-delay:var(--d,0s)!important}
+html.lux .lux-f.in{clip-path:inset(0 0 0 0);opacity:1}
+html.lux .lux-f.in > img,html.lux .lux-f.in > a > img,html.lux a.lux-f.in > img{transform:none}
+html.lux .lux-f.in:hover > img{transform:scale(1.04)}
+/* títulos: línea dorada que se dibuja */
+html.lux .sec-title.lux-r{position:relative}
+
+/* ---------- Portada: frase que sube línea por línea ---------- */
+html.lux .hero-claim span{overflow:hidden}
+html.lux .hero-claim span > i{display:block;font-style:normal;transform:translate3d(0,110%,0);transition:transform 1.4s var(--lux-ease)}
+html.lux .hero-claim span:nth-child(2) > i{transition-delay:.14s}
+html.lux.lux-go .hero-claim span > i{transform:none}
+html.lux .hero-kicker,html.lux .hero .lede,html.lux .hero-actions{opacity:0;transform:translate3d(0,22px,0);transition:opacity 1.2s var(--lux-ease),transform 1.2s var(--lux-ease)}
+html.lux .hero .lede{transition-delay:.35s}
+html.lux .hero-actions{transition-delay:.5s}
+html.lux.lux-go .hero-kicker,html.lux.lux-go .hero .lede,html.lux.lux-go .hero-actions{opacity:1;transform:none}
+.hero-media{will-change:transform}
+.hero-media video{transform:scale(1.12)}
+
+/* ---------- Intro ---------- */
+.lux-intro{position:fixed;inset:0;z-index:200;background:var(--lux-ink);color:#F4EFE3;display:grid;place-items:center;text-align:center;overflow:hidden;transition:opacity 1.3s var(--lux-ease),visibility 0s linear 1.3s}
+.lux-intro.out{opacity:0;visibility:hidden}
+.lux-intro-bg{position:absolute;inset:-4%;background:center 60%/cover no-repeat;opacity:0;filter:grayscale(1) contrast(1.05);animation:luxBg 7s ease-out forwards}
+.lux-intro::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(11,11,11,.35) 0%,rgba(11,11,11,.85) 62%,#0B0B0B 100%)}
+.lux-intro-in{position:relative;z-index:1;padding:24px;max-width:640px;transition:transform 1.3s var(--lux-ease),filter 1.3s var(--lux-ease)}
+.lux-intro.out .lux-intro-in{transform:scale(.96);filter:blur(6px)}
+.lux-intro-mark{width:clamp(64px,10vw,92px);height:auto;margin:0 auto 26px;display:block;opacity:0;animation:luxIn 1.6s .2s var(--lux-ease) forwards,luxGlow 5s 2s ease-in-out infinite}
+.lux-intro-k{font-family:'Inter Tight',sans-serif;font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--lux-gold);margin:0 0 18px;opacity:0;animation:luxIn 1.4s .6s var(--lux-ease) forwards}
+.lux-intro-t{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;font-size:clamp(2.6rem,8vw,5.2rem);line-height:1;letter-spacing:.01em;margin:0;opacity:0;animation:luxIn 1.8s .8s var(--lux-ease) forwards}
+.lux-intro-t em{color:var(--lux-gold)}
+.lux-intro-line{width:0;height:1px;background:var(--lux-gold);margin:28px auto;animation:luxLine 1.6s 1.3s var(--lux-ease) forwards}
+.lux-intro-s{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:clamp(1.15rem,2.4vw,1.45rem);color:rgba(244,239,227,.78);margin:0;opacity:0;animation:luxIn 1.4s 1.6s var(--lux-ease) forwards}
+.lux-intro-a{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:40px;opacity:0;animation:luxIn 1.4s 2s var(--lux-ease) forwards}
+.lux-enter{position:relative;display:inline-flex;align-items:center;gap:14px;background:transparent;color:#F4EFE3;border:1px solid rgba(206,179,92,.7);padding:17px 34px;font:500 .78rem/1 'Inter Tight',sans-serif;letter-spacing:.32em;text-transform:uppercase;cursor:pointer;overflow:hidden;transition:color .5s,border-color .5s}
+.lux-enter::before{content:"";position:absolute;inset:0;background:var(--lux-gold);transform:scaleX(0);transform-origin:left;transition:transform .7s var(--lux-ease);z-index:-1}
+.lux-enter:hover,.lux-enter:focus-visible{color:var(--lux-ink);border-color:var(--lux-gold)}
+.lux-enter:hover::before,.lux-enter:focus-visible::before{transform:scaleX(1)}
+.lux-enter{isolation:isolate}
+.lux-enter .eq{display:inline-flex;gap:2px;align-items:flex-end;height:12px}
+.lux-enter .eq i{width:2px;background:currentColor;animation:luxEq 1.1s ease-in-out infinite}
+.lux-enter .eq i:nth-child(2){animation-delay:.2s}.lux-enter .eq i:nth-child(3){animation-delay:.4s}.lux-enter .eq i:nth-child(4){animation-delay:.1s}
+.lux-silent{background:none;border:0;color:rgba(244,239,227,.55);font:400 .78rem 'Inter Tight',sans-serif;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;padding:8px}
+.lux-silent:hover{color:#F4EFE3}
+.lux-intro-n{font:400 .72rem 'Inter Tight',sans-serif;letter-spacing:.12em;color:rgba(244,239,227,.4);margin:6px 0 0}
+@keyframes luxIn{from{opacity:0;transform:translate3d(0,16px,0)}to{opacity:1;transform:none}}
+@keyframes luxLine{to{width:min(160px,40vw)}}
+@keyframes luxBg{from{opacity:0;transform:scale(1.12)}to{opacity:.42;transform:scale(1)}}
+@keyframes luxGlow{0%,100%{filter:drop-shadow(0 0 0 rgba(206,179,92,0))}50%{filter:drop-shadow(0 0 18px rgba(206,179,92,.45))}}
+@keyframes luxEq{0%,100%{height:3px}50%{height:12px}}
+html.lux-lock,html.lux-lock body{overflow:hidden}
+
+/* ---------- Botón de sonido ---------- */
+.lux-snd{position:fixed;left:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:7;display:flex;align-items:center;gap:10px;height:46px;padding:0 16px 0 14px;border-radius:999px;border:1px solid rgba(206,179,92,.55);background:rgba(11,11,11,.72);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#F4EFE3;cursor:pointer;font:500 .7rem 'Inter Tight',sans-serif;letter-spacing:.2em;text-transform:uppercase;box-shadow:0 8px 26px rgba(0,0,0,.35);transition:border-color .4s,transform .4s var(--lux-ease)}
+.lux-snd:hover{border-color:var(--lux-gold);transform:translateY(-2px)}
+.lux-snd .bars{display:inline-flex;align-items:flex-end;gap:3px;height:16px;width:21px}
+.lux-snd .bars i{width:3px;height:3px;border-radius:1px;background:var(--lux-gold);transition:height .4s}
+.lux-snd[aria-pressed="true"] .bars i{animation:luxBar 1.2s ease-in-out infinite}
+.lux-snd[aria-pressed="true"] .bars i:nth-child(2){animation-delay:.25s;animation-duration:.9s}
+.lux-snd[aria-pressed="true"] .bars i:nth-child(3){animation-delay:.5s;animation-duration:1.4s}
+.lux-snd[aria-pressed="true"] .bars i:nth-child(4){animation-delay:.15s;animation-duration:1.05s}
+.lux-snd .lbl{white-space:nowrap;max-width:200px;overflow:hidden;transition:max-width .6s var(--lux-ease),opacity .4s}
+.lux-snd.min .lbl{max-width:0;opacity:0}
+.lux-snd.min{padding:0 12px}
+.lux-snd.hint{animation:luxPulse 2.4s ease-in-out 3}
+@media (max-width:760px){.lux-snd{left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));height:44px;width:44px;padding:0;justify-content:center}.lux-snd .lbl{display:none}}
+@keyframes luxBar{0%,100%{height:3px}50%{height:16px}}
+@keyframes luxPulse{0%,100%{box-shadow:0 8px 26px rgba(0,0,0,.35),0 0 0 0 rgba(206,179,92,.5)}50%{box-shadow:0 8px 26px rgba(0,0,0,.35),0 0 0 12px rgba(206,179,92,0)}}
+
+/* ---------- Barra de avance ---------- */
+.lux-prog{position:fixed;left:0;top:0;height:2px;width:100%;z-index:90;background:linear-gradient(90deg,#9C8240,var(--lux-gold),#E8D79A);transform-origin:left;transform:scaleX(0);pointer-events:none}
+
+/* ---------- Cursor (solo escritorio) ---------- */
+.lux-cur{position:fixed;left:0;top:0;z-index:150;width:34px;height:34px;margin:-17px 0 0 -17px;border:1px solid rgba(206,179,92,.85);border-radius:50%;pointer-events:none;display:grid;place-items:center;transition:width .45s var(--lux-ease),height .45s var(--lux-ease),margin .45s var(--lux-ease),background .45s,border-color .45s,opacity .3s;mix-blend-mode:normal;opacity:0}
+.lux-cur.on{opacity:1}
+.lux-cur span{font:500 .62rem 'Inter Tight',sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--lux-ink);opacity:0;transition:opacity .3s}
+.lux-cur.link{width:54px;height:54px;margin:-27px 0 0 -27px;border-color:var(--lux-gold)}
+.lux-cur.view{width:86px;height:86px;margin:-43px 0 0 -43px;background:rgba(206,179,92,.92);border-color:transparent}
+.lux-cur.view span{opacity:1}
+.lux-cur.hide{opacity:0}
+
+/* ---------- Galería a pantalla completa ---------- */
+.lux-zoom{cursor:zoom-in}
+.lux-zoom::after{content:"";position:absolute;right:12px;top:12px;width:30px;height:30px;border-radius:50%;background:rgba(11,11,11,.55) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23CEB35C' stroke-width='1.6'%3E%3Cpath d='M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5'/%3E%3C/svg%3E") center/16px no-repeat;opacity:0;transform:scale(.8);transition:opacity .4s,transform .4s var(--lux-ease);z-index:2;pointer-events:none}
+.lux-zoom:hover::after{opacity:1;transform:none}
+@media (hover:none){.lux-zoom::after{opacity:.85;transform:none}}
+.lux-zoom{position:relative}
+.lux-lb{position:fixed;inset:0;z-index:180;background:#080808;color:#F4EFE3;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .5s var(--lux-ease),visibility 0s linear .5s}
+.lux-lb.open{opacity:1;visibility:visible;transition:opacity .5s var(--lux-ease)}
+.lux-lb-track{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior:contain}
+.lux-lb-track::-webkit-scrollbar{display:none}
+.lux-lb-s{flex:0 0 100%;height:100%;margin:0;scroll-snap-align:center;scroll-snap-stop:always;display:grid;place-items:center;padding:clamp(56px,7vh,80px) clamp(12px,5vw,90px) clamp(84px,11vh,110px)}
+.lux-lb-s img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;box-shadow:0 30px 90px rgba(0,0,0,.6);transform:scale(.94);opacity:0;transition:transform 1s var(--lux-ease),opacity .8s var(--lux-ease)}
+.lux-lb.open .lux-lb-s.cur img{transform:none;opacity:1}
+.lux-lb.open .lux-lb-s img.ok{opacity:1;transform:none}
+.lux-lb-bar{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:22px;padding:18px clamp(16px,4vw,48px) calc(20px + env(safe-area-inset-bottom,0px));background:linear-gradient(0deg,rgba(8,8,8,.92),rgba(8,8,8,0))}
+.lux-lb-n{font:500 .78rem 'Inter Tight',sans-serif;letter-spacing:.24em;color:var(--lux-gold);white-space:nowrap}
+.lux-lb-c{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:clamp(1rem,2vw,1.25rem);color:rgba(244,239,227,.82);margin:0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lux-lb-dots{display:flex;gap:6px}
+.lux-lb-dots i{width:18px;height:2px;background:rgba(244,239,227,.22);transition:background .4s,width .4s}
+.lux-lb-dots i.on{background:var(--lux-gold);width:34px}
+.lux-lb-x,.lux-lb-p,.lux-lb-nx{position:absolute;z-index:2;width:50px;height:50px;border-radius:50%;border:1px solid rgba(206,179,92,.45);background:rgba(11,11,11,.5);color:#F4EFE3;display:grid;place-items:center;cursor:pointer;transition:border-color .3s,background .3s}
+.lux-lb-x:hover,.lux-lb-p:hover,.lux-lb-nx:hover{border-color:var(--lux-gold);background:rgba(206,179,92,.15)}
+.lux-lb-x{top:calc(14px + env(safe-area-inset-top,0px));right:16px}
+.lux-lb-p{left:18px;top:50%;margin-top:-25px}
+.lux-lb-nx{right:18px;top:50%;margin-top:-25px}
+.lux-lb svg{width:20px;height:20px}
+.lux-lb-hint{position:absolute;top:calc(28px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);font:500 .66rem 'Inter Tight',sans-serif;letter-spacing:.28em;text-transform:uppercase;color:rgba(244,239,227,.5);pointer-events:none;transition:opacity .8s}
+@media (hover:none),(max-width:760px){.lux-lb-p,.lux-lb-nx{display:none}.lux-lb-dots{display:none}}
+@media (min-width:761px) and (hover:hover){.lux-lb-hint{display:none}}
+
+/* ---------- Recorrido 360° ---------- */
+.lux-360{background:#0B0B0B;color:#F4EFE3;padding:clamp(70px,10vw,140px) 0}
+.lux-360-in{max-width:var(--wrap,1240px);margin:0 auto;padding:0 var(--pad,20px)}
+.lux-360-k{font:500 11px 'Inter Tight',sans-serif;letter-spacing:.26em;text-transform:uppercase;color:var(--lux-gold);margin:0 0 18px}
+.lux-360 h2{font-family:'Inter Tight',sans-serif;font-weight:200;font-size:clamp(2.2rem,5.6vw,4.6rem);line-height:1;letter-spacing:-.035em;margin:0 0 14px}
+.lux-360 h2 em{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:400;color:var(--lux-gold);letter-spacing:0}
+.lux-360 p{color:#B4B4B1;max-width:56ch;margin:0 0 28px}
+.lux-360-v{width:100%;aspect-ratio:16/8;min-height:340px;border-radius:2px;overflow:hidden;background:#151515}
+.lux-360-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.lux-360-tabs button{background:none;border:1px solid rgba(206,179,92,.4);color:#F4EFE3;border-radius:999px;padding:9px 16px;font:500 .72rem 'Inter Tight',sans-serif;letter-spacing:.16em;text-transform:uppercase;cursor:pointer}
+.lux-360-tabs button[aria-pressed="true"]{background:var(--lux-gold);color:#0B0B0B;border-color:var(--lux-gold)}
+
+html.lux img.lux-plx,html.lux .lux-f > img.lux-plx{transition:none!important}
+@media (prefers-reduced-motion:reduce){
+  html.lux .lux-r,html.lux .lux-f{opacity:1!important;transform:none!important;clip-path:none!important}
+  html.lux .hero-claim span > i,html.lux .hero-kicker,html.lux .hero .lede,html.lux .hero-actions{transform:none!important;opacity:1!important}
+  .lux-cur,.lux-prog{display:none}
+  .lux-intro-mark,.lux-intro-k,.lux-intro-t,.lux-intro-s,.lux-intro-a{opacity:1!important;transform:none!important}
+  .lux-intro-line{width:min(160px,40vw)!important}
+  .lux-intro-bg{opacity:.4!important}
+}
+@media print{.lux-snd,.lux-cur,.lux-prog,.lux-intro,.lux-lb{display:none!important}}
