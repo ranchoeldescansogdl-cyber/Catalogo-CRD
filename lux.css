@@ -142,3 +142,6 @@ html.lux img.lux-plx,html.lux .lux-f > img.lux-plx{transition:none!important}
   .lux-intro-bg{opacity:.4!important}
 }
 @media print{.lux-snd,.lux-cur,.lux-prog,.lux-intro,.lux-lb{display:none!important}}
+
+.lux-cred{flex-basis:100%;width:100%;margin:18px 0 0;font-size:.72rem;line-height:1.5;opacity:.55}
+.lux-cred a{color:inherit}

@@ -15,7 +15,7 @@ const SONIDO_REAL = false;                 // true = usa /sonido/rancho.mp3
 const SONIDO_URL  = "/sonido/rancho.mp3";
 const VOLUMEN     = 0.62;                  // volumen final (0 a 1)
 const SUBIDA_SEG  = 26;                    // segundos en llegar al volumen final la primera vez
-const INTRO_DIAS  = 3;                     // la intro se vuelve a mostrar después de estos días
+const MUSICA_VOL  = 0.36;                  // volumen de la guitarra respecto al ambiente (0 a 1)
 
 /* Recorrido 360°: agrega fotos equirectangulares (2:1) a /tour/ y ponlas aquí.
    { titulo:"La pista", foto:"/tour/pista.jpg" }                                  */
@@ -152,6 +152,57 @@ const Amb = (function(){
     if(Math.random()<.6) snort(x+R(.4,1.2),to,amp*1.1);
     later(horseLoop,(x-now)*1000+R(22000,42000));
   }
+  /* ---- grabaciones reales: relinchos, cascos al paso, trote, galope, caballeriza ---- */
+  const API = raiz+"api/sonido?s=", bufs={};
+  function sample(key,desde,largo){
+    const k=key+(desde!=null?"@"+desde:"");
+    if(!bufs[k]) bufs[k]=fetch(API+key+(desde!=null?`&desde=${desde}&largo=${largo}`:""))
+      .then(r=>{ if(!r.ok) throw new Error("sonido"); return r.arrayBuffer(); })
+      .then(b=>new Promise((ok,ko)=>ctx.decodeAudioData(b,ok,ko)))
+      .then(buf=>{ let pk=0; for(let c=0;c<buf.numberOfChannels;c++){ const a=buf.getChannelData(c); for(let i=0;i<a.length;i+=7){ const v=Math.abs(a[i]); if(v>pk) pk=v; } } buf._pk=pk||1; return buf; })
+      .catch(e=>{ delete bufs[k]; throw e; });
+    return bufs[k];
+  }
+  /* toca una grabación: nivel normalizado (pico = nivel), paneo que se mueve, distancia */
+  function playBuf(buf,o){
+    const now=ctx.currentTime+.05, src=ctx.createBufferSource(); src.buffer=buf; src.playbackRate.value=o.rate||1;
+    const g=ctx.createGain(), p=ctx.createStereoPanner(), lp=ctx.createBiquadFilter();
+    lp.type="lowpass"; lp.frequency.value=12000-(o.dist||.3)*8500; lp.Q.value=.3;
+    const dur=buf.duration/(o.rate||1), amp=Math.min(1.2,o.nivel/buf._pk), fi=o.fi||.04, fo=Math.min(o.fo||.3,dur/2);
+    g.gain.setValueAtTime(0.0001,now); g.gain.exponentialRampToValueAtTime(amp,now+fi);
+    g.gain.setValueAtTime(amp,now+Math.max(fi,dur-fo)); g.gain.exponentialRampToValueAtTime(0.0001,now+dur);
+    p.pan.setValueAtTime(o.pan||0,now); if(o.pan2!=null) p.pan.linearRampToValueAtTime(o.pan2,now+dur);
+    src.connect(lp); lp.connect(g); g.connect(p); p.connect(bus); src.start(now); src.stop(now+dur+.05);
+    return dur;
+  }
+  const EVENTOS=[["paso",5],["relincho",4],["trote",3],["establo",3],["resoplido",3],["galope",1]];
+  const TROZOS={paso:[0,12,24,36,48,60,72],trote:[0,10,20,30,40,50,60],establo:[0,12,24,34]};
+  async function realLoop(){
+    if(!playing) return;
+    if(ctx.state!=="running") return later(realLoop,4000);
+    let r=Math.random()*EVENTOS.reduce((t,x)=>t+x[1],0), ev="paso"; for(const [k,w] of EVENTOS){ if((r-=w)<0){ ev=k; break; } }
+    let dur=3; const lado=R(-.9,.9);
+    try{
+      if(ev==="paso")      dur=playBuf(await sample("paso",pick(TROZOS.paso),12),{nivel:R(.12,.18),pan:lado,pan2:-lado*R(.4,.9),dist:R(.3,.6),fi:2,fo:3});
+      else if(ev==="trote") dur=playBuf(await sample("trote",pick(TROZOS.trote),10),{nivel:R(.11,.16),pan:lado,pan2:-lado,dist:R(.35,.65),fi:1.5,fo:2.5});
+      else if(ev==="relincho") dur=playBuf(await sample(pick(["relincho1","relincho1","relincho2","relincho3"])),{nivel:R(.15,.24),pan:R(-.8,.8),dist:R(.35,.75),rate:R(.95,1.03)});
+      else if(ev==="establo") dur=playBuf(await sample("establo",pick(TROZOS.establo),12),{nivel:R(.14,.2),pan:R(-.5,.5),dist:.3,fi:2,fo:3});
+      else if(ev==="resoplido") dur=playBuf(await sample("resoplido"),{nivel:R(.14,.2),pan:R(-.7,.7),dist:R(.2,.5)});
+      else dur=playBuf(await sample("galope"),{nivel:R(.12,.17),pan:lado,pan2:-lado*.5,dist:R(.45,.75),fo:.6});
+    }catch(e){ return horseLoop(); }               // sin conexión al sonido: cascos generados
+    later(realLoop,dur*1000+R(8000,20000));
+  }
+  /* ---- música de fondo (guitarra acústica) ---- */
+  let music=null, musicG=null;
+  function musica(){
+    if(SONIDO_REAL) return;
+    if(!music){
+      music=new Audio(); music.crossOrigin="anonymous"; music.loop=true; music.preload="auto"; music.src=API+"musica";
+      try{ const src=ctx.createMediaElementSource(music); musicG=ctx.createGain(); musicG.gain.value=0.0001; src.connect(musicG); musicG.connect(master); }catch(e){ musicG=null; }
+    }
+    const p=music.play(); if(p&&p.catch) p.catch(()=>{});
+    if(musicG){ const t=ctx.currentTime; musicG.gain.cancelScheduledValues(t); musicG.gain.setValueAtTime(Math.max(musicG.gain.value,0.0001),t); musicG.gain.setTargetAtTime(MUSICA_VOL,t+3,5); }
+  }
   function build(){
     const AC=W.AudioContext||W.webkitAudioContext; if(!AC) return false;
     ctx=new AC();
@@ -172,20 +223,22 @@ const Amb = (function(){
     if(!gust) wind();
     gustLoop();
     later(birdLoop,R(1200,2600));
-    later(horseLoop,R(9000,16000));
+    later(realLoop,R(5000,9000));
+    ["relincho1","resoplido","paso@24"].forEach(k=>{ const [a,b]=k.split("@"); sample(a,b!=null?+b:undefined,12).catch(()=>{}); });
   }
   function fade(to,sec){ const now=ctx.currentTime; master.gain.cancelScheduledValues(now); master.gain.setValueAtTime(Math.max(master.gain.value,0.0001),now); master.gain.setTargetAtTime(Math.max(to,0.0001),now,sec/3.2); }
   return {
     get on(){ return playing; },
     play(first){
       if(!ctx && !build()) return false;
+      musica();
       const go=()=>{ if(!playing){ playing=true; timers.forEach(clearTimeout); timers=[]; startLayers(); } fade(VOLUMEN, first?SUBIDA_SEG:7); };
       if(ctx.state!=="running") ctx.resume().then(go).catch(()=>{}); else go();
       started=true; return true;
     },
-    stop(){ if(!ctx) return; playing=false; timers.forEach(clearTimeout); timers=[]; fade(0,1.4); setTimeout(()=>{ if(!playing){ ctx.suspend(); if(file) file.pause(); } },1700); },
-    pause(){ if(ctx&&playing) ctx.suspend(); },
-    resume(){ if(ctx&&playing) ctx.resume(); },
+    stop(){ if(!ctx) return; playing=false; timers.forEach(clearTimeout); timers=[]; fade(0,1.4); setTimeout(()=>{ if(!playing){ ctx.suspend(); if(file) file.pause(); if(music) music.pause(); } },1700); },
+    pause(){ if(ctx&&playing){ ctx.suspend(); if(music) music.pause(); } },
+    resume(){ if(ctx&&playing){ ctx.resume(); if(music) music.play().catch(()=>{}); } },
     get started(){ return started; }
   };
 })();
@@ -213,9 +266,10 @@ function armarReanudar(){
    2. INTRO "ENTRAR AL RANCHO"
    ================================================================= */
 function intro(){
-  const last=+ls.get("crd-intro")||0, dias=(Date.now()-last)/864e5;
-  const limpio=!location.search && (!location.hash || location.hash==="#inicio");
-  if(!esInicio || !limpio || dias<INTRO_DIAS || W.self!==W.top || /bot|crawl|spider|lighthouse/i.test(navigator.userAgent)) return false;
+  let visto=false; try{ visto=sessionStorage.getItem("crd-intro")==="1"; }catch(e){}
+  const qs=new URLSearchParams(location.search); ["app","fbclid","gclid"].forEach(k=>qs.delete(k)); [...qs.keys()].forEach(k=>{ if(/^utm_/.test(k)) qs.delete(k); });
+  const limpio=![...qs.keys()].length && (!location.hash || location.hash==="#inicio");
+  if(!esInicio || !limpio || visto || W.self!==W.top || /bot|crawl|spider|lighthouse/i.test(navigator.userAgent)) return false;
   const el=d.createElement("div"); el.className="lux-intro"; el.setAttribute("role","dialog"); el.setAttribute("aria-label","Bienvenida a Rancho El Descanso");
   el.innerHTML=`<div class="lux-intro-bg" style="background-image:url('${raiz}galope.webp')"></div>
   <div class="lux-intro-in">
@@ -232,7 +286,7 @@ function intro(){
   </div>`;
   d.body.appendChild(el); html.classList.add("lux-lock");
   const enter=con=>{
-    ls.set("crd-intro",String(Date.now()));
+    try{ sessionStorage.setItem("crd-intro","1"); }catch(e){}
     if(con){ Amb.play(true); setBtn(true); ls.set("crd-sonido","on"); } else { ls.set("crd-sonido","off"); }
     el.classList.add("out"); html.classList.remove("lux-lock");
     setTimeout(()=>html.classList.add("lux-go"),350);
@@ -384,6 +438,13 @@ function tour(){
   tabs.addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b||!viewer) return; tabs.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); viewer.loadScene("s"+b.dataset.i); });
 }
 
+/* Créditos de los sonidos (licencias Creative Commons) */
+function creditos(){
+  const f=d.querySelector("footer"); if(!f || f.querySelector(".lux-cred")) return;
+  const p=d.createElement("p"); p.className="lux-cred";
+  p.innerHTML='Sonido ambiente: música “Calm Acoustic Guitar for Serene Moments” de Gustavo_Alivera; caballos de InspectorJ, YleArkisto, GoodListener, dobroide, n_audioman y TheKingOfGeeks360 · <a href="https://freesound.org" target="_blank" rel="noopener">Freesound</a>, licencias <a href="https://creativecommons.org/licenses/by/4.0/deed.es" target="_blank" rel="noopener">CC BY 4.0</a> y CC0.';
+  (f.querySelector(".foot-inner")||f).appendChild(p);
+}
 /* ================================================================= */
 function init(){
   soundButton();
@@ -391,7 +452,7 @@ function init(){
   const conIntro = intro();
   if(!conIntro){ requestAnimationFrame(()=>requestAnimationFrame(()=>html.classList.add("lux-go"))); armarReanudar(); }
   if(!reduce){ if(esInicio) apariciones(); movimiento(); }
-  galeria(); cursor(); tour();
+  galeria(); cursor(); tour(); creditos();
 }
 if(d.readyState==="loading") d.addEventListener("DOMContentLoaded",init); else init();
 })();
