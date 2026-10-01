@@ -258,6 +258,7 @@ blockquote footer{font-size:12px;letter-spacing:.2em;text-transform:uppercase;co
 .foot-legal{margin-top:40px;font-size:12px;color:var(--g2)}
 @media (max-width:720px){.foot-in{grid-template-columns:1fr}}
 </style>
+<link rel="stylesheet" href="/lux.css">
 </head>
 <body>
 
@@ -587,5 +588,6 @@ const io = "IntersectionObserver" in window ? new IntersectionObserver(es=>es.fo
 document.querySelectorAll(".rv").forEach(el=> io ? io.observe(el) : el.classList.add("in"));
 })();
 </script>
+<script src="/lux.js" defer></script>
 </body>
 </html>
