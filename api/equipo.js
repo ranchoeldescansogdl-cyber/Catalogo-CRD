@@ -12,7 +12,13 @@
    GET  /api/equipo?accion=ine&evento=<id>  → identificación del titular (roles con permiso)
    POST /api/equipo {accion:"enlace", email} | {accion:"google", credential} | {accion:"salir"}
    POST /api/equipo {accion:"hacer", tipo:"saldo_pagado"|"confirmar_evento"|"bloquear"|"nota"|"liga", ...}
-   Los POST exigen el header x-equipo: 1 (una página ajena no puede mandarlo sin permiso del navegador). */
+   Los POST exigen el header x-equipo: 1 (una página ajena no puede mandarlo sin permiso del navegador).
+
+   2 oct 2026 (fase 2): tareas con fotos (asignan admin y contabilidad), bitácora y salud de caballos (campo, médicos),
+   proveedores y contabilidad (admin y contabilidad), rol "medico", liga fija de celular para quien no usa correo,
+   comisiones con % normal (pestaña COMISIONES) y % especial por pago (PAGOS WEB).
+   GET  accion=tareas|reportes|conta|equipo_lista|cotizaciones|foto&id=
+   POST hacer tipo: tarea_crear|tarea_estatus|tarea_editar|reporte|registro|liga_celular */
 const crypto = require("crypto");
 const AG = require("./_agenda");
 
@@ -22,15 +28,21 @@ const DIAS_SESION = 14;
 const API = "https://api.stripe.com/v1/";
 const VERSION = "2026-08-26.dahlia";
 
+/* jefe = asigna, edita, revisa y cancela tareas (Nico, Mario y Judith) */
 const PERMISOS = {
-  admin:        {secciones: ["hoy", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones"], dinero: "todo", contacto: true, ine: true, acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga"]},
-  direccion:    {secciones: ["hoy", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones"], dinero: "todo", contacto: true, ine: true, acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga"]},
-  ventas:       {secciones: ["hoy", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones"], dinero: "propio", contacto: true, ine: true, acciones: ["nota", "liga"]},
-  contabilidad: {secciones: ["hoy", "agenda", "pagos", "caballos", "comisiones"], dinero: "todo", contacto: true, ine: false, acciones: ["saldo_pagado", "nota"]},
-  campo:        {secciones: ["hoy", "agenda"], dinero: "nada", contacto: false, ine: true, acciones: ["nota"]}
+  admin:        {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "salud", "bitacora", "proveedores", "conta", "equipo"], dinero: "todo", contacto: true, ine: true, jefe: true,
+                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "registro", "liga_celular", "prospecto"]},
+  direccion:    {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "salud", "bitacora"], dinero: "todo", contacto: true, ine: true, jefe: false,
+                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "prospecto"]},
+  ventas:       {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones"], dinero: "propio", contacto: true, ine: true, jefe: false, acciones: ["nota", "liga", "tarea", "prospecto"]},
+  contabilidad: {secciones: ["hoy", "tareas", "agenda", "pagos", "caballos", "comisiones", "proveedores", "conta", "bitacora"], dinero: "todo", contacto: true, ine: false, jefe: true,
+                 acciones: ["saldo_pagado", "nota", "tarea", "reporte", "registro"]},
+  campo:        {secciones: ["hoy", "tareas", "bitacora", "salud", "agenda"], dinero: "nada", contacto: false, ine: true, jefe: false, acciones: ["nota", "tarea", "reporte"]},
+  medico:       {secciones: ["hoy", "tareas", "salud", "bitacora"], dinero: "nada", contacto: false, ine: false, jefe: false, acciones: ["tarea", "reporte"]}
 };
+const DIAS_CELULAR = 400; // la liga fija del celular dura ~1 año; se invalida al generar otra o con Activo = NO
 /* Respaldo si la pestaña EQUIPO no responde: solo Nico puede entrar */
-const EQUIPO_RESPALDO = [{nombre: "Nicolás Campero", email: "nicolas@legaius.com", rol: "admin", vendedor: "nico"}];
+const EQUIPO_RESPALDO = [{nombre: "Nicolás Campero", email: "nicolas@legaius.com", id: "nicolas@legaius.com", rol: "admin", vendedor: "nico", liga: 0}];
 /* Claves oficiales (2 oct 2026): nico · moni · yuliana (las de la pestaña EQUIPO y las ligas ?v=).
    Nombres de la columna Vendedor de la Maestra y claves viejas de pagos (nicolas, monica) → clave oficial */
 const ALIAS = {nico: "nico", nicolas: "nico", moni: "moni", monica: "moni", yuli: "yuliana", yuliana: "yuliana"};
@@ -60,14 +72,17 @@ async function agendaPost(accion, extra) {
 let cacheEquipo = {t: 0, v: null};
 async function equipo() {
   if (cacheEquipo.v && Date.now() - cacheEquipo.t < 120e3) return cacheEquipo.v;
-  try { const j = await agendaPost("panel_equipo"); if (j.ok && Array.isArray(j.equipo) && j.equipo.length) { cacheEquipo = {t: Date.now(), v: j.equipo}; return j.equipo; } }
+  try { const j = await agendaPost("panel_equipo");
+    if (j.ok && Array.isArray(j.equipo) && j.equipo.length) { const v = j.equipo.map(x => ({...x, id: x.id || x.email})); cacheEquipo = {t: Date.now(), v}; return v; } }
   catch (e) { console.error("Equipo:", e.message); }
   return EQUIPO_RESPALDO;
 }
 async function usuarioDe(req) {
   const s = leer(cookieDe(req)); if (!s || s.k !== "sesion") return null;
-  const u = (await equipo()).find(x => x.email && x.email === s.e); // si lo dan de baja en la hoja, deja de entrar
-  return u && PERMISOS[u.rol] ? {...u, vendedor: canon(u.vendedor), permisos: PERMISOS[u.rol]} : null;
+  const u = (await equipo()).find(x => x.id && x.id === s.e); // si lo dan de baja en la hoja, deja de entrar
+  if (!u || !PERMISOS[u.rol]) return null;
+  if (s.v !== undefined && Number(s.v) !== Number(u.liga || 0)) return null; // liga de celular reemplazada
+  return {...u, vendedor: canon(u.vendedor), permisos: PERMISOS[u.rol]};
 }
 
 /* ---------- Stripe: pagos de la página ---------- */
@@ -137,8 +152,20 @@ function recortarEvento(ev, u) {
   return {...base, cliente: ev.cliente, telefono: ev.telefono, correo: ev.correo, atendio: ev.atendio, notas: ev.notas, folio: ev.folio,
     ...(propio ? {pagado: ev.pagado, total: ev.total, resta: ev.resta, liga: ev.liga} : {})};
 }
+/* % de comisión: pestaña COMISIONES (% normal) y, por pago de la página, "Comisión % (especial)" en PAGOS WEB.
+   Caballos y potros apartados en la página se comisionan en VENTAS (la venta completa), no aquí. */
+const pct = s => { const t = String(s || "").trim(); if (!t) return null; const n = Number(t.replace(/[^0-9.]/g, "")); return isNaN(n) ? null : (/%/.test(t) || n > 1 ? n / 100 : n); };
+function tasasDe(m) {
+  const t = {}; (m.tasas || []).forEach(r => { t[String(r["Tipo"] || "").trim()] = pct(r["% normal"]); });
+  const val = (k, def) => (t[k] === undefined ? def : t[k] || 0);
+  return {sesion: val("Sesiones de fotos", 0.10), evento: val("Eventos", 0.10)};
+}
+function datosPagoWeb(m) {
+  const d = {}; (m.pagosWeb || []).forEach(r => { const f = String(r["Folio Stripe"] || "").trim(); if (f) d[f] = {tasa: pct(r["Comisión % (especial)"]), pagada: !!String(r["Comisión pagada"] || "").trim()}; });
+  return d;
+}
 function comisiones(pagos, maestra, u) {
-  const filas = {};
+  const filas = {}, tasas = tasasDe(maestra), web = datosPagoWeb(maestra);
   const add = (clave, nombre, origen, monto, comision, pagada) => {
     if (!clave) clave = "sin_asignar";
     if (u.permisos.dinero === "propio" && clave !== u.vendedor) return;
@@ -146,8 +173,13 @@ function comisiones(pagos, maestra, u) {
     filas[k].ventas += monto || 0; filas[k].comision += comision || 0; if (!pagada) filas[k].porPagar += comision || 0;
     filas[k].detalle.push({origen, monto, comision, pagada});
   };
-  pagos.forEach(p => { if (p.atendio_clave === "nadie") return add("nadie", "Nadie (llegó por su cuenta)", `${p.tipo} · ${p.ref}`, p.monto, 0, true);
-    add(p.atendio_clave === "otro" ? "otro" : p.atendio_clave, p.atendio, `Página · ${p.tipo} · ${p.ref}`, p.monto, 0, true); });
+  pagos.forEach(p => {
+    const w = web[p.folio] || web[p.saldo_de] || {};
+    const base = p.tipo === "evento" ? tasas.evento : (p.tipo === "sesion" || p.tipo === "saldo_sesion") ? tasas.sesion : 0;
+    const tasa = w.tasa !== null && w.tasa !== undefined ? w.tasa : base, com = Math.round((p.monto || 0) * tasa * 100) / 100;
+    const origen = `Página · ${p.tipo} · ${p.ref}${tasa ? ` · ${Math.round(tasa * 10000) / 100}%` : (p.tipo === "caballo" || p.tipo === "potro") ? " · se comisiona en VENTAS" : ""}`;
+    if (p.atendio_clave === "nadie") return add("nadie", "Nadie (llegó por su cuenta)", origen, p.monto, 0, true);
+    add(p.atendio_clave === "otro" ? "otro" : p.atendio_clave, p.atendio, origen, p.monto, com, !!w.pagada || !com); });
   (maestra.ventas || []).forEach(v => {
     const num = s => Number(String(s || "").replace(/[^0-9.]/g, "")) || 0;
     add(claveVendedor(v["Vendedor"]), v["Vendedor"], `Maestra · ${v["Folio"]} · ${v["Concepto"]}`, num(v["Precio"]), num(v["Comisión $"]), !!String(v["Comisión pagada"] || "").trim());
@@ -168,7 +200,12 @@ async function verificarGoogle(credential) {
   if (t.aud !== id || !(t.email_verified === true || t.email_verified === "true") || !/accounts\.google\.com$/.test(t.iss || "")) return null;
   return String(t.email || "").toLowerCase();
 }
-function abrirSesion(res, email) { ponerCookie(res, firmar({k: "sesion", e: email, exp: Date.now() + DIAS_SESION * 864e5}), DIAS_SESION * 86400); }
+function abrirSesion(res, id, v) {
+  const dias = v === undefined ? DIAS_SESION : DIAS_CELULAR;
+  ponerCookie(res, firmar({k: "sesion", e: id, ...(v === undefined ? {} : {v}), exp: Date.now() + dias * 864e5}), dias * 86400);
+}
+const ROL_TXT = {admin: "Administración", direccion: "Dirección", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
+const puede = (u, s) => u.permisos.secciones.includes(s);
 
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store, private");
@@ -176,9 +213,10 @@ module.exports = async (req, res) => {
   try {
     const q = req.query || {};
     if (req.method === "GET" && q.entrar) { // liga del correo
-      const t = leer(q.entrar);
-      const ok = t && t.k === "enlace" && (await equipo()).some(u => u.email === t.e);
-      if (ok) abrirSesion(res, t.e);
+      const t = leer(q.entrar), eq = await equipo();
+      let ok = false;
+      if (t && t.k === "enlace" && eq.some(u => u.id === t.e)) { ok = true; abrirSesion(res, t.e); }
+      if (t && t.k === "celular") { const u = eq.find(x => x.id === t.e); if (u && Number(u.liga || 0) === Number(t.v)) { ok = true; abrirSesion(res, t.e, Number(t.v)); } }
       res.statusCode = 303; res.setHeader("Location", "/equipo/" + (ok ? "" : "?liga=vencida")); return res.end();
     }
     if (req.method === "POST") {
@@ -191,7 +229,7 @@ module.exports = async (req, res) => {
         const email = String(body.email || "").trim().toLowerCase();
         const u = (await equipo()).find(x => x.email && x.email === email);
         if (u) {
-          const liga = `${SITIO()}/api/equipo?entrar=${firmar({k: "enlace", e: email, exp: Date.now() + 15 * 60e3})}`;
+          const liga = `${SITIO()}/api/equipo?entrar=${firmar({k: "enlace", e: u.id, exp: Date.now() + 15 * 60e3})}`;
           const r = await agendaPost("panel_acceso", {email, liga, nombre: u.nombre}).catch(e => ({ok: false, error: e.message}));
           if (!r.ok) console.error("No se mandó la liga de acceso:", r.error);
         }
@@ -199,11 +237,33 @@ module.exports = async (req, res) => {
       }
       if (body.accion === "google") {
         const email = await verificarGoogle(body.credential);
-        if (!email || !(await equipo()).some(u => u.email === email)) return res.status(401).json({error: "Esta cuenta de Google no tiene acceso al portal."});
-        abrirSesion(res, email); return res.status(200).json({ok: true});
+        const g = email && (await equipo()).find(u => u.email === email);
+        if (!g) return res.status(401).json({error: "Esta cuenta de Google no tiene acceso al portal."});
+        abrirSesion(res, g.id); return res.status(200).json({ok: true});
       }
       const u = await usuarioDe(req); if (!u) return res.status(401).json({error: "Tu sesión terminó. Vuelve a entrar."});
       if (body.accion !== "hacer") return res.status(400).json({error: "acción no válida"});
+      const FASE2 = {tarea_crear: "tarea", tarea_estatus: "tarea", tarea_editar: "tarea", reporte: "reporte", registro: "registro", liga_celular: "liga_celular", prospecto: "prospecto"};
+      if (FASE2[body.tipo]) {
+        const p = u.permisos;
+        if (!p.acciones.includes(FASE2[body.tipo])) return res.status(403).json({error: "Tu rol no puede hacer esto."});
+        if ((body.tipo === "tarea_crear" || body.tipo === "tarea_editar") && !p.jefe) return res.status(403).json({error: "Solo Nico, Mario y Judith asignan tareas."});
+        const archivos = Array.isArray(body.archivos) ? body.archivos.slice(0, 6) : [];
+        if (archivos.reduce((a, x) => a + String(x && x.datos || "").length, 0) > 5.5e6) return res.status(413).json({error: "Las fotos pesan demasiado. Manda menos a la vez."});
+        if (body.tipo === "reporte") {
+          const area = String((body.reporte || {}).area || "");
+          if (area === "Salud" && !puede(u, "salud")) return res.status(403).json({error: "Tu rol no puede registrar salud."});
+        }
+        const r = await agendaPost("panel_fase2", {tipo: body.tipo, quien: u.nombre, jefe: !!p.jefe, id: body.id, estatus: body.estatus, nota: body.nota,
+          tarea: body.tarea, cambios: body.cambios, reporte: body.reporte, registro: body.registro, archivos});
+        if (body.tipo === "liga_celular" && r.ok) {
+          cacheEquipo = {t: 0, v: null};
+          const per = (await equipo()).find(x => x.id === body.id);
+          r.url = `${SITIO()}/api/equipo?entrar=${firmar({k: "celular", e: body.id, v: r.liga, exp: Date.now() + DIAS_CELULAR * 864e5})}`;
+          r.nombre = per ? per.nombre : "";
+        }
+        return res.status(r.ok ? 200 : 400).json(r);
+      }
       if (!u.permisos.acciones.includes(body.tipo)) return res.status(403).json({error: "Tu rol no puede hacer esto."});
       if (body.tipo === "liga") { // liga de pago del resto de una sesión, para mandarla por WhatsApp
         if (!/^cs_live_[A-Za-z0-9]+$/.test(String(body.folio || ""))) return res.status(400).json({error: "folio"});
@@ -219,8 +279,44 @@ module.exports = async (req, res) => {
     const u = await usuarioDe(req);
     if (!u) return res.status(401).json({error: "sin sesión", google: process.env.GOOGLE_CLIENT_ID || ""});
     const p = u.permisos;
-    if (q.accion === "yo") return res.status(200).json({usuario: {nombre: u.nombre, email: u.email, rol: u.rol, vendedor: u.vendedor}, permisos: p});
+    if (q.accion === "yo") return res.status(200).json({usuario: {nombre: u.nombre, email: u.email, rol: u.rol, rolTxt: ROL_TXT[u.rol] || u.rol, vendedor: u.vendedor, area: u.area || ""}, permisos: p});
+    if (q.accion === "tareas") {
+      if (!puede(u, "tareas")) return res.status(403).json({error: "Sin acceso."});
+      const j = await agendaPost("panel_tareas"); if (!j.ok) throw new Error(j.error || "tareas");
+      const eq = await equipo();
+      const tareas = j.tareas.filter(t => p.jefe || t["Asignada a"] === u.nombre || t["Asignó"] === u.nombre).map(t => { const x = {...t}; delete x._fila; return x; });
+      return res.status(200).json({tareas, personas: p.jefe ? eq.map(x => ({nombre: x.nombre, rol: ROL_TXT[x.rol] || x.rol, area: x.area || ""})) : []});
+    }
+    if (q.accion === "reportes") {
+      if (!puede(u, "bitacora") && !puede(u, "salud")) return res.status(403).json({error: "Sin acceso."});
+      const [j, m] = await Promise.all([agendaPost("panel_reportes"), maestraSegura()]); if (!j.ok) throw new Error(j.error || "reportes");
+      const reportes = j.reportes.filter(r => r["Área"] === "Salud" ? puede(u, "salud") : puede(u, "bitacora")).map(r => { const x = {...r}; delete x._fila; return x; });
+      return res.status(200).json({reportes, caballos: (m.caballos || []).map(c => ({ID: c["ID"], Nombre: c["Nombre"], Raza: c["Raza"], Sexo: c["Sexo"], Estatus: c["Estatus"], "Cargada de": c["Cargada de"], "Fecha pare": c["Fecha pare"]}))});
+    }
+    if (q.accion === "conta") {
+      if (!puede(u, "conta") && !puede(u, "proveedores")) return res.status(403).json({error: "Sin acceso."});
+      const j = await agendaPost("panel_conta"); if (!j.ok) throw new Error(j.error || "conta");
+      return res.status(200).json(j);
+    }
+    if (q.accion === "cotizaciones") {
+      if (!puede(u, "cotizaciones")) return res.status(403).json({error: "Sin acceso."});
+      const j = await agendaPost("panel_prospectos"); if (!j.ok) throw new Error(j.error || "cotizaciones");
+      const eq = await equipo();
+      return res.status(200).json({prospectos: j.prospectos.map(r => { const x = {...r}; delete x._fila; return x; }),
+        personas: eq.filter(x => ["admin", "direccion", "ventas"].includes(x.rol)).map(x => x.nombre)});
+    }
+    if (q.accion === "equipo_lista") {
+      if (!puede(u, "equipo")) return res.status(403).json({error: "Sin acceso."});
+      return res.status(200).json({equipo: (await equipo()).map(x => ({id: x.id, nombre: x.nombre, rol: ROL_TXT[x.rol] || x.rol, area: x.area || "", correo: x.email || "", liga: x.liga || 0}))});
+    }
+    if (q.accion === "foto") {
+      if (!["tareas", "bitacora", "salud", "conta"].some(s => puede(u, s))) return res.status(403).json({error: "Sin acceso."});
+      if (!/^[A-Za-z0-9_-]{20,}$/.test(String(q.id || ""))) return res.status(400).json({error: "archivo"});
+      const j = await agendaPost("panel_foto", {id: String(q.id)});
+      return res.status(j.ok ? 200 : 404).json(j);
+    }
     if (q.accion === "agenda") {
+      if (!puede(u, "agenda")) return res.status(403).json({error: "Sin acceso."});
       const [j, m] = await Promise.all([agendaPost("panel_agenda", {desde: q.desde, hasta: q.hasta}), maestraSegura()]);
       if (!j.ok) throw new Error(j.error || "agenda");
       const mapa = await correcciones(m);
@@ -235,7 +331,7 @@ module.exports = async (req, res) => {
       if (!p.secciones.includes("caballos")) return res.status(403).json({error: "Sin acceso."});
       const m = await agendaPost("panel_maestra");
       if (!m.ok) throw new Error(m.error || "maestra");
-      const propio = v => p.dinero === "todo" || claveVendedor(v["Vendedor"]) === u.vendedor;
+      const propio = v => p.dinero === "todo" || (p.dinero === "propio" && !!u.vendedor && claveVendedor(v["Vendedor"]) === u.vendedor);
       return res.status(200).json({generado: m.generado,
         ventas: m.ventas.filter(propio), pensiones: p.dinero === "todo" ? m.pensiones : [], maquilas: m.maquilas.filter(propio),
         caballos: m.caballos.map(c => p.dinero === "nada" ? {...c, Precio: ""} : c)});
