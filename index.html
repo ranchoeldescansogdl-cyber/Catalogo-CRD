@@ -2360,16 +2360,17 @@ const PAGO_ON = k => !!(CONFIG.STRIPE.api && CONFIG.STRIPE[k] && (MODO_PAGO==="l
 /* Abre Stripe Checkout. El servidor calcula el monto con la hoja. Si falla, manda a WhatsApp. */
 /* ¿Quién te atendió? (1 oct 2026): obligatorio antes de cualquier pago, para asignar comisiones.
    La lista viene del servidor (GET /api/checkout → vendedores; pestaña VENDEDORES de la hoja o respaldo).
-   Liga personal de cada vendedor: /?v=<clave> (ej. ?v=yuliana) deja su nombre preseleccionado. */
-let VENDEDORES=[{clave:"nicolas",nombre:"Nicolás Campero"},{clave:"monica",nombre:"Mónica Valle"},{clave:"yuliana",nombre:"Yuliana Garibay"}];
+   Liga personal de cada vendedor: /?v=<clave> (?v=nico · ?v=moni · ?v=yuliana) deja su nombre preseleccionado. */
+let VENDEDORES=[{clave:"nico",nombre:"Nicolás Campero"},{clave:"moni",nombre:"Mónica Valle"},{clave:"yuliana",nombre:"Yuliana Garibay"}];
 const ATENDIO_KEY="crd_atendio";
-(function(){ try{ const v=(new URLSearchParams(location.search).get("v")||"").toLowerCase().replace(/[^a-z0-9_-]/g,"").slice(0,30);
+(function(){ try{ let v=(new URLSearchParams(location.search).get("v")||"").toLowerCase().replace(/[^a-z0-9_-]/g,"").slice(0,30);
+  v=({nicolas:"nico",monica:"moni",yuli:"yuliana"})[v]||v;
   if(v) localStorage.setItem(ATENDIO_KEY,JSON.stringify({v:v,t:Date.now()})); }catch(e){} })();
 function atendioGuardado(){ try{ const o=JSON.parse(localStorage.getItem(ATENDIO_KEY)||"null"); if(o&&Date.now()-o.t<60*864e5) return o; }catch(e){} return null; }
 function preguntarAtendio(){
   const d=$("#atendio"); if(!d||!d.showModal) return Promise.resolve("nadie");
   return new Promise(res=>{
-    const prev=atendioGuardado(), sel=prev?(prev.v||""):"";
+    const prev=atendioGuardado(), sel=prev?(({nicolas:"nico",monica:"moni",yuli:"yuliana"})[prev.v]||prev.v||""):"";
     const ops=[...VENDEDORES.map(x=>[x.clave,x.nombre]),["nadie","Nadie, llegué por mi cuenta"],["otro","Otra persona"]];
     $("#at-ops").innerHTML=ops.map(([k,n])=>`<label class="at-op"><input type="radio" name="atendio" value="${esc(k)}"${k===sel?" checked":""}> <span>${esc(n)}</span></label>`).join("");
     const otro=$("#at-otro"), err=$("#at-err"); otro.value=prev&&prev.otro?prev.otro:""; err.hidden=true;
