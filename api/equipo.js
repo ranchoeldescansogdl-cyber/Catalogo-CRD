@@ -108,6 +108,25 @@ async function pagosStripe() {
 
 /* ---------- recortes por rol ---------- */
 const claveVendedor = n => ALIAS[String(n || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim().split(/\s+/)[0]] || "";
+/* Corrección de "¿Quién te atendió?" (2 oct 2026): columna "Atendió (corrección)" en la pestaña PAGOS WEB de la Maestra.
+   Se escribe Nico, Moni, Yuliana, Nadie u otro nombre en la fila del pago (se busca por "Folio Stripe").
+   Gana sobre lo que eligió el cliente en la página; también aplica al resto cobrado después (saldo_de). */
+const COL_CORRECCION = "Atendió (corrección)";
+async function maestraSegura() { try { const m = await agendaPost("panel_maestra"); if (m && m.ok) return m; } catch (e) { console.error("Maestra:", e.message); } return {ventas: [], pagosWeb: []}; }
+async function correcciones(m) {
+  const eq = await equipo(), mapa = {};
+  (m.pagosWeb || []).forEach(r => {
+    const folio = String(r["Folio Stripe"] || "").trim(), txt = String(r[COL_CORRECCION] || "").trim();
+    if (!folio || !txt) return;
+    const sin = txt.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    if (/^(nadie|ninguno|n\/a)$/.test(sin)) { mapa[folio] = {atendio: "Nadie (llegó por su cuenta)", atendio_clave: "nadie"}; return; }
+    const clave = claveVendedor(txt) || canon(sin.split(/\s+/)[0]);
+    const quien = eq.find(x => canon(x.vendedor) === clave);
+    mapa[folio] = quien ? {atendio: quien.nombre, atendio_clave: clave} : {atendio: txt + " (corregido)", atendio_clave: "otro"};
+  });
+  return mapa;
+}
+const corregir = (x, mapa) => { const c = mapa[x.folio] || (x.saldo_de && mapa[x.saldo_de]); return c ? {...x, ...c, corregido: true} : x; };
 function recortarEvento(ev, u) {
   const p = u.permisos;
   const base = {id: ev.id, titulo: ev.titulo, tipo: ev.tipo, estado: ev.estado, todoElDia: ev.todoElDia, inicio: ev.inicio, fin: ev.fin, fecha: ev.fecha,
@@ -202,9 +221,10 @@ module.exports = async (req, res) => {
     const p = u.permisos;
     if (q.accion === "yo") return res.status(200).json({usuario: {nombre: u.nombre, email: u.email, rol: u.rol, vendedor: u.vendedor}, permisos: p});
     if (q.accion === "agenda") {
-      const j = await agendaPost("panel_agenda", {desde: q.desde, hasta: q.hasta});
+      const [j, m] = await Promise.all([agendaPost("panel_agenda", {desde: q.desde, hasta: q.hasta}), maestraSegura()]);
       if (!j.ok) throw new Error(j.error || "agenda");
-      return res.status(200).json({generado: j.generado, eventos: j.eventos.map(e => recortarEvento(e, u))});
+      const mapa = await correcciones(m);
+      return res.status(200).json({generado: j.generado, eventos: j.eventos.map(e => recortarEvento(e.folio && mapa[e.folio] ? {...e, atendio: mapa[e.folio].atendio} : e, u))});
     }
     if (q.accion === "ine") {
       if (!p.ine) return res.status(403).json({error: "Tu rol no puede ver identificaciones."});
@@ -222,9 +242,9 @@ module.exports = async (req, res) => {
     }
     if (q.accion === "pagos") {
       if (!p.secciones.includes("pagos")) return res.status(403).json({error: "Sin acceso."});
-      const pagos = (await pagosStripe()).filter(x => p.dinero === "todo" || x.atendio_clave === u.vendedor);
-      let maestra = {ventas: []};
-      if (p.secciones.includes("comisiones")) { try { const m = await agendaPost("panel_maestra"); if (m.ok) maestra = m; } catch (e) { console.error(e); } }
+      const [todos, maestra] = await Promise.all([pagosStripe(), maestraSegura()]);
+      const mapa = await correcciones(maestra);
+      const pagos = todos.map(x => corregir(x, mapa)).filter(x => p.dinero === "todo" || x.atendio_clave === u.vendedor);
       return res.status(200).json({pagos, comisiones: p.secciones.includes("comisiones") ? comisiones(pagos, maestra, u) : []});
     }
     return res.status(400).json({error: "acción no válida"});
