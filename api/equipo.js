@@ -30,9 +30,11 @@ const PERMISOS = {
   campo:        {secciones: ["hoy", "agenda"], dinero: "nada", contacto: false, ine: true, acciones: ["nota"]}
 };
 /* Respaldo si la pestaña EQUIPO no responde: solo Nico puede entrar */
-const EQUIPO_RESPALDO = [{nombre: "Nicolás Campero", email: "nicolas@legaius.com", rol: "admin", vendedor: "nicolas"}];
-/* Nombres que se usan en la columna Vendedor de la Maestra → clave del vendedor */
-const ALIAS = {nico: "nicolas", nicolas: "nicolas", moni: "monica", monica: "monica", yuli: "yuliana", yuliana: "yuliana"};
+const EQUIPO_RESPALDO = [{nombre: "Nicolás Campero", email: "nicolas@legaius.com", rol: "admin", vendedor: "nico"}];
+/* Claves oficiales (2 oct 2026): nico · moni · yuliana (las de la pestaña EQUIPO y las ligas ?v=).
+   Nombres de la columna Vendedor de la Maestra y claves viejas de pagos (nicolas, monica) → clave oficial */
+const ALIAS = {nico: "nico", nicolas: "nico", moni: "moni", monica: "moni", yuli: "yuliana", yuliana: "yuliana"};
+const canon = k => { k = String(k || "").toLowerCase().trim(); return ALIAS[k] || k; };
 
 /* ---------- firma y cookie ---------- */
 const secreto = () => crypto.createHash("sha256").update("portal|" + (process.env.PORTAL_SECRET || process.env.RANCHO_TOKEN || "")).digest();
@@ -65,7 +67,7 @@ async function equipo() {
 async function usuarioDe(req) {
   const s = leer(cookieDe(req)); if (!s || s.k !== "sesion") return null;
   const u = (await equipo()).find(x => x.email && x.email === s.e); // si lo dan de baja en la hoja, deja de entrar
-  return u && PERMISOS[u.rol] ? {...u, permisos: PERMISOS[u.rol]} : null;
+  return u && PERMISOS[u.rol] ? {...u, vendedor: canon(u.vendedor), permisos: PERMISOS[u.rol]} : null;
 }
 
 /* ---------- Stripe: pagos de la página ---------- */
@@ -84,7 +86,7 @@ async function pagosStripe() {
       const m = s.metadata || {}, c = s.customer_details || {};
       lista.push({folio: s.id, fecha: new Date(s.created * 1000).toISOString(), tipo: m.tipo || "", ref: m.ref || s.client_reference_id || "",
         monto: (s.amount_total || 0) / 100, total: Number(m.total || m.estimado_total || 0), resta: Number(m.resta || 0),
-        cliente: c.name || "", correo: c.email || "", telefono: c.phone || "", atendio: m.atendio || "", atendio_clave: m.atendio_clave || "",
+        cliente: c.name || "", correo: c.email || "", telefono: c.phone || "", atendio: m.atendio || "", atendio_clave: canon(m.atendio_clave),
         fechaServicio: m.fecha || "", caballo: m.caballo || "", saldo_de: m.saldo_de || "", via: "página"});
     });
     if (!j.has_more || !j.data.length) break; after = j.data[j.data.length - 1].id;
@@ -95,7 +97,7 @@ async function pagosStripe() {
       if (lista.some(x => x.saldo_de && x.saldo_de === (p.metadata || {}).saldo_de && Math.abs(x.monto - p.amount / 100) < 1)) return;
       const m = p.metadata || {};
       lista.push({folio: p.id, fecha: new Date(p.created * 1000).toISOString(), tipo: "saldo_sesion", ref: m.ref || "", monto: p.amount / 100, total: 0, resta: 0,
-        cliente: "", correo: "", telefono: "", atendio: m.atendio || "", atendio_clave: m.atendio_clave || "", fechaServicio: m.fecha || "", caballo: "",
+        cliente: "", correo: "", telefono: "", atendio: m.atendio || "", atendio_clave: canon(m.atendio_clave), fechaServicio: m.fecha || "", caballo: "",
         saldo_de: m.saldo_de || "", via: "tarjeta guardada"});
     });
   } catch (e) { console.error("Saldos Stripe:", e.message); }

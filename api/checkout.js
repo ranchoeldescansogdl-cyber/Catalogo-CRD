@@ -13,7 +13,7 @@
    1 oct 2026: días festivos (api/_festivos.js) sin sesiones ni apartado de eventos en línea (se pregunta por WhatsApp).
    Sesiones piden hora de llegada, acompañantes con nombre (máx. 8 personas en total) e identificación del titular;
    la identificación viaja al Apps Script de la Agenda, que la guarda en una carpeta privada de Drive.
-   1 oct 2026: todo pago lleva atendio ("nicolas" | "nadie" | "otro:Nombre"): quién del Rancho atendió (comisiones);
+   1 oct 2026: todo pago lleva atendio ("nico" | "nadie" | "otro:Nombre"): quién del Rancho atendió (comisiones);
    GET /api/checkout devuelve {modo, vendedores} para armar la lista en la página.
    1 oct 2026: sesiones con anticipo guardan la tarjeta (customer_creation + setup_future_usage) y el aviso en el botón
    de pago dice que el resto se cobra solo a esa tarjeta 2 días antes; el cobro lo hace api/saldo.js.
@@ -26,7 +26,9 @@ const HOJAS = {
 };
 
 /* ¿Quién te atendió? (1 oct 2026): obligatorio en todo pago, para comisiones. Respaldo si la Agenda no responde */
-const VENDEDORES_FALLBACK = [{clave: "nicolas", nombre: "Nicolás Campero"}, {clave: "monica", nombre: "Mónica Valle"}, {clave: "yuliana", nombre: "Yuliana Garibay"}];
+const VENDEDORES_FALLBACK = [{clave: "nico", nombre: "Nicolás Campero"}, {clave: "moni", nombre: "Mónica Valle"}, {clave: "yuliana", nombre: "Yuliana Garibay"}];
+/* Claves viejas (ligas ?v= y pagos de antes del 2 oct 2026) → clave oficial */
+const ALIAS_VEND = {nicolas: "nico", monica: "moni", yuli: "yuliana"};
 
 /* Respaldo si la pestaña TARIFAS no responde (mismos valores que index.html, 28 sep 2026) */
 const TARIFAS_FALLBACK = [
@@ -121,7 +123,7 @@ async function loadVendedores() {
   cacheVend = {t: Date.now(), v: list};
   return list;
 }
-/* "nicolas" | "nadie" | "otro:Nombre" → {atendio (nombre legible), atendio_clave} */
+/* "nico" | "nadie" | "otro:Nombre" → {atendio (nombre legible), atendio_clave} */
 async function atendioDe(v) {
   v = String(v || "").trim();
   if (!v) throw new UserError("Dinos quién del Rancho te atendió para continuar.");
@@ -131,7 +133,7 @@ async function atendioDe(v) {
     if (n.length < 3) throw new UserError("Escribe el nombre de quien te atendió.");
     return {atendio: n + " (escrito por el cliente)", atendio_clave: "otro"};
   }
-  const x = (await loadVendedores()).find(p => p.clave === v.toLowerCase());
+  const k = v.toLowerCase(), x = (await loadVendedores()).find(p => p.clave === (ALIAS_VEND[k] || k));
   if (!x) throw new UserError("Elige de nuevo quién te atendió.");
   return {atendio: x.nombre, atendio_clave: x.clave};
 }
