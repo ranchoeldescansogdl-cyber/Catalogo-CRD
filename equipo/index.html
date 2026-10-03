@@ -130,6 +130,32 @@ dialog::backdrop{background:rgba(0,0,0,.75)}
 details.prov{background:#fff;border:1px solid var(--rule);border-radius:12px;margin:0 0 8px;padding:12px 14px}
 details.prov summary{cursor:pointer;display:flex;justify-content:space-between;gap:10px;font-weight:600;list-style:none}
 details.prov summary::-webkit-details-marker{display:none}
+/* redes sociales */
+.r-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:0 0 18px}
+.r-big{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;border:0;border-radius:16px;padding:20px;background:var(--black);color:#fff;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.12);min-height:118px}
+.r-big .ico{font-size:1.9rem;line-height:1;margin-bottom:4px}
+.r-big b{font-family:var(--display);font-weight:400;font-size:1.4rem;color:var(--gold);line-height:1.2}
+.r-big span:not(.ico){color:rgba(255,255,255,.75);font-size:.95rem}
+.r-alt{background:#fff;color:var(--ink);border:1px solid var(--rule);box-shadow:none}.r-alt b{color:var(--ink)}.r-alt span:not(.ico){color:var(--muted)}
+.r-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.r-tile{position:relative;display:block;width:100%;border-radius:12px;overflow:hidden;background:#e7e4dc;aspect-ratio:1;border:0;padding:0;cursor:pointer}
+.r-tile img{width:100%;height:100%;object-fit:cover;display:block}
+.r-sin{display:grid;place-items:center;height:100%;color:var(--muted);font-weight:600}
+.r-play{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.65);color:#fff;border-radius:999px;padding:2px 9px;font-size:.75rem}
+.r-tile .badge{position:absolute;top:8px;right:8px}
+.r-cap{font-size:.82rem;color:var(--muted);margin:5px 2px 0;line-height:1.35}
+.r-mini{padding:4px 10px;font-size:.8rem;margin-top:4px}
+.r-media{display:flex;gap:8px;overflow-x:auto;margin:12px 0 0}.r-media>div{flex:0 0 140px}
+.r-texto{white-space:pre-wrap;margin:10px 0 0}
+.r-temas{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}
+.r-tema{border:2px solid var(--rule);background:#fff;border-radius:12px;padding:14px 8px;font-weight:600;cursor:pointer;font-size:1rem}
+.r-tema[aria-pressed=true]{border-color:var(--black);background:var(--black);color:var(--gold)}
+.r-step{font-weight:600;margin:6px 0 8px;font-size:1.05rem}
+.r-pick{padding:22px 14px;font-size:1.05rem}
+.r-prog{height:12px;background:var(--mist);border-radius:999px;overflow:hidden;margin:6px 0 4px}.r-prog i{display:block;height:100%;width:0;background:var(--gold-deep);transition:width .2s}
+.r-ok-big{text-align:center;padding:8px 0}.r-ok-big .ico{font-size:3rem}.r-ok-big h3{margin:6px 0}
+.r-ap{padding:10px 20px;font-size:1rem}
+.r-kpi .kpi span+span{margin-top:4px}
 @media (max-width:600px){ .who span{display:none} .time{min-width:52px;font-size:1.15rem} .frm .dos{grid-template-columns:1fr} }
 </style>
 </head>
@@ -179,15 +205,15 @@ const fHora = iso => new Date(iso).toLocaleTimeString("es-MX", {hour: "2-digit",
 const fFecha = iso => new Date(iso).toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "2-digit", timeZone: TZ});
 const ROLES = {admin: "Administración", direccion: "Dirección", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
 const SECCIONES = {hoy: "Hoy", tareas: "Tareas", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", pagos: "Pagos y saldos", caballos: "Caballos y ventas",
-  comisiones: "Comisiones", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
+  comisiones: "Comisiones", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
 const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Otro"];
 const TIPOS_SALUD = ["Revisión", "Vacuna", "Desparasitación", "Herraje / cascos", "Dental", "Tratamiento", "Lesión o cólico", "Monta / inseminación", "Palpación / ecografía", "Parto", "Destete", "Trámite KFPS / GVHS", "Otro"];
 const TIPOS_BITACORA = ["Avance", "Problema", "Falta material o compra", "Aviso", "Otro"];
 const CATS_GASTO = ["Alimento", "Veterinario", "Medicamentos", "Herraje", "Mantenimiento", "Jardinería", "Sueldos", "Luz y agua", "Gasolina", "Eventos", "Papelería y trámites", "Otro"];
 const TIPO_PAGO = {sesion: "Sesión", evento: "Evento", caballo: "Caballo", potro: "Potro 2027", saldo_sesion: "Resto de sesión"};
 
-let REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
-const st = {agendaFiltro: "todo", busca: "", tFiltro: "pendientes", bArea: "todo", sCaballo: "", mes: "", qFiltro: "abiertas"};
+let REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
+const st = {agendaFiltro: "todo", busca: "", tFiltro: "pendientes", bArea: "todo", sCaballo: "", mes: "", qFiltro: "abiertas", rTab: "inicio"};
 
 function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3200); }
 async function api(q) { const r = await fetch("/api/equipo?" + q, {credentials: "same-origin", cache: "no-store"}); const j = await r.json().catch(() => ({}));
@@ -253,6 +279,7 @@ async function cargar(qué) {
   if (qué === "equipo" && !EQUIPO) EQUIPO = await api("accion=equipo_lista");
   if (qué === "cotizaciones" && !COTIZ) COTIZ = await api("accion=cotizaciones");
   if (qué === "reglamento" && !REG) REG = await api("accion=reglamento");
+  if (qué === "redes" && !REDES) REDES = await api("accion=redes");
 }
 const tiene = s => YO.permisos.secciones.includes(s);
 async function render() {
@@ -270,12 +297,14 @@ async function render() {
     if (s === "proveedores" || s === "conta") await cargar("conta");
     if (s === "equipo") await cargar("equipo");
     if (s === "reglamento") await cargar("reglamento");
+    if (s === "redes") await cargar("redes");
+    if (s === "hoy" && tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
     if (s !== ACTUAL) return;
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
-      tareas: vTareas, cotizaciones: vCotizaciones, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento})[s]();
+      tareas: vTareas, cotizaciones: vCotizaciones, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
-function recargar() { AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
+function recargar() { REDES = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
 
 /* ---------- piezas ---------- */
 const eventosReales = () => (AGENDA ? AGENDA.eventos : []).filter(e => !e.prueba && e.estado !== "reservando");
@@ -322,7 +351,7 @@ function porDia(lista, vacio) {
 
 /* ---------- vistas ---------- */
 function vHoy() {
-  const arriba = hoyCotiz() + hoyTareas() + hoySalud();
+  const arriba = hoyRedes() + hoyCotiz() + hoyTareas() + hoySalud();
   if (!tiene("agenda")) return `<h2>${esc(fDia(hoyISO()))}</h2>${arriba || `<div class="empty">Todo al día.</div>`}`;
   return vHoyAgenda().replace("<!--ARRIBA-->", () => arriba);
 }
@@ -650,6 +679,215 @@ document.addEventListener("click", e => {
       <button class="btn btn-dark" id="d-ok">Guardar</button></div>`);
     box.querySelector("#d-ok").onclick = () => enviar(box, {tipo: "prospecto", id: q.ID, cambios: {estatus: box.querySelector("#q-e").value, asignada: box.querySelector("#q-a").value,
       proximo: box.querySelector("#q-p").value, nota: box.querySelector("#q-n").value.trim()}}, "Seguimiento guardado");
+  }
+});
+/* ----- Redes sociales (3 oct 2026): el equipo sube fotos/videos directo a Drive; Nico y Mario aprueban; el agente de Claude arma y agenda en Metricool ----- */
+const R_TEMAS = [["Caballo", "🐴"], ["Potro o nacimiento", "🍼"], ["Rancho y naturaleza", "🌳"], ["Evento o sesión", "📸"], ["Equipo trabajando", "🧰"], ["Otro", "✨"]];
+const R_PEDIDOS = ["Anuncio del rancho", "Próximo evento", "Caballo en venta", "Temporada de maquilas", "Nacimiento", "Tip o consejo", "Otro"];
+const R_BADGE = {"Pedido": "b-info", "Borrador": "b-info", "Por aprobar": "b-warn", "Pedir cambios": "b-warn", "Aprobado": "b-ok", "Agendado": "b-ok", "Publicado": "b-ok", "Descartado": "b-info", "Error": "b-bad"};
+const R_TXT = {"Pedido": "Pedido, en espera", "Borrador": "En preparación", "Por aprobar": "Por aprobar", "Pedir cambios": "Corrigiendo", "Aprobado": "Aprobada", "Agendado": "Agendada", "Publicado": "Publicada", "Descartado": "Descartada", "Error": "Con error"};
+const R_RED = {facebook: "Facebook", instagram: "Instagram", tiktok: "TikTok", youtube: "YouTube"};
+const rThumb = id => `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w600`;
+const rFecha = s => { const t = String(s || ""); if (!/^\d{4}-\d{2}-\d{2}/.test(t)) return t; return fDia(t.slice(0, 10)) + (t.length > 10 ? " · " + t.slice(11, 16) : ""); };
+const rPuedeAprobar = () => YO.permisos.acciones.includes("redes_aprobar");
+const rPorAprobar = () => REDES ? REDES.publicaciones.filter(p => p["Estatus"] === "Por aprobar") : [];
+function rMat(id) { return REDES ? REDES.material.find(m => m.ID === id || m["ID Drive"] === id) : null; }
+function rMediaDe(p) { return String(p["Material"] || "").split(/[,\s]+/).filter(Boolean).map(x => rMat(x) || (/^[A-Za-z0-9_-]{20,}$/.test(x) ? {"ID Drive": x, Tipo: "Foto"} : null)).filter(Boolean); }
+function rTile(m, cap) {
+  const id = m["ID Drive"], video = m.Tipo === "Video";
+  return `<div><button class="r-tile" type="button" data-rver="${esc(id)}" data-rvid="${video ? 1 : ""}" aria-label="Ver ${video ? "video" : "foto"}">
+    <img src="${rThumb(id)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'r-sin',textContent:${video ? "'Video'" : "'Foto'"}}))">
+    ${video ? `<span class="r-play">▶ Video</span>` : ""}${m.Estatus ? `<span class="badge ${m.Estatus === "Usado" ? "b-ok" : m.Estatus === "Descartado" ? "b-info" : "b-warn"}">${m.Estatus === "Usado" ? "Ya se usó" : esc(m.Estatus)}</span>` : ""}</button>
+    ${cap ? `<p class="r-cap">${cap}</p>` : ""}</div>`;
+}
+function hoyRedes() {
+  if (!tiene("redes")) return "";
+  const n = rPorAprobar().length;
+  return `<div class="r-hero r-hero-hoy"><button class="r-big" type="button" data-rsubir="1"><span class="ico">📷</span><b>Subir fotos o video</b><span>Para las redes del rancho</span></button>
+    ${rPuedeAprobar() && n ? `<button class="r-big r-alt" type="button" onclick="st.rTab='aprobar';ir('redes')"><span class="ico">✅</span><b>${n} por aprobar</b><span>Publicaciones listas para revisar</span></button>` : ""}</div>`;
+}
+function rRedesTxt(s) { return String(s || "").split(/[,\s]+/).filter(Boolean).map(r => R_RED[r.toLowerCase()] || r).join(" · "); }
+function rCardPub(p, modo) {
+  const media = rMediaDe(p), vp = String(p["Vista previa"] || "");
+  const vpDrive = (vp.match(/\/d\/([A-Za-z0-9_-]{20,})/) || vp.match(/[?&]id=([A-Za-z0-9_-]{20,})/) || [])[1];
+  const editable = modo === "aprobar";
+  const acts = [];
+  if (editable) acts.push(`<button class="btn btn-dark r-ap" type="button" data-raprobar="${esc(p.ID)}">✓ Aprobar</button>`, `<button class="btn" type="button" data-rcambios="${esc(p.ID)}">Pedir cambio</button>`, `<button class="btn" type="button" data-rdescartar="${esc(p.ID)}">Descartar</button>`);
+  else if (rPuedeAprobar() && ["Aprobado", "Agendado", "Pedido", "Pedir cambios"].includes(p["Estatus"])) acts.push(`<button class="btn" type="button" data-rdescartar="${esc(p.ID)}">Descartar</button>`);
+  if (p["Liga publicada"]) acts.push(`<a class="btn" href="${esc(p["Liga publicada"])}" target="_blank" rel="noopener">Ver publicación</a>`);
+  if (vp && !vpDrive && /^https:\/\//.test(vp)) acts.push(`<a class="btn" href="${esc(vp)}" target="_blank" rel="noopener">Ver vista previa</a>`);
+  return `<article class="card r-card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(p["Categoría"] || "Publicación")}${p["Caballo / evento"] ? " · " + esc(p["Caballo / evento"]) : ""}</p>
+      <p class="card-m">${p["Fecha y hora"] ? esc(rFecha(p["Fecha y hora"])) : "Fecha por definir"}${p["Formato"] ? " · " + esc(p["Formato"]) : ""}${p["Redes"] ? " · " + esc(rRedesTxt(p["Redes"])) : ""}</p></div>
+      <span class="badge ${R_BADGE[p["Estatus"]] || "b-info"}">${esc(R_TXT[p["Estatus"]] || p["Estatus"])}</span></div>
+    ${media.length || vpDrive ? `<div class="r-media">${vpDrive ? rTile({"ID Drive": vpDrive, Tipo: /video|reel/i.test(p["Formato"] || "") ? "Video" : "Foto"}) : ""}${media.slice(0, 10).map(m => rTile({...m, Estatus: ""})).join("")}</div>` : ""}
+    ${editable ? `<div class="frm" style="margin-top:12px"><label>Texto de la publicación (puedes corregirlo antes de aprobar)</label><textarea rows="6" id="rt-${esc(p.ID)}" maxlength="2200">${esc(p["Texto"])}</textarea>
+      <label>Hashtags</label><input id="rh-${esc(p.ID)}" maxlength="600" value="${esc(p["Hashtags"])}"></div>`
+      : p["Texto"] ? `<p class="r-texto">${esc(p["Texto"])}${p["Hashtags"] ? `<br><span class="card-m">${esc(p["Hashtags"])}</span>` : ""}</p>` : ""}
+    ${p["Indicaciones"] ? `<details class="more"><summary>Indicaciones y comentarios</summary><pre>${esc(p["Indicaciones"])}</pre></details>` : ""}
+    ${p["Alcance"] || p["Interacciones"] ? `<p class="card-m">Alcance ${esc(p["Alcance"] || "—")} · Interacciones ${esc(p["Interacciones"] || "—")}</p>` : ""}
+    ${p["Aprobó"] ? `<p class="card-m">Aprobó ${esc(p["Aprobó"])} · ${esc(p["Aprobada"])}</p>` : ""}
+    ${acts.length ? `<div class="acts">${acts.join("")}</div>` : ""}</article>`;
+}
+function vRedes() {
+  const R = REDES, ofi = R.oficina, yo = YO.usuario.nombre;
+  const hero = `<div class="r-hero"><button class="r-big" type="button" data-rsubir="1"><span class="ico">📷</span><b>Subir fotos o video</b><span>Caballos, potros, el rancho, eventos. Directo del celular.</span></button>
+    <button class="r-big r-alt" type="button" data-rpedir="1"><span class="ico">✍️</span><b>Pedir una publicación</b><span>Un anuncio, un evento, una idea</span></button></div>`;
+  if (!ofi) { // campo y médicos: solo subir y ver lo suyo
+    const mios = R.material.slice().reverse(), pub = R.publicaciones.filter(p => p["Estatus"] === "Publicado").slice(-6).reverse();
+    return `<h2>Redes sociales</h2><p class="sub">Toma fotos o videos de lo bonito del rancho y súbelos aquí. Nico y Mario eligen qué se publica.</p>${hero}
+      <h3>Lo que has subido (${mios.length})</h3>${mios.length ? `<div class="r-grid">${mios.slice(0, 40).map(m => rTile(m, esc(m.Tema) + " · " + esc(String(m.Fecha).slice(0, 10)))).join("")}</div>` : `<div class="empty">Todavía no has subido nada. ¡Empieza con el botón de arriba!</div>`}
+      ${pub.length ? `<h3>Ya publicado</h3>${pub.map(p => rCardPub(p)).join("")}` : ""}`;
+  }
+  const P = R.publicaciones, hoy = hoyISO(), f = (st.rTab === "aprobar" && !R.aprueba) ? "inicio" : st.rTab;
+  const porAp = P.filter(p => p["Estatus"] === "Por aprobar"), nuevo = R.material.filter(m => m.Estatus === "Nuevo");
+  const prox = P.filter(p => ["Aprobado", "Agendado"].includes(p["Estatus"]) && String(p["Fecha y hora"]).slice(0, 10) >= hoy).sort((a, b) => String(a["Fecha y hora"]) < String(b["Fecha y hora"]) ? -1 : 1);
+  const mes = hoy.slice(0, 7), pubMes = P.filter(p => p["Estatus"] === "Publicado" && String(p["Fecha y hora"]).slice(0, 7) === mes);
+  const tabs = [["inicio", "Resumen"], ...(R.aprueba ? [["aprobar", `Por aprobar (${porAp.length})`]] : []), ["calendario", "Calendario"], ["material", `Material (${nuevo.length} nuevo${nuevo.length === 1 ? "" : "s"})`], ["metricas", "Métricas"]];
+  let cuerpo = "";
+  if (f === "inicio") {
+    const plan = R.plan.length ? `<h3>Plan de la semana</h3><div class="tbl-wrap"><table><thead><tr><th>Día</th><th>Qué se publica</th><th>Idea</th></tr></thead><tbody>${R.plan.map(x => `<tr><td>${esc(x["Día"])}</td><td><b>${esc(x["Categoría"])}</b></td><td>${esc(x["Idea"])}</td></tr>`).join("")}</tbody></table></div><p class="card-m">Para cambiar la mezcla, edita la pestaña REDES_PLAN de la Maestra.</p>` : "";
+    const pedidos = P.filter(p => ["Pedido", "Pedir cambios", "Borrador"].includes(p["Estatus"]));
+    cuerpo = `<div class="grid-kpi">${R.aprueba ? `<div class="kpi"><span>Por aprobar</span><b>${porAp.length}</b></div>` : ""}<div class="kpi"><span>Agendadas</span><b>${prox.length}</b></div>
+      <div class="kpi"><span>Publicadas este mes</span><b>${pubMes.length}</b></div><div class="kpi"><span>Material nuevo</span><b>${nuevo.length}</b></div></div>
+      ${R.aprueba && porAp.length ? `<div class="big-actions"><button class="btn btn-dark" type="button" data-rtab="aprobar">Revisar ${porAp.length} por aprobar</button></div>` : ""}
+      <h3>Próximas publicaciones</h3>${prox.length ? prox.slice(0, 5).map(p => rCardPub(p)).join("") : `<div class="empty">Nada agendado todavía. El agente prepara borradores a las 9 am y a las 5 pm.</div>`}
+      ${pedidos.length ? `<h3>En preparación (${pedidos.length})</h3>${pedidos.slice(0, 6).map(p => rCardPub(p)).join("")}` : ""}${plan}`;
+  }
+  if (f === "aprobar") cuerpo = porAp.length ? `<p class="sub">Revisa cada una: si está bien, aprieta <b>Aprobar</b> y el agente la agenda en su siguiente pasada. Con que la apruebe uno de los dos basta.</p>${porAp.map(p => rCardPub(p, "aprobar")).join("")}` : `<div class="empty">No hay nada por aprobar. ¡Todo al día!</div>`;
+  if (f === "calendario") {
+    const vivas = P.filter(p => !["Descartado"].includes(p["Estatus"]) && (String(p["Fecha y hora"]).slice(0, 10) >= masDias(hoy, -14) || !p["Fecha y hora"]));
+    const g = {}; vivas.forEach(p => { const d = String(p["Fecha y hora"]).slice(0, 10) || "sin-fecha"; (g[d] = g[d] || []).push(p); });
+    cuerpo = Object.keys(g).length ? Object.keys(g).sort().map(d => `<section class="day"><p class="day-h">${d === "sin-fecha" ? "Sin fecha" : esc(fDia(d))}${d === hoy ? " <small>· hoy</small>" : ""}</p>${g[d].map(p => rCardPub(p)).join("")}</section>`).join("")
+      : `<div class="empty">El calendario está vacío.</div>`;
+  }
+  if (f === "material") {
+    const L = R.material.slice().reverse().filter(m => m.Estatus !== "Descartado");
+    cuerpo = `<p class="sub">Todo lo que sube el equipo. "Nuevo" quiere decir que el agente todavía no lo usa.</p>${L.length ? `<div class="r-grid">${L.slice(0, 120).map(m => rTile(m, `${esc(m.Tema)}${m.Caballo ? " · " + esc(m.Caballo) : ""}<br>${esc(m["Subió"])} · ${esc(String(m.Fecha).slice(0, 10))}${m.Nota ? `<br><i>${esc(m.Nota)}</i>` : ""}${R.aprueba && m.Estatus === "Nuevo" ? `<br><button class="btn r-mini" type="button" data-rmdesc="${esc(m.ID)}">Descartar</button>` : ""}`)).join("")}</div>` : `<div class="empty">Todavía no hay material.</div>`}`;
+  }
+  if (f === "metricas") {
+    const M = R.metricas, redes = [...new Set(M.map(x => x["Red"]))];
+    const tiles = redes.map(r => { const L = M.filter(x => x["Red"] === r).sort((a, b) => a["Fecha"] < b["Fecha"] ? -1 : 1), u = L[L.length - 1], ant = L.find(x => x["Fecha"] >= masDias(String(u["Fecha"]).slice(0, 10), -30)) || L[0];
+      const dif = numv(u["Seguidores"]) - numv(ant["Seguidores"]);
+      return `<div class="kpi"><span>${esc(R_RED[String(r).toLowerCase()] || r)}</span><b>${Number(numv(u["Seguidores"])).toLocaleString("es-MX")}</b><span>seguidores${L.length > 1 ? ` · ${dif >= 0 ? "+" : ""}${dif.toLocaleString("es-MX")} en 30 días` : ""}</span>
+        <span>Alcance 7 días: ${esc(u["Alcance 7 días"] || "—")} · Interacciones: ${esc(u["Interacciones 7 días"] || "—")}</span></div>`; }).join("");
+    const top = P.filter(p => p["Estatus"] === "Publicado" && (p["Alcance"] || p["Interacciones"])).sort((a, b) => numv(b["Alcance"]) - numv(a["Alcance"])).slice(0, 10);
+    cuerpo = M.length ? `<p class="sub">Se actualizan solas cuando pasa el agente. Último dato: ${esc(M[M.length - 1]["Fecha"])}.</p><div class="grid-kpi r-kpi">${tiles}</div>
+      <h3>Publicaciones con más alcance</h3>${top.length ? tabla(top.map(p => ({Fecha: String(p["Fecha y hora"]).slice(0, 10), Qué: p["Categoría"] + (p["Caballo / evento"] ? " · " + p["Caballo / evento"] : ""), Alcance: p["Alcance"], Interacciones: p["Interacciones"]})), ["Fecha", "Qué", "Alcance", "Interacciones"], "") : `<div class="empty">Todavía no hay publicaciones medidas.</div>`}`
+      : `<div class="empty">Las métricas aparecen aquí en cuanto pase el agente de redes (9 am y 5 pm).</div>`;
+  }
+  return `<h2>Redes sociales</h2><p class="sub">Facebook, Instagram, TikTok y YouTube del rancho. El equipo sube material, el agente arma las publicaciones y Nico o Mario las aprueban.</p>${hero}
+    <div class="bar">${tabs.map(([k, n]) => `<button class="chip" type="button" data-rtab="${k}" aria-pressed="${f === k}">${n}</button>`).join("")}</div>${cuerpo}`;
+}
+/* subida directa a Drive (sesión reanudable que abre el Apps Script), en pedazos de 16 MB */
+function rMime(f) {
+  if (f.type) return f.type;
+  const e = (f.name.split(".").pop() || "").toLowerCase();
+  return ({mov: "video/quicktime", mp4: "video/mp4", m4v: "video/x-m4v", heic: "image/heic", heif: "image/heif", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp"})[e] || "";
+}
+function rPut(url, blob, ini, total, prog) {
+  return new Promise((ok, mal) => {
+    const x = new XMLHttpRequest(); x.open("PUT", url);
+    x.setRequestHeader("Content-Range", `bytes ${ini}-${ini + blob.size - 1}/${total}`);
+    x.upload.onprogress = e => { if (e.lengthComputable) prog(ini + e.loaded); };
+    x.onload = () => ok(x); x.onerror = () => mal(new Error("Se cortó la conexión")); x.ontimeout = () => mal(new Error("Tardó demasiado"));
+    x.send(blob);
+  });
+}
+async function rSubirUno(file, meta, prog) {
+  const mime = rMime(file);
+  if (!/^(image|video)\//.test(mime)) throw new Error(file.name + " no es foto ni video.");
+  const s = await post({accion: "hacer", tipo: "redes", op: "subida", mime, tamano: file.size, nombre: file.name, tema: meta.tema});
+  const CH = 16 * 1024 * 1024; let ini = 0, res = null;
+  while (ini < file.size) {
+    const blob = file.slice(ini, Math.min(ini + CH, file.size)); let x = null;
+    for (let i = 0; i < 4 && !x; i++) { try { x = await rPut(s.url, blob, ini, file.size, prog); } catch (e) { if (i === 3) throw e; await new Promise(r => setTimeout(r, 2000 * (i + 1))); } }
+    if (x.status === 308) { const r = x.getResponseHeader("Range"); ini = r ? Number(r.split("-")[1]) + 1 : ini + blob.size; continue; }
+    if (x.status === 200 || x.status === 201) { res = JSON.parse(x.responseText || "{}"); break; }
+    throw new Error("Drive respondió " + x.status + ". Intenta otra vez.");
+  }
+  if (!res || !res.id) throw new Error("No se pudo terminar de subir " + file.name);
+  prog(file.size);
+  return post({accion: "hacer", tipo: "redes", op: "material", fileId: res.id, tema: meta.tema, caballo: meta.caballo, nota: meta.nota});
+}
+let R_SUBIENDO = false;
+window.addEventListener("beforeunload", e => { if (R_SUBIENDO) { e.preventDefault(); e.returnValue = ""; } });
+function rOpcionesCaballo() { return ((REDES && REDES.caballos) || []).filter(c => !/vendid|muert/i.test(c.Estatus || "")).map(c => `<option value="${esc(c.Nombre)}">${esc(c.Raza || "")}</option>`).join(""); }
+async function rDialogoSubir() {
+  if (!REDES) { try { await cargar("redes"); } catch (e) {} }
+  const box = dialogo("Subir fotos o video", `<div class="frm">
+    <p class="r-step">1. Elige las fotos o videos</p>
+    <label class="foto-btn r-pick">📷 Tomar o elegir fotos y videos<input type="file" id="r-files" accept="image/*,video/*" multiple></label><div class="fotos-prev" id="r-prev"></div>
+    <p class="r-step">2. ¿De qué es?</p><div class="r-temas">${R_TEMAS.map(([t, i]) => `<button type="button" class="r-tema" data-rt="${esc(t)}" aria-pressed="false">${i} ${esc(t)}</button>`).join("")}</div>
+    <div id="r-cab-w" class="hide"><label>¿Qué caballo? (si sabes)</label><input id="r-cab" list="r-cabs" placeholder="Escribe el nombre"><datalist id="r-cabs">${rOpcionesCaballo()}</datalist></div>
+    <label>¿Algo que debamos saber? (opcional)</label><input id="r-nota" maxlength="300" placeholder="Ej. Nico corriendo al atardecer">
+    <div id="r-estado"></div>
+    <button class="btn btn-dark" id="r-ok" type="button">Enviar</button></div>`);
+  let tema = "";
+  const inp = box.querySelector("#r-files");
+  inp.addEventListener("change", () => { box.querySelector("#r-prev").innerHTML = [...inp.files].slice(0, 20).map(f => /^image/.test(rMime(f)) ? `<img src="${URL.createObjectURL(f)}" alt="">` : `<span class="badge b-info">🎬 ${esc(f.name)} · ${Math.round(f.size / 1048576)} MB</span>`).join(""); });
+  box.querySelectorAll(".r-tema").forEach(b => b.addEventListener("click", () => { tema = b.dataset.rt; box.querySelectorAll(".r-tema").forEach(x => x.setAttribute("aria-pressed", x === b)); box.querySelector("#r-cab-w").classList.toggle("hide", !/caballo|potro/i.test(tema)); }));
+  box.querySelector("#r-ok").onclick = async () => {
+    const files = [...inp.files].slice(0, 20);
+    if (!files.length) return alert("Primero elige las fotos o videos.");
+    if (!tema) return alert("Elige de qué es (paso 2).");
+    const meta = {tema, caballo: (box.querySelector("#r-cab").value || "").trim(), nota: box.querySelector("#r-nota").value.trim()};
+    const btn = box.querySelector("#r-ok"), est = box.querySelector("#r-estado"); btn.disabled = true; btn.textContent = "Subiendo… no cierres esta pantalla";
+    const total = files.reduce((a, f) => a + f.size, 0); let hechos = 0, fallas = [];
+    R_SUBIENDO = true;
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      est.innerHTML = `<p class="card-m">Subiendo ${i + 1} de ${files.length}…</p><div class="r-prog"><i id="r-bar"></i></div><p class="card-m" id="r-pct">0%</p>`;
+      try { await rSubirUno(f, meta, n => { const pct = Math.min(100, Math.round((hechos + n) / total * 100)); const bar = $("#r-bar"); if (bar) { bar.style.width = pct + "%"; $("#r-pct").textContent = pct + "%"; } }); }
+      catch (e) { fallas.push(f.name + ": " + e.message); }
+      hechos += f.size;
+    }
+    R_SUBIENDO = false; REDES = null;
+    box.innerHTML = fallas.length < files.length ? `<div class="r-ok-big"><div class="ico">✅</div><h3>¡Gracias! Ya llegó${files.length - fallas.length > 1 ? "ron" : ""}.</h3><p>Nico y Mario lo van a revisar para las redes del rancho.</p>
+        ${fallas.length ? `<div class="err" style="text-align:left">No se pudieron subir:<br>${fallas.map(esc).join("<br>")}</div>` : ""}
+        <div class="big-actions" style="justify-content:center"><button class="btn btn-dark" type="button" data-rsubir="1">Subir más</button><button class="btn" type="button" onclick="$('#dlg').close();render()">Listo</button></div></div>`
+      : `<div class="err" style="text-align:left">No se pudo subir nada:<br>${fallas.map(esc).join("<br>")}</div><button class="btn btn-dark" type="button" data-rsubir="1">Intentar de nuevo</button>`;
+  };
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.rtab) { st.rTab = b.dataset.rtab; render(); }
+  if (b.dataset.rsubir) { if (R_SUBIENDO) return; rDialogoSubir(); }
+  if (b.dataset.rver) {
+    const id = b.dataset.rver;
+    dialogo(b.dataset.rvid ? "Video" : "Foto", b.dataset.rvid ? `<iframe src="https://drive.google.com/file/d/${encodeURIComponent(id)}/preview" allow="autoplay" title="Video"></iframe>` : `<img src="${rThumb(id).replace("w600", "w1600")}" alt="">`);
+  }
+  if (b.dataset.rpedir) {
+    if (!REDES) { try { await cargar("redes"); } catch (err) {} }
+    const box = dialogo("Pedir una publicación", `<div class="frm">
+      <label>¿De qué se trata?</label><select id="rp-t">${opt(R_PEDIDOS, "Anuncio del rancho")}</select>
+      <label>¿Qué quieres que diga?</label><textarea id="rp-n" rows="4" maxlength="1000" placeholder="Ej. Avisar que ya nacieron los primeros potros 2027 y que se pueden apartar"></textarea>
+      <div class="dos"><div><label>Caballo (opcional)</label><input id="rp-c" list="rp-cabs"><datalist id="rp-cabs">${rOpcionesCaballo()}</datalist></div><div><label>¿Para cuándo? (opcional)</label><input id="rp-f" type="date" min="${hoyISO()}"></div></div>
+      <button class="btn btn-dark" id="d-ok" type="button">Mandar pedido</button></div>`);
+    box.querySelector("#d-ok").onclick = async () => {
+      const nota = box.querySelector("#rp-n").value.trim(); if (nota.length < 5) return alert("Escribe qué quieres que se publique.");
+      const bt = box.querySelector("#d-ok"); bt.disabled = true; bt.textContent = "Enviando…";
+      try { await post({accion: "hacer", tipo: "redes", op: "pedido", tema: box.querySelector("#rp-t").value, nota, caballo: box.querySelector("#rp-c").value.trim(), fecha: box.querySelector("#rp-f").value});
+        $("#dlg").close(); toast("Pedido enviado. El agente lo prepara en su siguiente pasada."); REDES = null; render(); }
+      catch (err) { alert(err.message); bt.disabled = false; bt.textContent = "Mandar pedido"; }
+    };
+  }
+  if (b.dataset.raprobar) {
+    const id = b.dataset.raprobar; b.disabled = true; b.textContent = "Aprobando…";
+    try { await post({accion: "hacer", tipo: "redes", op: "aprobar", id, texto: ($("#rt-" + CSS.escape(id)) || {}).value, hashtags: ($("#rh-" + CSS.escape(id)) || {}).value});
+      toast("Aprobada. El agente la agenda en su siguiente pasada."); REDES = null; render(); }
+    catch (err) { alert(err.message); b.disabled = false; b.textContent = "✓ Aprobar"; }
+  }
+  if (b.dataset.rcambios) {
+    const id = b.dataset.rcambios, box = dialogo("Pedir cambio", `<div class="frm"><label>¿Qué hay que cambiar?</label><textarea id="rc-n" rows="4" maxlength="800" placeholder="Ej. Usa el video donde corre, y menciona que se puede apartar con plan de pagos"></textarea><button class="btn btn-dark" id="d-ok" type="button">Mandar al agente</button></div>`);
+    box.querySelector("#d-ok").onclick = async () => { const nota = box.querySelector("#rc-n").value.trim(); if (!nota) return alert("Escribe qué hay que cambiar.");
+      try { await post({accion: "hacer", tipo: "redes", op: "cambios", id, nota}); $("#dlg").close(); toast("Listo. El agente la corrige y te la regresa."); REDES = null; render(); } catch (err) { alert(err.message); } };
+  }
+  if (b.dataset.rdescartar) {
+    if (!confirm("¿Descartar esta publicación? Ya no se publicará.")) return;
+    try { await post({accion: "hacer", tipo: "redes", op: "descartar", id: b.dataset.rdescartar}); toast("Publicación descartada"); REDES = null; render(); } catch (err) { alert(err.message); }
+  }
+  if (b.dataset.rmdesc) {
+    try { await post({accion: "hacer", tipo: "redes", op: "material_estatus", id: b.dataset.rmdesc, estatus: "Descartado"}); toast("Archivo descartado"); REDES = null; render(); } catch (err) { alert(err.message); }
   }
 });
 /* ---------- formularios ---------- */
