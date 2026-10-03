@@ -24,7 +24,10 @@
    identifica la versión exacta: quien no la ha aceptado ve el reglamento antes que el portal y aprieta "Leí y acepto".
    Cada aceptación queda en la pestaña REGLAMENTO de la Maestra (fecha y hora, persona, versión, huella, dispositivo, IP).
    GET  accion=reglamento → {version, huella, texto, aceptado, lista (solo quien asigna tareas)}
-   POST hacer tipo: reglamento_aceptar {huella} */
+   POST hacer tipo: reglamento_aceptar {huella}
+
+   3 oct 2026 (redes sociales): GET accion=redes · POST hacer tipo:"redes" op: subida|material|pedido|aprobar|cambios|descartar|material_estatus.
+   Los videos suben directo del celular a Drive (sesión reanudable que abre el Apps Script); aquí solo pasan los datos. */
 const crypto = require("crypto");
 const AG = require("./_agenda");
 const REG = require("./_reglamento");
@@ -38,16 +41,19 @@ const VERSION = "2026-08-26.dahlia";
 
 /* jefe = asigna, edita, revisa y cancela tareas (Nico, Mario y Judith) */
 const PERMISOS = {
-  admin:        {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "salud", "bitacora", "proveedores", "conta", "equipo"], dinero: "todo", contacto: true, ine: true, jefe: true,
-                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "registro", "liga_celular", "prospecto"]},
-  direccion:    {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "salud", "bitacora"], dinero: "todo", contacto: true, ine: true, jefe: false,
-                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "prospecto"]},
-  ventas:       {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones"], dinero: "propio", contacto: true, ine: true, jefe: false, acciones: ["nota", "liga", "tarea", "prospecto"]},
-  contabilidad: {secciones: ["hoy", "tareas", "agenda", "pagos", "caballos", "comisiones", "proveedores", "conta", "bitacora"], dinero: "todo", contacto: true, ine: false, jefe: true,
-                 acciones: ["saldo_pagado", "nota", "tarea", "reporte", "registro"]},
-  campo:        {secciones: ["hoy", "tareas", "bitacora", "salud", "agenda"], dinero: "nada", contacto: false, ine: true, jefe: false, acciones: ["nota", "tarea", "reporte"]},
-  medico:       {secciones: ["hoy", "tareas", "salud", "bitacora"], dinero: "nada", contacto: false, ine: false, jefe: false, acciones: ["tarea", "reporte"]}
+  admin:        {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "redes", "salud", "bitacora", "proveedores", "conta", "equipo"], dinero: "todo", contacto: true, ine: true, jefe: true,
+                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "registro", "liga_celular", "prospecto", "redes", "redes_aprobar"]},
+  direccion:    {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "redes", "salud", "bitacora"], dinero: "todo", contacto: true, ine: true, jefe: false,
+                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "prospecto", "redes"]},
+  ventas:       {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "redes"], dinero: "propio", contacto: true, ine: true, jefe: false, acciones: ["nota", "liga", "tarea", "prospecto", "redes"]},
+  contabilidad: {secciones: ["hoy", "tareas", "agenda", "pagos", "caballos", "comisiones", "proveedores", "conta", "bitacora", "redes"], dinero: "todo", contacto: true, ine: false, jefe: true,
+                 acciones: ["saldo_pagado", "nota", "tarea", "reporte", "registro", "redes"]},
+  campo:        {secciones: ["hoy", "tareas", "redes", "bitacora", "salud", "agenda"], dinero: "nada", contacto: false, ine: true, jefe: false, acciones: ["nota", "tarea", "reporte", "redes"]},
+  medico:       {secciones: ["hoy", "tareas", "salud", "bitacora", "redes"], dinero: "nada", contacto: false, ine: false, jefe: false, acciones: ["tarea", "reporte", "redes"]}
 };
+/* Redes sociales (3 oct 2026): todos suben fotos/videos y piden publicaciones; solo admin (Nico y Mario) aprueba.
+   Campo y médicos ven lo que ellos subieron y lo ya publicado; la oficina ve calendario y métricas. */
+const OFICINA = ["admin", "direccion", "ventas", "contabilidad"];
 Object.values(PERMISOS).forEach(p => p.secciones.push("reglamento")); // todos pueden releerlo
 const DIAS_CELULAR = 400; // la liga fija del celular dura ~1 año; se invalida al generar otra o con Activo = NO
 /* Respaldo si la pestaña EQUIPO no responde: solo Nico puede entrar */
@@ -264,6 +270,18 @@ module.exports = async (req, res) => {
         cacheReg = {t: 0, v: null};
         return res.status(r.ok ? 200 : 400).json(r);
       }
+      if (body.tipo === "redes") {
+        if (!u.permisos.acciones.includes("redes")) return res.status(403).json({error: "Tu rol no puede hacer esto."});
+        const op = String(body.op || "");
+        if (["aprobar", "cambios", "descartar", "material_estatus"].includes(op) && !u.permisos.acciones.includes("redes_aprobar")) return res.status(403).json({error: "Solo Nico y Mario aprueban publicaciones."});
+        const permitidas = {subida: ["mime", "tamano", "nombre", "tema"], material: ["fileId", "tema", "caballo", "nota"], pedido: ["tema", "nota", "caballo", "fecha"],
+          aprobar: ["id", "texto", "hashtags"], cambios: ["id", "nota"], descartar: ["id", "nota"], material_estatus: ["id", "estatus"]};
+        if (!permitidas[op]) return res.status(400).json({error: "acción no válida"});
+        const datos = {op, quien: u.nombre}; permitidas[op].forEach(k => { if (body[k] !== undefined) datos[k] = body[k]; });
+        if (op === "subida") { datos.origen = String(req.headers.origin || SITIO()); datos.tipo = String(body.mime || ""); delete datos.mime; }
+        const r = await agendaPost("panel_redes", datos);
+        return res.status(r.ok ? 200 : 400).json(r);
+      }
       const FASE2 = {tarea_crear: "tarea", tarea_estatus: "tarea", tarea_editar: "tarea", reporte: "reporte", registro: "registro", liga_celular: "liga_celular", prospecto: "prospecto"};
       if (FASE2[body.tipo]) {
         const p = u.permisos;
@@ -301,6 +319,16 @@ module.exports = async (req, res) => {
     if (!u) return res.status(401).json({error: "sin sesión", google: process.env.GOOGLE_CLIENT_ID || ""});
     const p = u.permisos;
     if (q.accion === "yo") return res.status(200).json({usuario: {nombre: u.nombre, email: u.email, rol: u.rol, rolTxt: ROL_TXT[u.rol] || u.rol, vendedor: u.vendedor, area: u.area || ""}, permisos: p});
+    if (q.accion === "redes") {
+      if (!puede(u, "redes")) return res.status(403).json({error: "Sin acceso."});
+      const j = await agendaPost("panel_redes", {op: "lista"}); if (!j.ok) throw new Error(j.error || "redes");
+      const ofi = OFICINA.includes(u.rol), aprueba = p.acciones.includes("redes_aprobar");
+      const mio = x => String(x["Subió"] || "") === u.nombre || String(x["Origen"] || "").endsWith(" · " + u.nombre);
+      return res.status(200).json({aprueba, oficina: ofi,
+        material: j.material.filter(x => ofi || mio(x)),
+        publicaciones: j.publicaciones.filter(x => aprueba || (ofi ? x["Estatus"] !== "Descartado" : (["Agendado", "Publicado"].includes(x["Estatus"]) || mio(x)))),
+        plan: ofi ? j.plan : [], metricas: ofi ? j.metricas : [], caballos: j.caballos});
+    }
     if (q.accion === "tareas") {
       if (!puede(u, "tareas")) return res.status(403).json({error: "Sin acceso."});
       const j = await agendaPost("panel_tareas"); if (!j.ok) throw new Error(j.error || "tareas");
