@@ -821,6 +821,22 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
   .reel-head .reel-nav{display:none}
 }
 @media (prefers-reduced-motion:reduce){.ses-fade img{animation:none}.ses-fade img:first-child{opacity:1}}
+
+/* ===== Menú de secciones en celular/tablet: se despliega solo y avanza para mostrar qué más hay ===== */
+@media (max-width:1140px){
+  .nav-row{-webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 56px),transparent 100%);mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 56px),transparent 100%)}
+  .nav-row.nr-med{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 40px,#000 calc(100% - 56px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 40px,#000 calc(100% - 56px),transparent 100%)}
+  .nav-row.nr-fin{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 40px,#000 100%);mask-image:linear-gradient(90deg,transparent 0,#000 40px,#000 100%)}
+  .nav-row.nr-cabe{-webkit-mask-image:none;mask-image:none}
+  .nav-row a{animation:nrIn .7s cubic-bezier(.2,.7,.2,1) both}
+  .nav-row a:nth-child(2){animation-delay:.08s}.nav-row a:nth-child(3){animation-delay:.16s}.nav-row a:nth-child(4){animation-delay:.24s}
+  .nav-row a:nth-child(5){animation-delay:.32s}.nav-row a:nth-child(6){animation-delay:.40s}.nav-row a:nth-child(7){animation-delay:.48s}.nav-row a:nth-child(n+8){animation-delay:.56s}
+}
+/* En computadora, el menú de arriba también entra desplegándose */
+.topline .site-nav a{animation:nrIn .7s cubic-bezier(.2,.7,.2,1) both}
+.topline .site-nav a:nth-child(2){animation-delay:.08s}.topline .site-nav a:nth-child(3){animation-delay:.16s}.topline .site-nav a:nth-child(4){animation-delay:.24s}.topline .site-nav a:nth-child(5){animation-delay:.32s}.topline .site-nav a:nth-child(6){animation-delay:.40s}.topline .site-nav a:nth-child(7){animation-delay:.48s}
+@keyframes nrIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.nav-row a,.topline .site-nav a{animation:none}}
 </style>
 <link rel="stylesheet" href="/lux.css">
 </head>
@@ -2862,6 +2878,32 @@ document.querySelectorAll("[data-reel]").forEach(r=>{
   new IntersectionObserver(es=>{vis=es[0].isIntersecting;},{threshold:.35}).observe(r);
   if(!quieto) setInterval(()=>{ if(vis&&!pausa&&!document.hidden&&!document.documentElement.classList.contains("lux-lock")) ir(1); },4200);
 });})();
+</script>
+<script>
+/* Menú de secciones (celular/tablet): se desliza solo de ida y vuelta para que se vea todo lo que hay.
+   Se detiene en cuanto la persona lo toca y vuelve a moverse tras unos segundos sin tocarlo. */
+(()=>{const n=document.querySelector(".nav-row"); if(!n) return;
+const quieto=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const max=()=>n.scrollWidth-n.clientWidth;
+const marcar=()=>{ const m=max(), x=n.scrollLeft; n.classList.toggle("nr-cabe",m<=4); n.classList.toggle("nr-fin",m>4&&x>=m-4); n.classList.toggle("nr-med",m>4&&x>4&&x<m-4); };
+n.addEventListener("scroll",marcar,{passive:true}); addEventListener("resize",marcar); marcar();
+if(quieto) return;
+let pos=0,dir=1,espera=performance.now()+1800,pausaHasta=0,vis=true,t0=0;
+const VEL=42; // pixeles por segundo
+const tocar=()=>{ pausaHasta=performance.now()+7000; pos=n.scrollLeft; };
+["pointerdown","touchstart","wheel","focusin","mouseenter"].forEach(e=>n.addEventListener(e,tocar,{passive:true}));
+n.addEventListener("click",()=>{ pausaHasta=performance.now()+15000; });
+if("IntersectionObserver" in window) new IntersectionObserver(es=>{vis=es[0].isIntersecting;},{threshold:.5}).observe(n);
+const paso=t=>{ const dt=Math.min(.05,(t-(t0||t))/1000); t0=t;
+  const m=max(), libre=vis&&!document.hidden&&getComputedStyle(n).display!=="none"&&!document.documentElement.classList.contains("lux-lock")&&!n.querySelector("[aria-current]");
+  if(m>4&&libre&&t>pausaHasta&&t>espera){
+    pos+=dir*VEL*dt;
+    if(pos>=m){pos=m;dir=-1;espera=t+1600;} else if(pos<=0){pos=0;dir=1;espera=t+2600;}
+    n.scrollLeft=Math.round(pos);
+  } else if(t<=pausaHasta) pos=n.scrollLeft;
+  requestAnimationFrame(paso); };
+requestAnimationFrame(paso);
+})();
 </script>
 <script src="/lux.js" defer></script>
 </body>
