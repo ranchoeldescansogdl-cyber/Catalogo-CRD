@@ -33,6 +33,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .who{font-size:.85rem;color:rgba(255,255,255,.75);text-align:right;line-height:1.2}
 .who b{display:block;color:#fff;font-weight:500}
 .btn-out{background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:999px;padding:6px 12px;font-size:.85rem;cursor:pointer}
+#b-regl{border-color:transparent;color:rgba(255,255,255,.7);padding:6px 8px}#b-regl:hover{color:#fff}
 .tabs{display:flex;gap:4px;overflow-x:auto;max-width:1200px;margin:10px auto 0;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:0 0 auto;background:transparent;border:0;color:rgba(255,255,255,.7);padding:10px 14px;border-bottom:2px solid transparent;cursor:pointer;font-weight:500}
@@ -154,6 +155,7 @@ details.prov summary::-webkit-details-marker{display:none}
       <img src="/marca/simbolo-oro.png" alt="">
       <h1>Equipo · Rancho El Descanso</h1>
       <div class="who"><b id="u-nombre"></b><span id="u-rol"></span></div>
+      <button class="btn-out" id="b-regl" type="button" onclick="ir('reglamento')">Reglamento</button>
       <button class="btn-out" id="b-salir" type="button">Salir</button>
     </div>
     <nav class="tabs" id="tabs" role="tablist"></nav>
@@ -222,30 +224,19 @@ async function iniciar() {
   history.replaceState(null, "", "/equipo/" + location.hash);
   $("#login").classList.add("hide"); $("#app").classList.remove("hide");
   $("#u-nombre").textContent = YO.usuario.nombre; $("#u-rol").textContent = (ROLES[YO.usuario.rol] || YO.usuario.rol) + (YO.usuario.area ? " · " + YO.usuario.area : "");
-  try { REG = await api("accion=reglamento"); } catch (e) { REG = null; } // si falla, no se bloquea el portal
-  if (REG && !REG.aceptado) return pedirReglamento();
   armarPortal();
 }
-/* Antes de usar el portal: leer el reglamento y aceptarlo (se guarda fecha, hora y la versión exacta) */
-function pedirReglamento() {
-  $("#tabs").innerHTML = ""; window.scrollTo(0, 0);
-  $("#main").innerHTML = `<h2>Reglamento del rancho</h2>
-    <p class="sub">Antes de usar el portal, lee el reglamento completo. Al final marca la casilla y aprieta <b>Leí y acepto</b>. Se guarda la fecha y la hora.</p>
-    <article class="regl">${mdHtml(REG.texto)}</article>
-    <div class="regl-ok"><label><input type="checkbox" id="r-chk"> Leí el reglamento completo y estoy de acuerdo.</label>
-      <button class="btn btn-dark" type="button" id="r-ok" disabled>Leí y acepto</button></div>`;
-  $("#r-chk").onchange = e => { $("#r-ok").disabled = !e.target.checked; };
-  $("#r-ok").onclick = async () => {
-    const b = $("#r-ok"); b.disabled = true; b.textContent = "Guardando…";
-    try { const r = await post({accion: "hacer", tipo: "reglamento_aceptar", huella: REG.huella}); REG = null; toast("Listo. Gracias por aceptar el reglamento."); armarPortal(); }
-    catch (e) { toast(e.message); b.disabled = false; b.textContent = "Leí y acepto"; }
-  };
+/* Reglamento: botón discreto arriba (no es pestaña ni se pide al entrar); aceptarlo es opcional */
+async function aceptarReglamento(b) {
+  b.disabled = true; b.textContent = "Guardando…";
+  try { await post({accion: "hacer", tipo: "reglamento_aceptar", huella: REG.huella}); REG = null; toast("Listo. Gracias por aceptar el reglamento."); render(); }
+  catch (e) { toast(e.message); b.disabled = false; b.textContent = "Leí y acepto"; }
 }
 function armarPortal() {
-  const secs = YO.permisos.secciones;
+  const secs = YO.permisos.secciones.filter(s => s !== "reglamento");
   $("#tabs").innerHTML = secs.map(s => `<button class="tab" role="tab" data-s="${s}" aria-selected="false">${SECCIONES[s]}</button>`).join("");
   if (!window.__tabs) { window.__tabs = 1; $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) ir(b.dataset.s); }); }
-  const h = location.hash.slice(1); ir(secs.includes(h) ? h : secs[0]);
+  const h = location.hash.slice(1); ir(secs.includes(h) || h === "reglamento" ? h : secs[0]);
 }
 function ir(s) {
   ACTUAL = s; location.hash = s;
@@ -603,8 +594,10 @@ function mdHtml(md) {
 function vReglamento() {
   const lista = REG.lista ? `<h3>Quién ya lo aceptó</h3><div class="tbl-wrap" style="max-width:860px;margin-bottom:16px"><table><thead><tr><th>Persona</th><th>Rol</th><th>Esta versión</th></tr></thead><tbody>${REG.lista.map(x =>
       `<tr><td>${esc(x.nombre)}</td><td>${esc(x.rol)}</td><td>${x.aceptado ? `<span class="badge b-ok">Aceptó · ${esc(x.aceptado)}</span>` : `<span class="badge b-warn">Pendiente</span>${x.anterior ? ` <small class="card-m">aceptó la ${esc(x.anterior)}</small>` : ""}`}</td></tr>`).join("")}</tbody></table></div>
-      <p class="sub">Cada aceptación queda en la pestaña REGLAMENTO de la Maestra con fecha, hora, versión y dispositivo. Si se cambia el texto, el portal se lo vuelve a pedir a todos.</p>` : "";
-  return `<h2>Reglamento</h2><p class="sub">Versión ${esc(REG.version)}${REG.aceptado ? ` · lo aceptaste el ${esc(REG.aceptado)}` : ""}</p>${lista}<article class="regl">${mdHtml(REG.texto)}</article>`;
+      <p class="sub">Cada aceptación queda en la pestaña REGLAMENTO de la Maestra con fecha, hora, versión y dispositivo. Si se cambia el texto, hay que volver a aceptarlo.</p>` : "";
+  const ok = REG.aceptado ? "" : `<div class="regl-ok"><label><input type="checkbox" onchange="document.getElementById('r-ok').disabled=!this.checked"> Leí el reglamento completo y estoy de acuerdo.</label>
+      <button class="btn btn-dark" type="button" id="r-ok" disabled onclick="aceptarReglamento(this)">Leí y acepto</button></div>`;
+  return `<h2>Reglamento</h2><p class="sub">Versión ${esc(REG.version)}${REG.aceptado ? ` · lo aceptaste el ${esc(REG.aceptado)}` : ""}</p>${lista}<article class="regl">${mdHtml(REG.texto)}</article>${ok}`;
 }
 
 /* ----- Cotizaciones de eventos (prospectos de la página) ----- */
@@ -849,7 +842,7 @@ document.addEventListener("click", async e => {
   }
 });
 document.addEventListener("input", e => { if (e.target.id === "busca") { st.busca = e.target.value; const pos = e.target.selectionStart; render().then(() => { const i = $("#busca"); if (i) { i.focus(); i.setSelectionRange(pos, pos); } }); } });
-window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (YO && (!REG || REG.aceptado) && h !== ACTUAL && YO.permisos.secciones.includes(h)) ir(h); });
+window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (YO && h !== ACTUAL && YO.permisos.secciones.includes(h)) ir(h); });
 iniciar();
 </script>
 </body>
