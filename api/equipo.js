@@ -18,9 +18,17 @@
    proveedores y contabilidad (admin y contabilidad), rol "medico", liga fija de celular para quien no usa correo,
    comisiones con % normal (pestaña COMISIONES) y % especial por pago (PAGOS WEB).
    GET  accion=tareas|reportes|conta|equipo_lista|cotizaciones|foto&id=
-   POST hacer tipo: tarea_crear|tarea_estatus|tarea_editar|reporte|registro|liga_celular */
+   POST hacer tipo: tarea_crear|tarea_estatus|tarea_editar|reporte|registro|liga_celular
+
+   2 oct 2026 (reglamento): el texto vive en api/_reglamento.js (privado, solo se entrega con sesión). Su huella SHA-256
+   identifica la versión exacta: quien no la ha aceptado ve el reglamento antes que el portal y aprieta "Leí y acepto".
+   Cada aceptación queda en la pestaña REGLAMENTO de la Maestra (fecha y hora, persona, versión, huella, dispositivo, IP).
+   GET  accion=reglamento → {version, huella, texto, aceptado, lista (solo quien asigna tareas)}
+   POST hacer tipo: reglamento_aceptar {huella} */
 const crypto = require("crypto");
 const AG = require("./_agenda");
+const REG = require("./_reglamento");
+const REG_HUELLA = crypto.createHash("sha256").update(REG.texto, "utf8").digest("hex");
 
 const SITIO = () => (process.env.SITE_URL || "https://rancho-el-descanso.vercel.app").replace(/\/$/, "");
 const COOKIE = "crd_equipo";
@@ -40,6 +48,7 @@ const PERMISOS = {
   campo:        {secciones: ["hoy", "tareas", "bitacora", "salud", "agenda"], dinero: "nada", contacto: false, ine: true, jefe: false, acciones: ["nota", "tarea", "reporte"]},
   medico:       {secciones: ["hoy", "tareas", "salud", "bitacora"], dinero: "nada", contacto: false, ine: false, jefe: false, acciones: ["tarea", "reporte"]}
 };
+Object.values(PERMISOS).forEach(p => p.secciones.push("reglamento")); // todos pueden releerlo
 const DIAS_CELULAR = 400; // la liga fija del celular dura ~1 año; se invalida al generar otra o con Activo = NO
 /* Respaldo si la pestaña EQUIPO no responde: solo Nico puede entrar */
 const EQUIPO_RESPALDO = [{nombre: "Nicolás Campero", email: "nicolas@legaius.com", id: "nicolas@legaius.com", rol: "admin", vendedor: "nico", liga: 0}];
@@ -69,7 +78,12 @@ async function agendaPost(accion, extra) {
   const txt = await r.text();
   try { return JSON.parse(txt); } catch (e) { throw new Error("Agenda respondió " + r.status + ": " + txt.slice(0, 150)); }
 }
-let cacheEquipo = {t: 0, v: null};
+let cacheEquipo = {t: 0, v: null}, cacheReg = {t: 0, v: null};
+async function aceptaciones() {
+  if (cacheReg.v && Date.now() - cacheReg.t < 60e3) return cacheReg.v;
+  const j = await agendaPost("panel_reglamento"); if (!j.ok) throw new Error(j.error || "reglamento");
+  cacheReg = {t: Date.now(), v: j.aceptaciones || []}; return cacheReg.v;
+}
 async function equipo() {
   if (cacheEquipo.v && Date.now() - cacheEquipo.t < 120e3) return cacheEquipo.v;
   try { const j = await agendaPost("panel_equipo");
@@ -243,6 +257,13 @@ module.exports = async (req, res) => {
       }
       const u = await usuarioDe(req); if (!u) return res.status(401).json({error: "Tu sesión terminó. Vuelve a entrar."});
       if (body.accion !== "hacer") return res.status(400).json({error: "acción no válida"});
+      if (body.tipo === "reglamento_aceptar") {
+        if (body.huella !== REG_HUELLA) return res.status(409).json({error: "El reglamento cambió mientras lo leías. Vuelve a abrir el portal."});
+        const r = await agendaPost("panel_reglamento_aceptar", {id: u.id, quien: u.nombre, rol: u.rol, version: REG.version, huella: REG_HUELLA,
+          dispositivo: String(req.headers["user-agent"] || "").slice(0, 200), ip: String(req.headers["x-real-ip"] || req.headers["x-forwarded-for"] || "").split(",")[0].trim()});
+        cacheReg = {t: 0, v: null};
+        return res.status(r.ok ? 200 : 400).json(r);
+      }
       const FASE2 = {tarea_crear: "tarea", tarea_estatus: "tarea", tarea_editar: "tarea", reporte: "reporte", registro: "registro", liga_celular: "liga_celular", prospecto: "prospecto"};
       if (FASE2[body.tipo]) {
         const p = u.permisos;
@@ -304,6 +325,16 @@ module.exports = async (req, res) => {
       const eq = await equipo();
       return res.status(200).json({prospectos: j.prospectos.map(r => { const x = {...r}; delete x._fila; return x; }),
         personas: eq.filter(x => ["admin", "direccion", "ventas"].includes(x.rol)).map(x => x.nombre)});
+    }
+    if (q.accion === "reglamento") {
+      const acs = await aceptaciones(), vale = a => a["Huella del texto (SHA-256)"] === REG_HUELLA;
+      const mio = acs.filter(a => a["Correo / ID"] === u.id && vale(a)).pop();
+      const out = {version: REG.version, huella: REG_HUELLA, texto: REG.texto, aceptado: mio ? mio["Fecha y hora"] : ""};
+      if (p.jefe) out.lista = (await equipo()).map(x => {
+        const suyas = acs.filter(a => a["Correo / ID"] === x.id), ok = suyas.filter(vale).pop(), ult = suyas[suyas.length - 1];
+        return {nombre: x.nombre, rol: ROL_TXT[x.rol] || x.rol, aceptado: ok ? ok["Fecha y hora"] : "", anterior: !ok && ult ? `versión ${ult["Versión"]} (${ult["Fecha y hora"]})` : ""};
+      });
+      return res.status(200).json(out);
     }
     if (q.accion === "equipo_lista") {
       if (!puede(u, "equipo")) return res.status(403).json({error: "Sin acceso."});
