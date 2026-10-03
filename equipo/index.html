@@ -70,6 +70,12 @@ h3{font-family:var(--display);font-weight:400;font-size:1.15rem;margin:22px 0 10
 .btn[disabled]{opacity:.5;cursor:default}
 .badge{display:inline-block;border-radius:999px;padding:2px 9px;font-size:.78rem;font-weight:600;white-space:nowrap}
 .b-ok{background:var(--ok-bg);color:var(--ok)} .b-warn{background:var(--warn-bg);color:var(--warn)} .b-bad{background:var(--bad-bg);color:var(--bad)} .b-info{background:var(--info-bg);color:var(--muted)}
+.regl{background:#fff;border:1px solid var(--rule);border-radius:12px;padding:6px 18px 14px;max-width:860px}
+.regl h2{font-size:1.35rem;margin:14px 0 4px}.regl h3{font-family:var(--display);font-weight:400;font-size:1.2rem;margin:22px 0 6px;color:var(--gold-deep)}
+.regl p,.regl li{max-width:70ch}.regl ul,.regl ol{padding-left:22px;margin:6px 0 10px}.regl li{margin:3px 0}.regl .tbl-wrap{margin:8px 0 12px}
+.regl-ok{position:sticky;bottom:0;max-width:860px;background:var(--mist);border-top:1px solid var(--rule);padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.regl-ok label{display:flex;gap:8px;align-items:flex-start;font-weight:500}.regl-ok input{width:22px;height:22px;margin-top:2px;accent-color:var(--black)}
+.regl-ok .btn{padding:12px 22px;font-size:1rem}
 .tbl-wrap{overflow-x:auto;background:#fff;border:1px solid var(--rule);border-radius:12px}
 table{border-collapse:collapse;width:100%;font-size:.92rem}
 th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
@@ -171,14 +177,14 @@ const fHora = iso => new Date(iso).toLocaleTimeString("es-MX", {hour: "2-digit",
 const fFecha = iso => new Date(iso).toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "2-digit", timeZone: TZ});
 const ROLES = {admin: "Administración", direccion: "Dirección", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
 const SECCIONES = {hoy: "Hoy", tareas: "Tareas", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", pagos: "Pagos y saldos", caballos: "Caballos y ventas",
-  comisiones: "Comisiones", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo"};
+  comisiones: "Comisiones", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
 const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Otro"];
 const TIPOS_SALUD = ["Revisión", "Vacuna", "Desparasitación", "Herraje / cascos", "Dental", "Tratamiento", "Lesión o cólico", "Monta / inseminación", "Palpación / ecografía", "Parto", "Destete", "Trámite KFPS / GVHS", "Otro"];
 const TIPOS_BITACORA = ["Avance", "Problema", "Falta material o compra", "Aviso", "Otro"];
 const CATS_GASTO = ["Alimento", "Veterinario", "Medicamentos", "Herraje", "Mantenimiento", "Jardinería", "Sueldos", "Luz y agua", "Gasolina", "Eventos", "Papelería y trámites", "Otro"];
 const TIPO_PAGO = {sesion: "Sesión", evento: "Evento", caballo: "Caballo", potro: "Potro 2027", saldo_sesion: "Resto de sesión"};
 
-let YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
+let REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
 const st = {agendaFiltro: "todo", busca: "", tFiltro: "pendientes", bArea: "todo", sCaballo: "", mes: "", qFiltro: "abiertas"};
 
 function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3200); }
@@ -216,9 +222,29 @@ async function iniciar() {
   history.replaceState(null, "", "/equipo/" + location.hash);
   $("#login").classList.add("hide"); $("#app").classList.remove("hide");
   $("#u-nombre").textContent = YO.usuario.nombre; $("#u-rol").textContent = (ROLES[YO.usuario.rol] || YO.usuario.rol) + (YO.usuario.area ? " · " + YO.usuario.area : "");
+  try { REG = await api("accion=reglamento"); } catch (e) { REG = null; } // si falla, no se bloquea el portal
+  if (REG && !REG.aceptado) return pedirReglamento();
+  armarPortal();
+}
+/* Antes de usar el portal: leer el reglamento y aceptarlo (se guarda fecha, hora y la versión exacta) */
+function pedirReglamento() {
+  $("#tabs").innerHTML = ""; window.scrollTo(0, 0);
+  $("#main").innerHTML = `<h2>Reglamento del rancho</h2>
+    <p class="sub">Antes de usar el portal, lee el reglamento completo. Al final marca la casilla y aprieta <b>Leí y acepto</b>. Se guarda la fecha y la hora.</p>
+    <article class="regl">${mdHtml(REG.texto)}</article>
+    <div class="regl-ok"><label><input type="checkbox" id="r-chk"> Leí el reglamento completo y estoy de acuerdo.</label>
+      <button class="btn btn-dark" type="button" id="r-ok" disabled>Leí y acepto</button></div>`;
+  $("#r-chk").onchange = e => { $("#r-ok").disabled = !e.target.checked; };
+  $("#r-ok").onclick = async () => {
+    const b = $("#r-ok"); b.disabled = true; b.textContent = "Guardando…";
+    try { const r = await post({accion: "hacer", tipo: "reglamento_aceptar", huella: REG.huella}); REG = null; toast("Listo. Gracias por aceptar el reglamento."); armarPortal(); }
+    catch (e) { toast(e.message); b.disabled = false; b.textContent = "Leí y acepto"; }
+  };
+}
+function armarPortal() {
   const secs = YO.permisos.secciones;
   $("#tabs").innerHTML = secs.map(s => `<button class="tab" role="tab" data-s="${s}" aria-selected="false">${SECCIONES[s]}</button>`).join("");
-  $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) ir(b.dataset.s); });
+  if (!window.__tabs) { window.__tabs = 1; $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) ir(b.dataset.s); }); }
   const h = location.hash.slice(1); ir(secs.includes(h) ? h : secs[0]);
 }
 function ir(s) {
@@ -235,6 +261,7 @@ async function cargar(qué) {
   if (qué === "conta" && !CONTA) CONTA = await api("accion=conta");
   if (qué === "equipo" && !EQUIPO) EQUIPO = await api("accion=equipo_lista");
   if (qué === "cotizaciones" && !COTIZ) COTIZ = await api("accion=cotizaciones");
+  if (qué === "reglamento" && !REG) REG = await api("accion=reglamento");
 }
 const tiene = s => YO.permisos.secciones.includes(s);
 async function render() {
@@ -251,12 +278,13 @@ async function render() {
     if (s === "salud" || s === "bitacora") await cargar("reportes");
     if (s === "proveedores" || s === "conta") await cargar("conta");
     if (s === "equipo") await cargar("equipo");
+    if (s === "reglamento") await cargar("reglamento");
     if (s !== ACTUAL) return;
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
-      tareas: vTareas, cotizaciones: vCotizaciones, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo})[s]();
+      tareas: vTareas, cotizaciones: vCotizaciones, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
-function recargar() { AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null; render(); }
+function recargar() { AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
 
 /* ---------- piezas ---------- */
 const eventosReales = () => (AGENDA ? AGENDA.eventos : []).filter(e => !e.prueba && e.estado !== "reservando");
@@ -556,6 +584,28 @@ function vEquipo() {
        <td><button class="btn" data-celular="${esc(x.id)}" data-nom="${esc(x.nombre)}">Liga de celular</button></td></tr>`).join("")}</tbody></table></div>`;
 }
 
+/* ----- Reglamento (texto en api/_reglamento.js; aceptaciones en la pestaña REGLAMENTO) ----- */
+function mdHtml(md) {
+  const inl = t => esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>"), L = String(md || "").split("\n"), celdas = r => r.replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+  let h = "", i = 0;
+  while (i < L.length) {
+    const l = L[i];
+    if (!l.trim()) { i++; continue; }
+    if (l.startsWith("|")) { const rows = []; while (i < L.length && L[i].startsWith("|")) rows.push(L[i++]);
+      h += `<div class="tbl-wrap"><table><thead><tr>${celdas(rows[0]).map(c => `<th>${inl(c)}</th>`).join("")}</tr></thead><tbody>${rows.slice(2).map(r => `<tr>${celdas(r).map(c => `<td>${inl(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`; continue; }
+    if (/^- /.test(l)) { let li = ""; while (i < L.length && /^- /.test(L[i])) li += `<li>${inl(L[i++].slice(2))}</li>`; h += `<ul>${li}</ul>`; continue; }
+    if (/^\d+\. /.test(l)) { let li = ""; while (i < L.length && /^\d+\. /.test(L[i])) li += `<li>${inl(L[i++].replace(/^\d+\. /, ""))}</li>`; h += `<ol>${li}</ol>`; continue; }
+    const m = l.match(/^(#{1,3}) (.*)/); if (m) { const n = m[1].length + 1; h += `<h${n}>${inl(m[2])}</h${n}>`; i++; continue; }
+    h += `<p>${inl(l)}</p>`; i++;
+  }
+  return h;
+}
+function vReglamento() {
+  const lista = REG.lista ? `<h3>Quién ya lo aceptó</h3><div class="tbl-wrap" style="max-width:860px;margin-bottom:16px"><table><thead><tr><th>Persona</th><th>Rol</th><th>Esta versión</th></tr></thead><tbody>${REG.lista.map(x =>
+      `<tr><td>${esc(x.nombre)}</td><td>${esc(x.rol)}</td><td>${x.aceptado ? `<span class="badge b-ok">Aceptó · ${esc(x.aceptado)}</span>` : `<span class="badge b-warn">Pendiente</span>${x.anterior ? ` <small class="card-m">aceptó la ${esc(x.anterior)}</small>` : ""}`}</td></tr>`).join("")}</tbody></table></div>
+      <p class="sub">Cada aceptación queda en la pestaña REGLAMENTO de la Maestra con fecha, hora, versión y dispositivo. Si se cambia el texto, el portal se lo vuelve a pedir a todos.</p>` : "";
+  return `<h2>Reglamento</h2><p class="sub">Versión ${esc(REG.version)}${REG.aceptado ? ` · lo aceptaste el ${esc(REG.aceptado)}` : ""}</p>${lista}<article class="regl">${mdHtml(REG.texto)}</article>`;
+}
 
 /* ----- Cotizaciones de eventos (prospectos de la página) ----- */
 const ESTATUS_Q = ["Borrador", "Contactado", "Visita agendada", "Propuesta enviada", "Apartó", "Perdido"];
@@ -799,7 +849,7 @@ document.addEventListener("click", async e => {
   }
 });
 document.addEventListener("input", e => { if (e.target.id === "busca") { st.busca = e.target.value; const pos = e.target.selectionStart; render().then(() => { const i = $("#busca"); if (i) { i.focus(); i.setSelectionRange(pos, pos); } }); } });
-window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (YO && h !== ACTUAL && YO.permisos.secciones.includes(h)) ir(h); });
+window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (YO && (!REG || REG.aceptado) && h !== ACTUAL && YO.permisos.secciones.includes(h)) ir(h); });
 iniciar();
 </script>
 </body>
