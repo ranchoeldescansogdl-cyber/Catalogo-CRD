@@ -283,7 +283,7 @@ module.exports = async (req, res) => {
       let ok = false;
       if (t && t.k === "enlace" && eq.some(u => u.id === t.e)) { ok = true; abrirSesion(res, t.e); }
       if (t && t.k === "celular") { const u = eq.find(x => x.id === t.e); if (u && Number(u.liga || 0) === Number(t.v)) { ok = true; abrirSesion(res, t.e, Number(t.v)); } }
-      res.statusCode = 303; res.setHeader("Location", "/equipo/" + (ok ? "" : "?liga=vencida")); return res.end();
+      res.statusCode = 303; res.setHeader("Location", "/equipo/" + (ok ? (t.k === "celular" ? "?c=" + encodeURIComponent(q.entrar) : "") : "?liga=vencida")); return res.end();
     }
     if (req.method === "POST") {
       if (req.headers["x-equipo"] !== "1") return res.status(403).json({error: "no permitido"});
