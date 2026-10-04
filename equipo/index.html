@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#000000">
+<meta name="referrer" content="same-origin">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <title>Equipo · Rancho El Descanso</title>
 <link rel="icon" href="/app-icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -266,6 +268,10 @@ async function post(body) { const r = await fetch("/api/equipo", {method: "POST"
 
 /* ---------- entrada ---------- */
 function mostrarLogin(google) {
+  const c = new URLSearchParams(location.search).get("c");
+  if (c) { let u = 0; try { u = Number(sessionStorage.getItem("reentrar")) || 0; } catch (e) {}
+    if (Date.now() - u > 60e3) { try { sessionStorage.setItem("reentrar", String(Date.now())); } catch (e) {}
+      location.replace("/api/equipo?entrar=" + encodeURIComponent(c)); return; } }
   $("#app").classList.add("hide"); $("#login").classList.remove("hide");
   if (new URLSearchParams(location.search).get("liga") === "vencida") $("#l-msg").textContent = "Esa liga ya venció o no es válida. Pide una nueva.";
   if (google && !window.__gsi) { window.__gsi = 1; const s = document.createElement("script"); s.src = "https://accounts.google.com/gsi/client"; s.async = true;
@@ -290,7 +296,7 @@ $("#b-salir").addEventListener("click", async () => { try { await post({accion: 
 /* ---------- arranque ---------- */
 async function iniciar() {
   try { YO = await api("accion=yo"); } catch (e) { return; }
-  history.replaceState(null, "", "/equipo/" + location.hash);
+  { const c = new URLSearchParams(location.search).get("c"); history.replaceState(null, "", "/equipo/" + (c ? "?c=" + encodeURIComponent(c) : "") + location.hash); }
   $("#login").classList.add("hide"); $("#app").classList.remove("hide");
   $("#u-nombre").textContent = YO.usuario.nombre; $("#u-rol").textContent = (ROLES[YO.usuario.rol] || YO.usuario.rol) + (YO.usuario.area ? " · " + YO.usuario.area : "");
   armarPortal();
