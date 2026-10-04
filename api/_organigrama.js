@@ -7,7 +7,8 @@
    Para cambiar el organigrama se edita esta lista. Cada persona se reconoce por su correo o por el primer nombre
    con el que está en la pestaña EQUIPO de la Maestra. Quien no aparezca aquí reporta a Mario y no asigna.
    asigna: "todos" o lista de claves · areas: áreas permitidas en sus tareas (vacío = cualquiera) · revisaTodo: revisa y aprueba todo
-   caja: lleva la caja chica en el rancho (4 oct 2026: Olga). Judith la captura desde la oficina; Mario y Nico la ven completa. */
+   caja: lleva la caja chica en el rancho (4 oct 2026: Olga). Judith la captura desde la oficina; Mario y Nico la ven completa.
+   quitar: secciones del rol que esa persona no usa (4 oct 2026: Olga sin Salud de caballos; Chito sí la tiene). */
 const ORG = [
   {clave: "mario",   busca: ["mcampero@ceica.com.mx", "mario"], puesto: "Dueño y director general", area: "Dirección", reportaA: null, asigna: "todos", revisaTodo: true},
   {clave: "nico",    busca: ["nicolas@legaius.com", "nicolas", "nico"], puesto: "Ventas y sistemas", area: "Dirección", reportaA: "mario", asigna: "todos", revisaTodo: true},
@@ -17,7 +18,7 @@ const ORG = [
   {clave: "joaquin", busca: ["joaquin"], puesto: "Médico de planta", area: "Salud", reportaA: "mario", asigna: ["chito"], areas: ["Salud", "Reproducción"]},
   {clave: "roberto", busca: ["rcmenaz@hotmail.com", "roberto"], puesto: "Reproducción y registros", area: "Reproducción", reportaA: "mario", asigna: ["chito"], areas: ["Salud", "Reproducción"]},
   {clave: "chito",   busca: ["chito"], puesto: "Caballos y caballerizas", area: "Caballos", reportaA: "mario"},
-  {clave: "olga",    busca: ["olgaespinoza419@gmail.com", "olga"], puesto: "Jardinería, mantenimiento y caja chica", area: "Jardinería", reportaA: "mario", caja: true}
+  {clave: "olga",    busca: ["olgaespinoza419@gmail.com", "olga"], puesto: "Jardinería, mantenimiento y caja chica", area: "Jardinería", reportaA: "mario", caja: true, quitar: ["salud"]}
 ];
 const CUENTAS_GENERALES = ["ranchoeldescansogdl@gmail.com"]; // no es una persona: fuera del organigrama, no asigna ni pide
 
@@ -44,6 +45,7 @@ function puedeAsignarA(quien, destino) {
 }
 const areasDe = p => (puestoDe(p) || {}).areas || [];
 const llevaCaja = p => { const o = puestoDe(p); return !!o && !!o.caja; };
+const seccionesQuitadas = p => (puestoDe(p) || {}).quitar || [];
 
 /* Tareas "Disponible": en la columna "Asignada a" se guarda "Disponible · Todos" o "Disponible · Olga, Chito"
    (primeros nombres). Pedidas: "Solicitud · <sugerencia>" hasta que Mario o Nico la aprueban y la asignan. */
@@ -67,5 +69,5 @@ function puedeRevisar(p, t, equipo) {
   return !!dest && puedeAsignarA(p, dest);
 }
 
-module.exports = {ORG, puestoDe, claveDe, revisaTodo, asignaAlguien, puedePedir, puedeAsignarA, areasDe, llevaCaja, DISP, SOLI,
+module.exports = {ORG, puestoDe, claveDe, revisaTodo, asignaAlguien, puedePedir, puedeAsignarA, areasDe, llevaCaja, seccionesQuitadas, DISP, SOLI,
   esDisponible, esSolicitud, candidatos, FOTO, APROBO, pideFoto, puedeTomar, puedeRevisar, primerNombre, norm};

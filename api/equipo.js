@@ -44,7 +44,8 @@
    4 oct 2026 (revisión de accesos, decidido por Nico):
    - Mónica (rol "direccion") se trata como vendedora: solo SUS pagos, ventas y comisiones; sigue confirmando eventos y
      bloqueando fechas; "Marcar resto pagado" solo en sus clientes. Bitácora sí; Salud y Redes no.
-   - Redes: la sección solo la ven Mario, Nico y la cuenta del rancho (admin). Los demás solo tienen el botón "Subir fotos o video".
+   - Redes: la sección y subir material solo para Mario, Nico y la cuenta del rancho (admin). Ya no hay botón de subir en Inicio.
+   - Olga: sin Salud de caballos (organigrama "quitar"); Chito sí la tiene.
    - Cotizaciones: quien no ve todo el dinero (Mónica y Yuliana) ve solo las suyas y las que nadie ha tomado.
    - Médicos: agenda del rancho (eventos, bloqueos y otras citas) sin sesiones de fotos y sin datos del cliente.
    - Chito y Olga: en la agenda ven teléfono, correo y notas de la cita (las notas sin montos ni ligas de pago).
@@ -70,17 +71,17 @@ const PERMISOS = {
                  acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "registro", "liga_celular", "prospecto", "redes", "redes_aprobar", "caja"]},
   /* "direccion" = Mónica: vendedora con eventos (4 oct 2026). Solo su dinero; confirma eventos, bloquea fechas y marca pagado solo lo suyo */
   direccion:    {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "bitacora"], dinero: "propio", contacto: true, ine: true, jefe: false,
-                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "prospecto", "redes"]},
-  ventas:       {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones"], dinero: "propio", contacto: true, ine: true, jefe: false, acciones: ["nota", "liga", "tarea", "prospecto", "redes"]},
+                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "prospecto"]},
+  ventas:       {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones"], dinero: "propio", contacto: true, ine: true, jefe: false, acciones: ["nota", "liga", "tarea", "prospecto"]},
   contabilidad: {secciones: ["hoy", "tareas", "agenda", "cambios", "pagos", "caballos", "comisiones", "caja", "proveedores", "conta", "bitacora"], dinero: "todo", contacto: true, ine: false, jefe: true,
-                 acciones: ["saldo_pagado", "nota", "tarea", "reporte", "registro", "redes", "caja"]},
+                 acciones: ["saldo_pagado", "nota", "tarea", "reporte", "registro", "caja"]},
   /* campo: contacto del cliente y notas de la cita (sin montos) por si hay que llamarle el día de la sesión o evento */
-  campo:        {secciones: ["hoy", "tareas", "bitacora", "salud", "agenda"], dinero: "nada", contacto: true, ine: true, jefe: false, acciones: ["nota", "tarea", "reporte", "redes"]},
+  campo:        {secciones: ["hoy", "tareas", "bitacora", "salud", "agenda"], dinero: "nada", contacto: true, ine: true, jefe: false, acciones: ["nota", "tarea", "reporte"]},
   /* médicos: qué pasa en el rancho (eventos, bloqueos, citas), sin sesiones de fotos ni datos del cliente */
-  medico:       {secciones: ["hoy", "tareas", "salud", "bitacora", "agenda"], dinero: "nada", contacto: false, ine: false, jefe: false, agenda: "rancho", acciones: ["tarea", "reporte", "redes"]}
+  medico:       {secciones: ["hoy", "tareas", "salud", "bitacora", "agenda"], dinero: "nada", contacto: false, ine: false, jefe: false, agenda: "rancho", acciones: ["tarea", "reporte"]}
 };
-/* Redes sociales (3 oct 2026; 4 oct: la sección solo para admin). Todos con la acción "redes" pueden SUBIR fotos y videos
-   (op subida y material); ver la sección, pedir publicaciones y aprobar es solo de Mario, Nico y la cuenta del rancho. */
+/* Redes sociales (3 oct 2026; 4 oct: solo Mario, Nico y la cuenta del rancho). Ellos suben el material ("Fotos para redes",
+   dentro de la sección Redes), piden publicaciones y aprueban. El resto del equipo ya no sube material ni ve la sección. */
 const CAJA = {fondo: 5000, aviso: 1250}; // caja chica (4 oct 2026)
 const OFICINA = ["admin", "direccion", "ventas", "contabilidad"];
 Object.values(PERMISOS).forEach(p => p.secciones.push("reglamento")); // todos pueden releerlo
@@ -137,6 +138,7 @@ async function usuarioDe(req) {
 function permisosDe(u) {
   const b = PERMISOS[u.rol]; if (!b) return null;
   const p = {...b, secciones: [...b.secciones], acciones: [...b.acciones]};
+  ORG.seccionesQuitadas(u).forEach(x => { const i = p.secciones.indexOf(x); if (i >= 0) p.secciones.splice(i, 1); });
   if (ORG.llevaCaja(u)) { if (!p.secciones.includes("caja")) p.secciones.splice(p.secciones.indexOf("tareas") + 1, 0, "caja"); if (!p.acciones.includes("caja")) p.acciones.push("caja"); }
   return p;
 }
