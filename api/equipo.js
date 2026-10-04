@@ -27,7 +27,13 @@
    POST hacer tipo: reglamento_aceptar {huella}
 
    3 oct 2026 (redes sociales): GET accion=redes · POST hacer tipo:"redes" op: subida|material|pedido|aprobar|cambios|descartar|material_estatus.
-   Los videos suben directo del celular a Drive (sesión reanudable que abre el Apps Script); aquí solo pasan los datos. */
+   Los videos suben directo del celular a Drive (sesión reanudable que abre el Apps Script); aquí solo pasan los datos.
+
+   3 oct 2026 (cancelar y reagendar): solo quien asigna tareas (jefe: Nico, Mario y Judith).
+   GET  accion=cambios → {filas (pestaña CANCELACIONES Y CAMBIOS), holds (reservas a medias con datos de Stripe)}
+   POST hacer tipo:"cambio" objeto: cita|cotizacion|reprogramar (paso: fecha|reenviar|cancelar) · motivo: no_se_hara|reagendar_cliente|reagendar_rancho
+        · modo: nosotros|cliente · fecha, horario, llegada, nota, correo, forzar. Una reserva a medias se cancela
+        venciendo primero su pago en Stripe (si ya pagó, no se toca). Nunca se devuelve dinero desde aquí. */
 const crypto = require("crypto");
 const AG = require("./_agenda");
 const REG = require("./_reglamento");
@@ -41,12 +47,12 @@ const VERSION = "2026-08-26.dahlia";
 
 /* jefe = asigna, edita, revisa y cancela tareas (Nico, Mario y Judith) */
 const PERMISOS = {
-  admin:        {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "redes", "salud", "bitacora", "proveedores", "conta", "equipo"], dinero: "todo", contacto: true, ine: true, jefe: true,
+  admin:        {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "cambios", "pagos", "caballos", "comisiones", "redes", "salud", "bitacora", "proveedores", "conta", "equipo"], dinero: "todo", contacto: true, ine: true, jefe: true,
                  acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "registro", "liga_celular", "prospecto", "redes", "redes_aprobar"]},
   direccion:    {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "redes", "salud", "bitacora"], dinero: "todo", contacto: true, ine: true, jefe: false,
                  acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "prospecto", "redes"]},
   ventas:       {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "redes"], dinero: "propio", contacto: true, ine: true, jefe: false, acciones: ["nota", "liga", "tarea", "prospecto", "redes"]},
-  contabilidad: {secciones: ["hoy", "tareas", "agenda", "pagos", "caballos", "comisiones", "proveedores", "conta", "bitacora", "redes"], dinero: "todo", contacto: true, ine: false, jefe: true,
+  contabilidad: {secciones: ["hoy", "tareas", "agenda", "cambios", "pagos", "caballos", "comisiones", "proveedores", "conta", "bitacora", "redes"], dinero: "todo", contacto: true, ine: false, jefe: true,
                  acciones: ["saldo_pagado", "nota", "tarea", "reporte", "registro", "redes"]},
   campo:        {secciones: ["hoy", "tareas", "redes", "bitacora", "salud", "agenda"], dinero: "nada", contacto: false, ine: true, jefe: false, acciones: ["nota", "tarea", "reporte", "redes"]},
   medico:       {secciones: ["hoy", "tareas", "salud", "bitacora", "redes"], dinero: "nada", contacto: false, ine: false, jefe: false, acciones: ["tarea", "reporte", "redes"]}
@@ -207,6 +213,46 @@ function comisiones(pagos, maestra, u) {
   return Object.values(filas).sort((a, b) => b.ventas - a.ventas);
 }
 
+/* ---------- cancelar y reagendar (3 oct 2026) ---------- */
+const hoyMX = (n = 0) => new Date(Date.now() - 6 * 36e5 + n * 864e5).toISOString().slice(0, 10);
+const MOTIVOS = ["no_se_hara", "reagendar_cliente", "reagendar_rancho"];
+async function stripePost(ruta) {
+  const r = await fetch(API + ruta, {method: "POST", headers: {Authorization: "Bearer " + process.env.STRIPE_SECRET_KEY, "Stripe-Version": VERSION}});
+  return {ok: r.ok, j: await r.json().catch(() => ({}))};
+}
+async function cambio(u, body, res) {
+  if (!u.permisos.jefe) return res.status(403).json({error: "Solo Nico, Mario y Judith pueden cancelar o reagendar."});
+  const objeto = String(body.objeto || ""), d = {quien: u.nombre, nota: String(body.nota || "").slice(0, 400), correo: !!body.correo, forzar: !!body.forzar};
+  if (objeto === "reprogramar") {
+    if (!["fecha", "reenviar", "cancelar"].includes(body.paso)) return res.status(400).json({error: "acción no válida"});
+    Object.assign(d, {op: "reprogramar", id: String(body.id || ""), paso: body.paso});
+  } else {
+    if (!MOTIVOS.includes(body.motivo)) return res.status(400).json({error: "Elige el motivo."});
+    d.motivo = body.motivo;
+    if (objeto === "cotizacion") Object.assign(d, {op: "cotizacion", id: String(body.id || "")});
+    else if (objeto === "cita") Object.assign(d, {op: "cita", evento: String(body.evento || ""), modo: body.modo === "cliente" ? "cliente" : "nosotros", folio: String(body.folio || "")});
+    else return res.status(400).json({error: "acción no válida"});
+  }
+  if (objeto === "cita" && d.motivo !== "no_se_hara" && d.modo === "nosotros" || objeto === "reprogramar" && body.paso === "fecha") {
+    d.fecha = /^\d{4}-\d{2}-\d{2}$/.test(String(body.fecha || "")) ? body.fecha : "";
+    if (!d.fecha) return res.status(400).json({error: "Elige la nueva fecha."});
+    if (body.horario) {
+      if (!AG.SLOTS[body.horario]) return res.status(400).json({error: "Horario no válido."});
+      d.horario = body.horario;
+      d.llegada = (AG.LLEGADAS[body.horario] || []).includes(body.llegada) ? body.llegada : "";
+    }
+  }
+  if (objeto === "cotizacion" && d.motivo !== "no_se_hara") d.fecha = /^\d{4}-\d{2}-\d{2}$/.test(String(body.fecha || "")) ? body.fecha : "";
+  // Reserva a medias: primero se vence el pago en Stripe para que ya no lo puedan completar
+  if (objeto === "cita" && d.motivo === "no_se_hara" && /^cs_(live|test)_[A-Za-z0-9]+$/.test(d.folio)) {
+    const s = await stripeGet("checkout/sessions/" + d.folio).catch(() => null);
+    if (s && s.status === "complete") return res.status(409).json({error: "Esta reserva ya se pagó: recarga, ya es una cita y solo se puede reagendar."});
+    if (s && s.status === "open") { const x = await stripePost("checkout/sessions/" + d.folio + "/expire"); if (!x.ok) return res.status(409).json({error: "No se pudo cancelar el pago en proceso. Intenta de nuevo en un minuto."}); }
+  }
+  const r = await agendaPost("panel_cambios", d);
+  return res.status(r.ok ? 200 : 400).json(r);
+}
+
 /* ---------- entrada ---------- */
 const intentos = new Map();
 function frenar(ip) {
@@ -282,6 +328,7 @@ module.exports = async (req, res) => {
         const r = await agendaPost("panel_redes", datos);
         return res.status(r.ok ? 200 : 400).json(r);
       }
+      if (body.tipo === "cambio") return await cambio(u, body, res);
       const FASE2 = {tarea_crear: "tarea", tarea_estatus: "tarea", tarea_editar: "tarea", reporte: "reporte", registro: "registro", liga_celular: "liga_celular", prospecto: "prospecto"};
       if (FASE2[body.tipo]) {
         const p = u.permisos;
@@ -348,11 +395,27 @@ module.exports = async (req, res) => {
       return res.status(200).json(j);
     }
     if (q.accion === "cotizaciones") {
-      if (!puede(u, "cotizaciones")) return res.status(403).json({error: "Sin acceso."});
+      if (!puede(u, "cotizaciones") && !p.jefe) return res.status(403).json({error: "Sin acceso."});
       const j = await agendaPost("panel_prospectos"); if (!j.ok) throw new Error(j.error || "cotizaciones");
       const eq = await equipo();
       return res.status(200).json({prospectos: j.prospectos.map(r => { const x = {...r}; delete x._fila; return x; }),
         personas: eq.filter(x => ["admin", "direccion", "ventas"].includes(x.rol)).map(x => x.nombre)});
+    }
+    if (q.accion === "cambios") {
+      if (!p.jefe) return res.status(403).json({error: "Sin acceso."});
+      const [j, ag] = await Promise.all([agendaPost("panel_cambios", {op: "lista"}), agendaPost("panel_agenda", {desde: hoyMX(-1), hasta: hoyMX(400)})]);
+      if (!j.ok) throw new Error(j.error || "cambios");
+      const holds = await Promise.all((ag.ok ? ag.eventos : []).filter(e => e.estado === "reservando" && !e.prueba).map(async e => {
+        const x = {id: e.id, titulo: e.titulo, tipo: e.tipo, fecha: e.fecha, inicio: e.inicio, fin: e.fin, todoElDia: e.todoElDia, folio: e.folio};
+        const vence = String(e.notas || "").match(/Vence: (\S+)/); if (vence) x.vence = vence[1];
+        if (/^cs_(live|test)_/.test(e.folio || "")) try {
+          const s = await stripeGet("checkout/sessions/" + e.folio), m = s.metadata || {};
+          Object.assign(x, {titular: m.titular || "", paquete: m.paquete || "", horario: m.horario || "", llegada: m.llegada || "", evento: m.evento || "", invitados: m.invitados || "",
+            monto: (s.amount_total || 0) / 100, total: Number(m.total || m.estimado_total || 0), atendio: m.atendio || "", estadoPago: s.status});
+        } catch (err) { console.error("hold", e.folio, err.message); }
+        return x;
+      }));
+      return res.status(200).json({filas: j.filas, holds});
     }
     if (q.accion === "reglamento") {
       const acs = await aceptaciones(), vale = a => a["Huella del texto (SHA-256)"] === REG_HUELLA;
