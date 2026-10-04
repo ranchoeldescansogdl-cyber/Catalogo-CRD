@@ -159,6 +159,47 @@ details.prov summary::-webkit-details-marker{display:none}
   main{margin-left:230px;max-width:none;padding-left:28px;padding-right:28px}
   .top-row{max-width:none}
 }
+/* Inicio (4 oct 2026): pantalla de Hoy para cada quien + barra fija abajo en celular */
+.bnav{display:none}
+.hoy-acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:14px 0 4px}
+.qa{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--rule);border-radius:14px;padding:14px;font-weight:600;font-size:1rem;cursor:pointer;text-align:left;min-height:64px;line-height:1.25}
+.qa .ico{font-size:1.55rem;line-height:1;flex:none}
+.qa.dark{background:var(--black);color:#fff;border-color:var(--black)}
+.qa:active{transform:scale(.98)}
+.blk{margin:24px 0 0}
+.blk>h3{margin:0 0 10px}
+.blk-dec{background:#fffaf0;border:1px solid var(--gold);border-radius:14px;padding:4px 14px 14px}
+.blk-dec>h3{margin-top:12px}
+.lbl{font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin:14px 0 6px}
+.lbl.rojo{color:var(--bad)} .lbl.oro{color:var(--gold-deep)} .lbl.gris{color:var(--muted)}
+details.mas{background:#fff;border:1px solid var(--rule);border-radius:12px;padding:10px 14px;margin:10px 0 0}
+details.mas>summary{cursor:pointer;font-weight:600;color:var(--muted)}
+details.mas[open]>summary{margin-bottom:10px}
+.linea{background:#fff;border:1px solid var(--rule);border-radius:12px;padding:10px 14px;margin:8px 0 0;color:var(--muted);font-size:.95rem}
+.linea b{color:var(--ink)}
+.mini-lista{margin:0;padding:0;list-style:none}
+.mini-lista li{padding:7px 0;border-bottom:1px solid var(--rule);font-size:.95rem}.mini-lista li:last-child{border-bottom:0}
+.como-bar{background:var(--gold);color:#000;padding:8px 16px;font-weight:600;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:.95rem}
+.como-bar button{background:#000;color:var(--gold);border:0;border-radius:999px;padding:6px 14px;font-weight:600;cursor:pointer}
+body.como main .acts,body.como main .big-actions,body.como .hoy-acts,body.como .bnav .plus,body.como main .r-hero{pointer-events:none;opacity:.4}
+.vercomo{display:flex;gap:8px;align-items:center;margin:10px 0 0;font-size:.9rem;color:var(--muted)}
+.vercomo select{border:1px solid var(--rule);border-radius:999px;padding:6px 10px;background:#fff;font-size:.9rem}
+.tag{display:inline-block;border-radius:999px;padding:1px 8px;font-size:.75rem;font-weight:600;background:var(--info-bg);color:var(--muted);margin-left:4px;vertical-align:middle}
+.tag.oro{background:#fdf1d6;color:var(--warn)}
+.chkgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;margin:0 0 6px}
+.chkgrid label.chk{margin:0 0 6px}
+.qa-lista{display:grid;gap:10px}
+@media (max-width:899px){
+  .bnav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:grid;grid-template-columns:repeat(4,1fr);background:var(--black);padding:4px 6px calc(4px + env(safe-area-inset-bottom,0px));border-top:1px solid rgba(255,255,255,.12)}
+  .bnav button{position:relative;background:none;border:0;color:rgba(255,255,255,.72);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;font-size:.78rem;font-weight:500;padding:6px 2px;cursor:pointer;min-height:56px}
+  .bnav .ico{font-size:1.45rem;line-height:1}
+  .bnav button[aria-current=true]{color:var(--gold)}
+  .bnav .plus .ico{background:var(--gold);color:#000;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:1.7rem;font-weight:600;margin-top:-20px;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+  .bnav .n{position:absolute;top:3px;left:calc(50% + 6px);background:var(--gold);color:#000;border-radius:999px;min-width:20px;height:20px;font-size:.72rem;font-weight:700;display:grid;place-items:center;padding:0 5px}
+  main{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+}
+@media (min-width:900px){ .cel-only{display:none} }
+@media (max-width:600px){ .card-h{flex-wrap:wrap} .card-h>div[style*="flex:1"]{min-width:55%!important} }
 /* redes sociales */
 .r-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:0 0 18px}
 .r-big{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;border:0;border-radius:16px;padding:20px;background:var(--black);color:#fff;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.12);min-height:118px}
@@ -229,7 +270,9 @@ details.prov summary::-webkit-details-marker{display:none}
     <div class="backbar" id="backbar"><button class="btn-back" id="b-menu" type="button">← Menú</button><b id="sec-t"></b></div>
     <nav class="tabs" id="tabs" role="tablist"></nav>
   </header>
+  <div class="como-bar hide" id="como-bar"></div>
   <main id="main"></main>
+  <nav class="bnav" id="bnav" aria-label="Navegación"></nav>
 </div>
 
 <dialog id="dlg"><div class="dlg-h"><strong id="dlg-t"></strong><button class="btn" type="button" id="dlg-x">Cerrar</button></div><div class="dlg-b" id="dlg-b"></div></dialog>
@@ -247,23 +290,25 @@ const fDia = iso => { const t = new Date(iso + "T12:00:00Z").toLocaleDateString(
 const fHora = iso => new Date(iso).toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ});
 const fFecha = iso => new Date(iso).toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "2-digit", timeZone: TZ});
 const ROLES = {admin: "Administración", direccion: "Dirección", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
-const SECCIONES = {hoy: "Hoy", tareas: "Tareas", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", caballos: "Caballos y ventas",
+const SECCIONES = {hoy: "Inicio", tareas: "Tareas", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", caballos: "Caballos y ventas",
   comisiones: "Comisiones", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
-const ICONOS = {hoy: "☀️", tareas: "✅", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", caballos: "🐴", comisiones: "💰", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
+const ICONOS = {hoy: "🏠", tareas: "✅", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", caballos: "🐴", comisiones: "💰", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
 const esCel = () => window.matchMedia("(max-width:899px)").matches;
-const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Otro"];
+const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Administración", "Otro"];
 const TIPOS_SALUD = ["Revisión", "Vacuna", "Desparasitación", "Herraje / cascos", "Dental", "Tratamiento", "Lesión o cólico", "Monta / inseminación", "Palpación / ecografía", "Parto", "Destete", "Trámite KFPS / GVHS", "Otro"];
 const TIPOS_BITACORA = ["Avance", "Problema", "Falta material o compra", "Aviso", "Otro"];
 const CATS_GASTO = ["Alimento", "Veterinario", "Medicamentos", "Herraje", "Mantenimiento", "Jardinería", "Sueldos", "Luz y agua", "Gasolina", "Eventos", "Papelería y trámites", "Otro"];
 const TIPO_PAGO = {sesion: "Sesión", evento: "Evento", caballo: "Caballo", potro: "Potro 2027", saldo_sesion: "Resto de sesión"};
 
+let COMO = "", COMO_NOM = ""; // "Ver como…" (Mario y Nico): solo lectura
 let CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
 const st = {agendaFiltro: "todo", busca: "", tFiltro: "pendientes", bArea: "todo", sCaballo: "", mes: "", qFiltro: "abiertas", rTab: "inicio"};
 
 function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3200); }
-async function api(q) { const r = await fetch("/api/equipo?" + q, {credentials: "same-origin", cache: "no-store"}); const j = await r.json().catch(() => ({}));
+async function api(q) { const r = await fetch("/api/equipo?" + q + (COMO ? "&como=" + encodeURIComponent(COMO) : ""), {credentials: "same-origin", cache: "no-store"}); const j = await r.json().catch(() => ({}));
   if (r.status === 401) { mostrarLogin(j.google); throw new Error("sin sesión"); } if (!r.ok) throw new Error(j.error || "Error " + r.status); return j; }
-async function post(body) { const r = await fetch("/api/equipo", {method: "POST", credentials: "same-origin", headers: {"Content-Type": "application/json", "x-equipo": "1"}, body: JSON.stringify(body)});
+async function post(body) { if (COMO) throw new Error("Estás viendo el portal como " + COMO_NOM + ": solo se puede ver. Vuelve a tu vista para hacer cambios.");
+  const r = await fetch("/api/equipo", {method: "POST", credentials: "same-origin", headers: {"Content-Type": "application/json", "x-equipo": "1"}, body: JSON.stringify(body)});
   const j = await r.json().catch(() => ({})); if (r.status === 401 && body.accion === "hacer") { mostrarLogin(); } if (!r.ok) throw new Error(j.error || "Error " + r.status); return j; }
 
 /* ---------- entrada ---------- */
@@ -298,10 +343,18 @@ async function iniciar() {
   try { YO = await api("accion=yo"); } catch (e) { return; }
   { const c = new URLSearchParams(location.search).get("c"); history.replaceState(null, "", "/equipo/" + (c ? "?c=" + encodeURIComponent(c) : "") + location.hash); }
   $("#login").classList.add("hide"); $("#app").classList.remove("hide");
-  $("#u-nombre").textContent = YO.usuario.nombre; $("#u-rol").textContent = (ROLES[YO.usuario.rol] || YO.usuario.rol) + (YO.usuario.area ? " · " + YO.usuario.area : "");
+  if (!COMO) { $("#u-nombre").textContent = YO.usuario.nombre; $("#u-rol").textContent = (YO.org && YO.org.puesto) || ((ROLES[YO.usuario.rol] || YO.usuario.rol) + (YO.usuario.area ? " · " + YO.usuario.area : "")); }
+  document.body.classList.toggle("como", !!COMO);
+  $("#como-bar").classList.toggle("hide", !COMO);
+  $("#como-bar").innerHTML = COMO ? `<span>👁️ Estás viendo el portal como <b>${esc(YO.usuario.nombre)}</b> (solo ver)</span><button type="button" onclick="verComo('')">Volver a mi vista</button>` : "";
   armarPortal();
 }
 /* Reglamento: botón discreto arriba (no es pestaña ni se pide al entrar); aceptarlo es opcional */
+async function verComo(id) {
+  COMO = id; COMO_NOM = id && YO.gente ? ((YO.gente.find(x => x.id === id) || {}).nombre || "") : "";
+  CAMBIOS = REDES = REG = AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null;
+  location.hash = "hoy"; await iniciar(); window.scrollTo(0, 0);
+}
 async function aceptarReglamento(b) {
   b.disabled = true; b.textContent = "Guardando…";
   try { await post({accion: "hacer", tipo: "reglamento_aceptar", huella: REG.huella}); REG = null; toast("Listo. Gracias por aceptar el reglamento."); render(); }
@@ -310,16 +363,23 @@ async function aceptarReglamento(b) {
 function armarPortal() {
   const secs = YO.permisos.secciones.filter(s => s !== "reglamento");
   $("#tabs").innerHTML = secs.map(s => `<button class="tab" role="tab" data-s="${s}" aria-selected="false"><span class="ico" aria-hidden="true">${ICONOS[s] || "•"}</span>${SECCIONES[s]}</button>`).join("");
+  /* celular: barra fija abajo · Inicio · Tareas · ➕ · Más (todas las secciones) */
+  $("#bnav").innerHTML = `<button type="button" data-bn="hoy"><span class="ico" aria-hidden="true">🏠</span>Inicio</button>
+    ${secs.includes("tareas") ? `<button type="button" data-bn="tareas"><span class="ico" aria-hidden="true">✅</span>Tareas<span class="n hide" id="bn-n"></span></button>` : ""}
+    <button type="button" class="plus" data-bn="mas-accion" aria-label="Subir, reportar o pedir"><span class="ico" aria-hidden="true">+</span>Subir</button>
+    <button type="button" data-bn="menu"><span class="ico" aria-hidden="true">☰</span>Más</button>`;
+  $("#bnav").style.gridTemplateColumns = `repeat(${secs.includes("tareas") ? 4 : 3},1fr)`;
   if (!window.__tabs) { window.__tabs = 1; $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) ir(b.dataset.s); });
-    $("#b-menu").addEventListener("click", () => ir("menu"));
-    const alto = () => document.documentElement.style.setProperty("--hdr", $(".top").offsetHeight + "px"); alto(); window.addEventListener("resize", () => { alto(); if (!esCel() && ACTUAL === "menu") ir(secs[0]); }); }
-  const h = location.hash.slice(1); ir(secs.includes(h) || h === "reglamento" ? h : esCel() ? "menu" : secs[0]);
+    $("#bnav").addEventListener("click", e => { const b = e.target.closest("[data-bn]"); if (!b) return; if (b.dataset.bn === "mas-accion") abrirAcciones(); else ir(b.dataset.bn); });
+    const alto = () => document.documentElement.style.setProperty("--hdr", $(".top").offsetHeight + "px"); alto(); window.addEventListener("resize", () => { alto(); if (!esCel() && ACTUAL === "menu") ir("hoy"); }); }
+  const h = location.hash.slice(1); ir(secs.includes(h) || h === "reglamento" ? h : secs.includes("hoy") ? "hoy" : secs[0]);
 }
 function ir(s) {
-  if (s === "menu" && !esCel()) s = YO.permisos.secciones[0];
-  ACTUAL = s; location.hash = s; window.scrollTo(0, 0);
+  if (s === "menu" && !esCel()) s = "hoy";
+  ACTUAL = s; if (location.hash.slice(1) !== s) location.hash = s; window.scrollTo(0, 0);
   document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.s === s));
-  $("#backbar").classList.toggle("on", s !== "menu"); $("#sec-t").textContent = SECCIONES[s] || "";
+  document.querySelectorAll("#bnav [data-bn]").forEach(b => b.setAttribute("aria-current", b.dataset.bn === s || (b.dataset.bn === "menu" && !["hoy", "tareas"].includes(s))));
+  $("#sec-t").textContent = SECCIONES[s] || "";
   document.documentElement.style.setProperty("--hdr", $(".top").offsetHeight + "px");
   render();
 }
@@ -342,10 +402,10 @@ async function render() {
   try {
     const s = ACTUAL;
     if (s === "menu") { if (tiene("tareas")) await cargar("tareas").catch(() => {}); if (tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
-      if (ACTUAL === "menu") m.innerHTML = vMenu(); return; }
-    if (["agenda", "clientes", "eventos"].includes(s) || (s === "hoy" && tiene("agenda"))) await cargar("agenda");
-    if (s === "hoy" && tiene("tareas")) await cargar("tareas").catch(() => {});
-    if (s === "hoy" && tiene("salud")) await cargar("reportes").catch(() => {});
+      pintarContador(); if (ACTUAL === "menu") m.innerHTML = vMenu(); return; }
+    if (["agenda", "clientes", "eventos"].includes(s)) await cargar("agenda");
+    if (s === "hoy") await Promise.all([tiene("agenda") ? cargar("agenda").catch(() => {}) : 0, tiene("tareas") ? cargar("tareas").catch(() => {}) : 0,
+      tiene("salud") || tiene("bitacora") ? cargar("reportes").catch(() => {}) : 0]);
     if ((s === "hoy" && tiene("cotizaciones")) || s === "cotizaciones") await cargar("cotizaciones").catch(e => { if (s === "cotizaciones") throw e; });
     if (["pagos", "comisiones"].includes(s)) await cargar("pagos");
     if (s === "caballos") await cargar("caballos");
@@ -358,6 +418,7 @@ async function render() {
     if (s === "cambios") { await cargar("agenda"); await cargar("cotizaciones").catch(() => {}); await cargar("cambios"); }
     if (s === "hoy" && tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
     if (s !== ACTUAL) return;
+    pintarContador();
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
       tareas: vTareas, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
@@ -367,10 +428,10 @@ function recargar() { REDES = CAMBIOS = null; AGENDA = PAGOS = CABALLOS = TAREAS
 /* ---------- menú de cuadros (celular) ---------- */
 function vMenu() {
   const n = {};
-  if (TAREAS) n.tareas = misTareas().length + porRevisar().length;
+  if (TAREAS) n.tareas = misTareas().length + porRevisar().length + solicitudes().length;
   if (REDES && YO.permisos.acciones.includes("redes_aprobar")) n.redes = rPorAprobar().length;
   const nombre = String(YO.usuario.nombre || "").split(" ")[0];
-  return `<p class="menu-hola">Hola, ${esc(nombre)}</p><p class="sub" style="margin:0">${esc(fDia(hoyISO()))} · ¿Qué quieres ver?</p>
+  return `<p class="menu-hola">Hola, ${esc(nombre)}</p><p class="sub" style="margin:0">${esc(fDia(hoyISO()))} · Todas las secciones</p>
     <div class="menu-grid">${YO.permisos.secciones.filter(s => s !== "reglamento").map(s => `<button class="menu-tile" type="button" data-ir="${s}"><span class="ico" aria-hidden="true">${ICONOS[s] || "•"}</span>${esc(SECCIONES[s])}${n[s] ? `<span class="n">${n[s]}</span>` : ""}</button>`).join("")}</div>`;
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-ir]"); if (b) ir(b.dataset.ir); });
@@ -420,24 +481,136 @@ function porDia(lista, vacio) {
 }
 
 /* ---------- vistas ---------- */
-function vHoy() {
-  const arriba = hoyRedes() + hoyCotiz() + hoyTareas() + hoySalud();
-  if (!tiene("agenda")) return `<h2>${esc(fDia(hoyISO()))}</h2>${arriba || `<div class="empty">Todo al día.</div>`}`;
-  return vHoyAgenda().replace("<!--ARRIBA-->", () => arriba);
+/* ---------- Inicio (4 oct 2026): lo que le toca hoy a cada quien ----------
+   campo y médicos: atrasado, hoy, disponible, qué pasa hoy en el rancho y una línea de mañana
+   oficina: lo suyo y lo de su área, hoy y mañana completos, 7 días plegados
+   Mario y Nico: espera tu decisión · hoy en el rancho · ayer · la semana · "Ver como…" */
+const nivelYo = () => (YO.org && YO.org.revisaTodo) ? "dir" : ["admin", "direccion", "ventas", "contabilidad"].includes(YO.usuario.rol) ? "ofi" : "campo";
+const lim = t => isoDe(t["Fecha límite"]);
+function bloque(titulo, html, cls = "") { return html ? `<section class="blk ${cls}"><h3>${titulo}</h3>${html}</section>` : ""; }
+function plegado(titulo, html) { return html ? `<details class="mas"><summary>${titulo}</summary>${html}</details>` : ""; }
+function hoyAcciones() {
+  const A = YO.permisos.acciones, O = YO.org || {}, b = [];
+  if (tiene("redes")) b.push(`<button class="qa dark" type="button" data-rsubir="1"><span class="ico">📷</span>Subir fotos o video</button>`);
+  if (A.includes("reporte") && tiene("bitacora")) b.push(`<button class="qa" type="button" data-nuevo-rep=""><span class="ico">📝</span>Reportar avance o problema</button>`);
+  if (A.includes("reporte") && tiene("salud")) b.push(`<button class="qa" type="button" data-nuevo-rep="Salud"><span class="ico">🩺</span>Registrar salud</button>`);
+  if (O.asigna && tiene("tareas")) b.push(`<button class="qa" type="button" data-nueva-tarea="1"><span class="ico">➕</span>Nueva tarea</button>`);
+  if (O.pide && tiene("tareas")) b.push(`<button class="qa" type="button" data-pedir="1"><span class="ico">🙋</span>Pedir tarea</button>`);
+  return b;
 }
-function vHoyAgenda() {
-  const hoy = hoyISO(), man = masDias(hoy, 1), ev = eventosReales();
-  const deHoy = ev.filter(e => e.fecha === hoy || (e.todoElDia && e.fecha <= hoy && e.fin >= hoy)), deMan = ev.filter(e => e.fecha === man);
-  const semana = ev.filter(e => e.fecha > man && e.fecha <= masDias(hoy, 7));
-  const pend = ev.filter(e => e.saldo === "pendiente" && e.fecha > hoy), porConf = ev.filter(e => e.estado === "por_confirmar" && e.fecha >= hoy);
-  const kpi = [`<div class="kpi"><span>Hoy</span><b>${deHoy.length}</b></div>`, `<div class="kpi"><span>Mañana</span><b>${deMan.length}</b></div>`, `<div class="kpi"><span>Próximos 7 días</span><b>${semana.length + deMan.length + deHoy.length}</b></div>`];
-  if (YO.permisos.dinero !== "nada") kpi.push(`<div class="kpi"><span>Restos pendientes</span><b>${pend.length}</b></div>`);
-  if (YO.permisos.secciones.includes("eventos")) kpi.push(`<div class="kpi"><span>Eventos por confirmar</span><b>${porConf.length}</b></div>`);
-  return `<h2>${esc(fDia(hoy))}</h2><!--ARRIBA--><div class="grid-kpi">${kpi.join("")}</div>
-    ${pend.length && YO.permisos.dinero !== "nada" ? `<h3>Restos sin cobrar</h3>${pend.map(e => cardEvento(e, {fecha: 1})).join("")}` : ""}
-    <h3>Hoy</h3>${deHoy.length ? deHoy.map(e => cardEvento(e)).join("") : `<div class="empty">No hay nada agendado hoy.</div>`}
-    <h3>Mañana</h3>${deMan.length ? deMan.map(e => cardEvento(e)).join("") : `<div class="empty">Nada agendado mañana.</div>`}
-    <h3>Resto de la semana</h3>${porDia(semana, "Nada más esta semana.")}`;
+function abrirAcciones() {
+  if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
+  const b = hoyAcciones();
+  dialogo("¿Qué quieres hacer?", b.length ? `<div class="qa-lista">${b.join("")}</div>` : `<div class="empty">No hay acciones para tu puesto.</div>`);
+  if ((tiene("bitacora") || tiene("salud")) && !REPORTES) cargar("reportes").catch(() => {});
+}
+function pintarContador() {
+  const n = $("#bn-n"); if (!n || !TAREAS) return;
+  const k = misTareas().length + porRevisar().length + solicitudes().length + disponibles().length;
+  n.textContent = k; n.classList.toggle("hide", !k);
+}
+function verComoSelect() {
+  if (COMO || !(YO.org && YO.org.revisaTodo) || !(YO.gente || []).length) return "";
+  return `<label class="vercomo">👁️ Ver como <select onchange="if(this.value)verComo(this.value)"><option value="">Elige a alguien…</option>${YO.gente.map(x => `<option value="${esc(x.id)}">${esc(x.nombre)}</option>`).join("")}</select></label>`;
+}
+function vHoy() {
+  const hoy = hoyISO(), man = masDias(hoy, 1), sem = masDias(hoy, 7), nv = nivelYo(), O = YO.org || {};
+  const nombre = String(YO.usuario.nombre || "").split(/[\s(]+/)[0];
+  let h = `<p class="menu-hola">Hola, ${esc(nombre)}</p><p class="sub" style="margin:0">${esc(fDia(hoy))}${O.reportaA ? " · Tu encargado: " + esc(O.reportaA) : ""}</p>${verComoSelect()}`;
+  const acts = hoyAcciones(); if (acts.length) h += `<div class="hoy-acts">${acts.join("")}</div>`;
+
+  /* 1. espera tu decisión */
+  if (TAREAS) {
+    const sol = solicitudes(), rev = porRevisar(), rp = rPuedeAprobar() && REDES ? rPorAprobar().length : 0;
+    let d = "";
+    if (sol.length) d += `<p class="lbl oro">Lo que pide el equipo (${sol.length})</p>${sol.map(cardTarea).join("")}`;
+    if (rev.length) d += `<p class="lbl oro">Tareas terminadas por revisar (${rev.length})</p>${rev.slice(0, 6).map(cardTarea).join("")}${rev.length > 6 ? `<button class="btn" type="button" onclick="st.tFiltro='revisar';ir('tareas')">Ver las ${rev.length}</button>` : ""}`;
+    if (rp) d += `<p class="lbl oro">Redes</p><button class="qa" type="button" onclick="st.rTab='aprobar';ir('redes')"><span class="ico">📷</span>${rp} publicación${rp === 1 ? "" : "es"} por aprobar</button>`;
+    h += bloque("Espera tu decisión", d, "blk-dec");
+  }
+
+  /* 2. lo tuyo de hoy */
+  if (TAREAS) {
+    const mias = misTareas(), atr = mias.filter(t => lim(t) && lim(t) < hoy), dh = mias.filter(t => lim(t) === hoy), sf = mias.filter(t => !lim(t));
+    const dm = mias.filter(t => lim(t) === man), prox = mias.filter(t => lim(t) > man && lim(t) <= sem), luego = mias.filter(t => lim(t) > sem);
+    let d = "";
+    if (atr.length) d += `<p class="lbl rojo">Atrasado (${atr.length})</p>${atr.map(cardTarea).join("")}`;
+    if (dh.length) d += `<p class="lbl oro">Para hoy (${dh.length})</p>${dh.map(cardTarea).join("")}`;
+    if (sf.length) d += `<p class="lbl gris">Sin fecha (${sf.length})</p>${sf.map(cardTarea).join("")}`;
+    if (!d) d = `<div class="empty">${dm.length + prox.length + luego.length ? "Hoy no tienes nada pendiente." : "No tienes tareas pendientes. 👍"}</div>`;
+    if (nv === "campo") {
+      if (dm.length) d += plegado(`Mañana: ${dm.length} tarea${dm.length === 1 ? "" : "s"}`, dm.map(cardTarea).join(""));
+    } else {
+      if (dm.length) d += `<p class="lbl gris">Mañana (${dm.length})</p>${dm.map(cardTarea).join("")}`;
+      if (prox.length) d += plegado(`Próximos 7 días (${prox.length})`, prox.map(cardTarea).join(""));
+    }
+    const despues = nv === "campo" ? [...prox, ...luego] : luego;
+    if (despues.length) d += plegado(`Más adelante (${despues.length})`, despues.map(cardTarea).join(""));
+    h += bloque("Lo tuyo de hoy", d);
+
+    const disp = disponibles();
+    if (disp.length) h += bloque(`Trabajo disponible (${disp.length})`, `<p class="sub" style="margin:0 0 10px">El primero que la toma se la queda.</p>${disp.map(cardTarea).join("")}`);
+    if (O.asigna && !O.revisaTodo) { const asig = TAREAS.tareas.filter(t => t["Asignó"] === YO.usuario.nombre && abiertaT(t) && t["Asignada a"] !== YO.usuario.nombre && !t._solicitud);
+      if (asig.length) h += plegado(`Lo que asignaste y sigue pendiente (${asig.length})`, asig.map(cardTarea).join("")); }
+    const ms = misSolicitudes();
+    if (ms.length) h += plegado(`Lo que pediste y espera respuesta (${ms.length})`, ms.map(cardTarea).join(""));
+  }
+
+  /* 3. hoy en el rancho */
+  let r = "";
+  if (tiene("agenda") && AGENDA) {
+    const ev = eventosReales(), deHoy = ev.filter(e => e.fecha === hoy || (e.todoElDia && e.fecha <= hoy && e.fin >= hoy)), deMan = ev.filter(e => e.fecha === man);
+    if (nv === "campo") {
+      r += deHoy.length ? deHoy.map(e => cardEvento(e)).join("") : `<div class="empty">Hoy no hay sesiones ni eventos.</div>`;
+      r += `<div class="linea"><b>Mañana:</b> ${deMan.length ? deMan.map(e => esc((e.todoElDia ? "todo el día" : (e.llegada || fHora(e.inicio))) + " · " + e.titulo)).join(" · ") : "nada agendado"}</div>`;
+    } else {
+      const semana = ev.filter(e => e.fecha > man && e.fecha <= sem), dinero = YO.permisos.dinero !== "nada";
+      const pend = dinero ? ev.filter(e => e.saldo === "pendiente" && e.fecha > hoy) : [], porConf = tiene("eventos") ? ev.filter(e => e.estado === "por_confirmar" && e.fecha >= hoy) : [];
+      const kpi = [`<div class="kpi"><span>Hoy</span><b>${deHoy.length}</b></div>`, `<div class="kpi"><span>Mañana</span><b>${deMan.length}</b></div>`, `<div class="kpi"><span>Próximos 7 días</span><b>${deHoy.length + deMan.length + semana.length}</b></div>`];
+      if (dinero) kpi.push(`<div class="kpi"><span>Restos sin cobrar</span><b>${pend.length}</b></div>`);
+      if (tiene("eventos")) kpi.push(`<div class="kpi"><span>Eventos por confirmar</span><b>${porConf.length}</b></div>`);
+      r += `<div class="grid-kpi">${kpi.join("")}</div>`;
+      r += `<p class="lbl oro">Hoy</p>${deHoy.length ? deHoy.map(e => cardEvento(e)).join("") : `<div class="empty">No hay nada agendado hoy.</div>`}`;
+      r += `<p class="lbl gris">Mañana</p>${deMan.length ? deMan.map(e => cardEvento(e)).join("") : `<div class="empty">Nada agendado mañana.</div>`}`;
+      if (pend.length) r += plegado(`Restos sin cobrar (${pend.length})`, pend.map(e => cardEvento(e, {fecha: 1})).join(""));
+      if (porConf.length) r += plegado(`Eventos por confirmar (${porConf.length})`, porConf.map(e => cardEvento(e, {fecha: 1})).join(""));
+      if (semana.length) r += plegado(`Resto de la semana (${semana.length})`, porDia(semana, ""));
+    }
+  }
+  if (nv === "dir" && TAREAS) {
+    const eqHoy = TAREAS.tareas.filter(t => abiertaT(t) && !t._solicitud && t["Asignada a"] !== YO.usuario.nombre && (!lim(t) || lim(t) <= hoy));
+    if (eqHoy.length) r += plegado(`Tareas del equipo para hoy (${eqHoy.length})`, `<ul class="mini-lista">${eqHoy.sort((a, b) => (lim(a) || "9") < (lim(b) || "9") ? -1 : 1).map(t =>
+      `<li><b>${esc(t._disponible ? "Disponible" : t["Asignada a"])}</b> · ${esc(t["Tarea"])}${lim(t) && lim(t) < hoy ? ` <span class="tag" style="background:var(--bad-bg);color:var(--bad)">atrasada</span>` : lim(t) === hoy ? ` <span class="tag oro">hoy</span>` : ""}${t["Estatus"] === "En proceso" ? ` <span class="tag">en proceso</span>` : ""}</li>`).join("")}</ul>`);
+  }
+  r += saludHoy(nv);
+  if (nv !== "campo") r += hoyCotiz();
+  h += bloque("Hoy en el rancho", r);
+
+  /* 4. ayer (Mario y Nico) */
+  if (nv === "dir" && TAREAS) h += bloque("Ayer", ayerResumen());
+
+  /* todas las secciones, debajo (en computadora están a la izquierda) */
+  const secs = YO.permisos.secciones.filter(x => !["reglamento", "hoy"].includes(x));
+  h += `<section class="blk cel-only"><h3>Secciones</h3><div class="menu-grid">${secs.map(x => `<button class="menu-tile" type="button" data-ir="${x}"><span class="ico" aria-hidden="true">${ICONOS[x] || "•"}</span>${esc(SECCIONES[x])}</button>`).join("")}</div></section>`;
+  return h;
+}
+function saludHoy(nv) {
+  if (!REPORTES || !tiene("salud")) return "";
+  const hoy = hoyD(), pr = proximosSalud(), ya = pr.filter(r => r["Próxima fecha"] <= hoy), sem = pr.filter(r => r["Próxima fecha"] > hoy && r["Próxima fecha"] <= masDias(hoy, 7));
+  let h = "";
+  if (ya.length) h += `<p class="lbl ${ya.some(r => r["Próxima fecha"] < hoy) ? "rojo" : "oro"}">Salud: toca hoy o está atrasado (${ya.length})</p>${tablaProximos(ya)}`;
+  if (sem.length) h += nv === "ofi" ? plegado(`Salud esta semana (${sem.length})`, tablaProximos(sem)) : plegado(`Salud en los próximos 7 días (${sem.length})`, tablaProximos(sem));
+  return h;
+}
+function ayerResumen() {
+  const ayer = masDias(hoyISO(), -1), T = TAREAS.tareas;
+  const cerradas = T.filter(t => ["Hecha", "Revisada"].includes(t["Estatus"]) && String(t["Actualizada"] || "").startsWith(ayer));
+  const atras = {}; T.filter(t => ["Pendiente", "En proceso"].includes(t["Estatus"]) && !t._solicitud && lim(t) && lim(t) < hoyISO()).forEach(t => { const k = t._disponible ? "Disponibles sin tomar" : t["Asignada a"]; atras[k] = (atras[k] || 0) + 1; });
+  const ks = Object.keys(atras).sort((a, b) => atras[b] - atras[a]);
+  let h = `<div class="grid-kpi"><div class="kpi"><span>Tareas cerradas ayer</span><b>${cerradas.length}</b></div><div class="kpi"><span>Tareas atrasadas hoy</span><b>${ks.reduce((a, k) => a + atras[k], 0)}</b></div></div>`;
+  if (cerradas.length) h += plegado(`Lo que se cerró ayer (${cerradas.length})`, `<ul class="mini-lista">${cerradas.map(t => `<li><b>${esc(t["Asignada a"])}</b> · ${esc(t["Tarea"])}${t["Estatus"] === "Hecha" ? ` <span class="tag oro">por revisar</span>` : ""}</li>`).join("")}</ul>`);
+  if (ks.length) h += `<div class="linea"><b>Atrasos por persona:</b> ${ks.map(k => `${esc(k)} ${atras[k]}`).join(" · ")}</div>`;
+  return h;
 }
 function vAgenda() {
   const hoy = hoyISO(), f = st.agendaFiltro;
@@ -516,58 +689,72 @@ const isoDe = t => { t = String(t || "").trim(); let m = t.match(/^(\d{4})-(\d{2
   m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/); if (m) return (m[3].length === 2 ? "20" + m[3] : m[3]) + "-" + m[2].padStart(2, "0") + "-" + m[1].padStart(2, "0"); return ""; };
 const ESTADO_BADGE = {"Pendiente": "b-warn", "En proceso": "b-info", "Hecha": "b-ok", "Revisada": "b-ok", "Cancelada": "b-info"};
 
-/* ----- Hoy ----- */
-function misTareas() { return TAREAS ? TAREAS.tareas.filter(t => t["Asignada a"] === YO.usuario.nombre && ["Pendiente", "En proceso"].includes(t["Estatus"])) : []; }
-function porRevisar() { return TAREAS && YO.permisos.jefe ? TAREAS.tareas.filter(t => t["Estatus"] === "Hecha") : []; }
-function hoyTareas() {
-  if (!TAREAS) return "";
-  const mias = misTareas(), rev = porRevisar();
-  let h = "";
-  if (rev.length) h += `<h3>Tareas terminadas por revisar (${rev.length})</h3>${rev.slice(0, 5).map(cardTarea).join("")}${rev.length > 5 ? `<button class="btn" onclick="ir('tareas')">Ver todas</button>` : ""}`;
-  h += `<h3>Mis tareas (${mias.length})</h3>${mias.length ? mias.map(cardTarea).join("") : `<div class="empty">No tienes tareas pendientes.</div>`}`;
-  return h;
-}
-function hoySalud() {
-  if (!REPORTES || !tiene("salud")) return "";
-  const pr = proximosSalud().filter(r => r["Próxima fecha"] <= masDias(hoyD(), 7));
-  return pr.length ? `<h3>Salud: pendiente esta semana (${pr.length})</h3>${tablaProximos(pr)}` : "";
-}
+/* ----- tareas para el Inicio ----- */
+const abiertaT = t => ["Pendiente", "En proceso"].includes(t["Estatus"]);
+function misTareas() { return TAREAS ? TAREAS.tareas.filter(t => t["Asignada a"] === YO.usuario.nombre && abiertaT(t)) : []; }
+function porRevisar() { return TAREAS ? TAREAS.tareas.filter(t => t["Estatus"] === "Hecha" && t._revisar) : []; }
+function solicitudes() { return TAREAS && YO.org && YO.org.revisaTodo ? TAREAS.tareas.filter(t => t._solicitud && t["Estatus"] === "Pendiente") : []; }
+function disponibles() { return TAREAS ? TAREAS.tareas.filter(t => t._tomar) : []; }
+function misSolicitudes() { return TAREAS ? TAREAS.tareas.filter(t => t._solicitud && t["Estatus"] === "Pendiente" && t["Asignó"] === YO.usuario.nombre) : []; }
 
 /* ----- Tareas ----- */
 function cardTarea(t) {
-  const yo = YO.usuario.nombre, jefe = YO.permisos.jefe, mia = t["Asignada a"] === yo, e = t["Estatus"];
-  const venc = t["Fecha límite"] && t["Fecha límite"] < hoyD() && ["Pendiente", "En proceso"].includes(e);
+  const yo = YO.usuario.nombre, mia = t["Asignada a"] === yo, e = t["Estatus"], O = YO.org || {}, rev = !!t._revisar;
+  const venc = lim(t) && lim(t) < hoyD() && abiertaT(t);
   const acts = [];
-  if (mia && e === "Pendiente") acts.push(`<button class="btn" data-test="En proceso" data-tid="${esc(t.ID)}">Empezar</button>`);
-  if (mia && ["Pendiente", "En proceso"].includes(e)) acts.push(`<button class="btn btn-dark" data-terminar="${esc(t.ID)}">Ya la terminé</button>`);
-  if (mia && ["Pendiente", "En proceso"].includes(e)) acts.push(`<button class="btn" data-avance="${esc(t.ID)}">Mandar avance o foto</button>`);
-  if (jefe && e === "Hecha") { acts.push(`<button class="btn btn-dark" data-test="Revisada" data-tid="${esc(t.ID)}">Revisada, todo bien</button>`); acts.push(`<button class="btn" data-reabrir="${esc(t.ID)}">Reabrir</button>`); }
-  if (jefe && !["Revisada", "Cancelada"].includes(e)) acts.push(`<button class="btn" data-avisar="${esc(t.ID)}">Avisar por WhatsApp</button>`);
-  if (jefe && ["Pendiente", "En proceso"].includes(e)) acts.push(`<button class="btn" data-test="Cancelada" data-tid="${esc(t.ID)}">Cancelar</button>`);
+  if (t._solicitud && e === "Pendiente") {
+    if (O.revisaTodo) { acts.push(`<button class="btn btn-dark" data-aprobar="${esc(t.ID)}">Aprobar y asignar</button>`); acts.push(`<button class="btn" data-rechazar="${esc(t.ID)}">No se hará</button>`); }
+    else if (t["Asignó"] === yo) acts.push(`<button class="btn" data-test="Cancelada" data-tid="${esc(t.ID)}">Ya no la necesito</button>`);
+  } else {
+    if (t._tomar) acts.push(`<button class="btn btn-dark" data-tomar="${esc(t.ID)}">🙋 Yo la tomo</button>`);
+    if (mia && e === "Pendiente") acts.push(`<button class="btn" data-test="En proceso" data-tid="${esc(t.ID)}">Empezar</button>`);
+    if (mia && abiertaT(t)) acts.push(`<button class="btn btn-dark" data-terminar="${esc(t.ID)}">Ya la terminé</button>`);
+    if (mia && abiertaT(t)) acts.push(`<button class="btn" data-avance="${esc(t.ID)}">Mandar avance o foto</button>`);
+    if (rev && e === "Hecha") { acts.push(`<button class="btn btn-dark" data-test="Revisada" data-tid="${esc(t.ID)}">Revisada, todo bien</button>`); acts.push(`<button class="btn" data-reabrir="${esc(t.ID)}">Reabrir</button>`); }
+    if (rev && !t._disponible && !["Revisada", "Cancelada"].includes(e) && !mia) acts.push(`<button class="btn" data-avisar="${esc(t.ID)}">Avisar por WhatsApp</button>`);
+    if (rev && abiertaT(t)) acts.push(`<button class="btn" data-test="Cancelada" data-tid="${esc(t.ID)}">Cancelar</button>`);
+  }
   const f = btnFotos(t["Evidencias"]); if (f) acts.push(f);
+  const para = t._solicitud ? `Pidió: <b>${esc(t["Asignó"])}</b>${/Por definir$/.test(t["Asignada a"]) ? "" : " · Sugiere: " + esc(String(t["Asignada a"]).replace(/^Solicitud · /, ""))}`
+    : t._disponible ? `<b>Disponible</b> para ${esc(String(t["Asignada a"]).replace(/^Disponible · /, "").replace(/^Todos$/, "todo el equipo"))} · ${quienAsigno(t)}`
+    : `Para: <b>${esc(t["Asignada a"])}</b> · ${quienAsigno(t)}`;
+  const badge = t._solicitud && e === "Pendiente" ? `<span class="badge b-warn">Solicitud</span>` : t._disponible && e === "Pendiente" ? `<span class="badge b-info">Disponible</span>`
+    : `<span class="badge ${ESTADO_BADGE[e] || "b-info"}">${esc(e === "Hecha" ? "Hecha, por revisar" : e)}</span>`;
   return `<article class="card prio-${esc(t["Prioridad"] || "Normal")}">
-    <div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(t["Tarea"])}</p>
-      <p class="card-m">${esc(t["Área"] || "")}${t["Área"] ? " · " : ""}Para: <b>${esc(t["Asignada a"])}</b> · Asignó: ${esc(t["Asignó"])}</p></div>
-      <span class="badge ${ESTADO_BADGE[e] || "b-info"}">${esc(e === "Hecha" ? "Hecha, por revisar" : e)}</span></div>
-    <dl class="kv">${t["Fecha límite"] ? `<dt>Para cuándo</dt><dd class="${venc ? "t-vencida" : ""}">${esc(fDia(t["Fecha límite"]))}${venc ? " · ¡ya pasó!" : ""}</dd>` : ""}
+    <div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(t["Tarea"])}${t._foto ? `<span class="tag oro">📷 pide foto</span>` : ""}</p>
+      <p class="card-m">${esc(t["Área"] || "")}${t["Área"] ? " · " : ""}${para}</p></div>${badge}</div>
+    <dl class="kv">${t["Fecha límite"] ? `<dt>Para cuándo</dt><dd class="${venc ? "t-vencida" : ""}">${esc(fDia(lim(t) || t["Fecha límite"]))}${venc ? " · ¡ya pasó!" : ""}</dd>` : ""}
       ${t["Prioridad"] && t["Prioridad"] !== "Normal" ? `<dt>Prioridad</dt><dd>${esc(t["Prioridad"])}</dd>` : ""}
       ${t["Detalle"] ? `<dt>Qué hacer</dt><dd style="white-space:pre-wrap">${esc(t["Detalle"])}</dd>` : ""}
       ${t["Nota de cierre"] ? `<dt>Notas</dt><dd style="white-space:pre-wrap">${esc(t["Nota de cierre"])}</dd>` : ""}
       ${t["Revisó"] ? `<dt>Revisó</dt><dd>${esc(t["Revisó"])}</dd>` : ""}</dl>
     ${acts.length ? `<div class="acts">${acts.join("")}</div>` : ""}</article>`;
 }
+function quienAsigno(t) { return t._aprobo ? "Pidió: " + esc(t["Asignó"]) + " · Aprobó: " + esc(t._aprobo.split(" · ")[0]) : "Asignó: " + esc(t["Asignó"]); }
 function vTareas() {
-  const T = TAREAS.tareas, yo = YO.usuario.nombre, jefe = YO.permisos.jefe, f = st.tFiltro;
-  const filtros = jefe ? [["pendientes", "Pendientes"], ["revisar", "Por revisar"], ["mias", "Mías"], ["hechas", "Terminadas"], ["todas", "Todas"]] : [["pendientes", "Por hacer"], ["hechas", "Terminadas"]];
+  const T = TAREAS.tareas, yo = YO.usuario.nombre, O = YO.org || {}, manda = O.asigna || O.revisaTodo, f = st.tFiltro;
+  const filtros = [["pendientes", manda ? "Pendientes" : "Por hacer"]];
+  if (O.revisaTodo) filtros.push(["solicitudes", `Solicitudes (${solicitudes().length})`]);
+  if (porRevisar().length || manda) filtros.push(["revisar", `Por revisar (${porRevisar().length})`]);
+  filtros.push(["disponibles", `Disponibles (${T.filter(t => t._disponible && t["Estatus"] === "Pendiente").length})`]);
+  if (manda) filtros.push(["mias", "Mías"]);
+  if (O.pide) filtros.push(["pedidas", "Lo que pedí"]);
+  filtros.push(["hechas", "Terminadas"]); if (manda) filtros.push(["todas", "Todas"]);
   let L = T;
-  if (f === "pendientes") L = T.filter(t => ["Pendiente", "En proceso"].includes(t["Estatus"]) && (jefe || t["Asignada a"] === yo));
-  if (f === "revisar") L = T.filter(t => t["Estatus"] === "Hecha");
+  if (f === "pendientes") L = T.filter(t => abiertaT(t) && !t._solicitud && (O.revisaTodo || t["Asignada a"] === yo || t._revisar));
+  if (f === "solicitudes") L = solicitudes();
+  if (f === "revisar") L = porRevisar();
+  if (f === "disponibles") L = T.filter(t => t._disponible && t["Estatus"] === "Pendiente");
   if (f === "mias") L = T.filter(t => t["Asignada a"] === yo);
+  if (f === "pedidas") L = T.filter(t => t["Asignó"] === yo && (t._solicitud || t._aprobo));
   if (f === "hechas") L = T.filter(t => ["Hecha", "Revisada"].includes(t["Estatus"]));
-  L = [...L].sort((a, b) => (a["Fecha límite"] || "9999") < (b["Fecha límite"] || "9999") ? -1 : 1);
+  L = [...L].sort((a, b) => (lim(a) || "9999") < (lim(b) || "9999") ? -1 : 1);
   const chips = filtros.map(([k, n]) => `<button class="chip" data-tf="${k}" aria-pressed="${f === k}">${n}</button>`).join("");
-  return `<h2>Tareas</h2><p class="sub">${jefe ? "Asigna tareas, revisa lo que el equipo terminó y sus fotos." : "Lo que te toca hacer. Cuando termines, toma una foto y márcala como hecha."}</p>
-    ${jefe ? `<div class="big-actions"><button class="btn btn-dark" data-nueva-tarea="1">+ Nueva tarea</button></div>` : ""}
+  const botones = [O.asigna ? `<button class="btn btn-dark" data-nueva-tarea="1">+ Nueva tarea</button>` : "", O.pide ? `<button class="btn${O.asigna ? "" : " btn-dark"}" data-pedir="1">🙋 Pedir tarea</button>` : ""].join("");
+  const sub = O.revisaTodo ? "Asigna tareas, aprueba lo que pide el equipo y revisa lo terminado con sus fotos."
+    : O.asigna ? "Asigna tareas a tu gente, revisa lo que terminaron y toma trabajo disponible."
+    : "Lo que te toca hacer. Cuando termines, márcala como hecha y sube la foto. Si hace falta algo, pídelo con \"Pedir tarea\".";
+  return `<h2>Tareas</h2><p class="sub">${sub}</p>${botones ? `<div class="big-actions">${botones}</div>` : ""}
     <div class="bar">${chips}</div>${L.length ? L.map(cardTarea).join("") : `<div class="empty">No hay tareas aquí.</div>`}`;
 }
 
@@ -1164,23 +1351,44 @@ document.addEventListener("click", async e => {
       out.push(/pdf/.test(j.tipo) ? `<a class="btn" href="${url}" target="_blank" rel="noopener">Abrir PDF</a>` : `<a href="${url}" target="_blank" rel="noopener"><img src="${url}" alt=""></a>`); } catch (err) { out.push(`<div class="err">${esc(err.message)}</div>`); } }
     if (box.querySelector("#d-gal")) box.querySelector("#d-gal").innerHTML = out.join("");
   }
-  if (b.dataset.nuevaTarea) {
-    const per = (TAREAS && TAREAS.personas) || [];
-    const box = dialogo("Nueva tarea", `<div class="frm">
-      <label>¿Qué hay que hacer?</label><input id="d-t" maxlength="140" placeholder="Ej. Podar los árboles de la entrada">
-      <label>Detalles (opcional)</label><textarea id="d-d" rows="3" maxlength="1500" placeholder="Explica cómo o qué materiales usar"></textarea>
-      <label>¿A quién se la asignas?</label><select id="d-a"><option value="">Elige a una persona</option>${per.map(x => `<option value="${esc(x.nombre)}">${esc(x.nombre)} · ${esc(x.rol)}${x.area ? " · " + esc(x.area) : ""}</option>`).join("")}</select>
-      <div class="dos"><div><label>Área</label><select id="d-ar">${opt(AREAS, "Caballos")}</select></div><div><label>Para cuándo</label><input id="d-l" type="date" min="${hoyD()}"></div></div>
-      <label>Prioridad</label><select id="d-p">${opt(["Normal", "Alta", "Baja"], "Normal")}</select>
-      ${campoFotos("Agregar foto de referencia (opcional)")}
-      <button class="btn btn-dark" id="d-ok">Asignar tarea</button></div>`);
+  if (b.dataset.nuevaTarea || b.dataset.pedir || b.dataset.aprobar) {
+    if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
+    if (!TAREAS) { try { await cargar("tareas"); } catch (err) { return alert(err.message); } }
+    const modo = b.dataset.aprobar ? "aprobar" : b.dataset.pedir ? "pedir" : "nueva";
+    const t = modo === "aprobar" ? TAREAS.tareas.find(x => x.ID === b.dataset.aprobar) : null; if (modo === "aprobar" && !t) return;
+    const box = dialogo({nueva: "Nueva tarea", pedir: "Pedir tarea", aprobar: "Aprobar y asignar"}[modo], formTarea(modo, t));
     activarFotos(box);
+    const dest = box.querySelector("#d-a"), disp = box.querySelector("#d-disp");
+    if (dest && disp) dest.onchange = () => { disp.hidden = dest.value !== "__disp"; };
+    if (t && dest) { const sug = t["Asignada a"].replace(/^Solicitud · /, ""); if ([...dest.options].some(o => o.value === sug)) dest.value = sug; }
     box.querySelector("#d-ok").onclick = () => {
-      const tarea = {tarea: box.querySelector("#d-t").value.trim(), detalle: box.querySelector("#d-d").value.trim(), asignada: box.querySelector("#d-a").value, area: box.querySelector("#d-ar").value, limite: box.querySelector("#d-l").value, prioridad: box.querySelector("#d-p").value};
-      if (tarea.tarea.length < 3 || !tarea.asignada) return alert("Escribe la tarea y elige a quién se la asignas.");
-      enviar(box, {tipo: "tarea_crear", tarea}, "Tarea asignada", () => {
-        if (confirm("¿Le avisas por WhatsApp a " + tarea.asignada + "?")) window.open(wa(`Hola ${tarea.asignada.split(" ")[0]}, te asigné una tarea en el portal del rancho: ${tarea.tarea}${tarea.limite ? " (para el " + fDia(tarea.limite) + ")" : ""}. Entra aquí para verla: ${PORTAL}#tareas`), "_blank", "noopener"); });
+      const v = id => (box.querySelector(id) || {}).value || "";
+      let asignada = v("#d-a");
+      if (asignada === "__disp") {
+        const todos = box.querySelector("#d-todos") && box.querySelector("#d-todos").checked, quienes = [...box.querySelectorAll("[data-dp]:checked")].map(x => x.dataset.dp);
+        if (!todos && !quienes.length) return alert("Elige quién puede tomarla.");
+        asignada = "Disponible · " + (todos ? "Todos" : quienes.join(", "));
+      }
+      const datos = {tarea: v("#d-t").trim(), detalle: v("#d-d").trim(), asignada, area: v("#d-ar"), limite: v("#d-l"), prioridad: v("#d-p") || "Normal",
+        pideFoto: !!(box.querySelector("#d-foto") && box.querySelector("#d-foto").checked)};
+      if (modo !== "aprobar" && datos.tarea.length < 3) return alert("Escribe qué hay que hacer.");
+      if (modo !== "pedir" && !datos.asignada) return alert("Elige a quién se la asignas.");
+      const avisar = j => { if (datos.asignada.startsWith("Disponible") || modo === "pedir") return;
+        const titulo = datos.tarea || (t && t["Tarea"]) || "";
+        if (confirm("¿Le avisas por WhatsApp a " + datos.asignada + "?")) window.open(wa(`Hola ${datos.asignada.split(" ")[0]}, te asigné una tarea en el portal del rancho: ${titulo}${datos.limite ? " (para el " + fDia(datos.limite) + ")" : ""}. Entra aquí para verla: ${PORTAL}#hoy`), "_blank", "noopener"); };
+      if (modo === "aprobar") enviar(box, {tipo: "tarea_aprobar", id: t.ID, cambios: {asignada: datos.asignada, limite: datos.limite, prioridad: datos.prioridad, pideFoto: datos.pideFoto, detalle: datos.detalle}}, "Solicitud aprobada y asignada", avisar);
+      else if (modo === "pedir") enviar(box, {tipo: "tarea_pedir", tarea: datos}, "Listo, se la pediste a Mario");
+      else enviar(box, {tipo: "tarea_crear", tarea: datos}, datos.asignada.startsWith("Disponible") ? "Tarea disponible: el primero que la tome se la queda" : "Tarea asignada", avisar);
     };
+  }
+  if (b.dataset.rechazar) {
+    const box = dialogo("No se hará", `<div class="frm"><label>¿Por qué? (lo verá quien la pidió)</label><textarea id="d-n" rows="3" maxlength="800" placeholder="Ej. Ya se hizo, no hay presupuesto este mes"></textarea><button class="btn btn-dark" id="d-ok">Rechazar solicitud</button></div>`);
+    box.querySelector("#d-ok").onclick = () => enviar(box, {tipo: "tarea_estatus", id: b.dataset.rechazar, estatus: "Cancelada", nota: "No se hará: " + (box.querySelector("#d-n").value.trim() || "sin motivo")}, "Solicitud rechazada");
+  }
+  if (b.dataset.tomar) {
+    b.disabled = true;
+    try { await post({accion: "hacer", tipo: "tarea_tomar", id: b.dataset.tomar}); toast("¡Es tuya! Ya aparece en tus pendientes."); TAREAS = null; render(); }
+    catch (err) { alert(err.message); TAREAS = null; render(); }
   }
   if (b.dataset.test && b.dataset.tid) {
     const e2 = b.dataset.test; if (e2 === "Cancelada" && !confirm("¿Cancelar esta tarea?")) return;
@@ -1189,14 +1397,16 @@ document.addEventListener("click", async e => {
     catch (err) { alert(err.message); b.disabled = false; }
   }
   if (b.dataset.terminar || b.dataset.avance) {
-    const fin = !!b.dataset.terminar, id = b.dataset.terminar || b.dataset.avance;
+    const fin = !!b.dataset.terminar, id = b.dataset.terminar || b.dataset.avance, tt = TAREAS && TAREAS.tareas.find(x => x.ID === id), obligada = fin && tt && tt._foto;
     const box = dialogo(fin ? "Terminar tarea" : "Mandar avance", `<div class="frm">
-      ${campoFotos(fin ? "Tomar foto de cómo quedó" : "Tomar o subir fotos")}
+      ${obligada ? `<p class="aviso">📷 Esta tarea pide foto: toma una foto de cómo quedó.</p>` : ""}
+      ${campoFotos(fin ? (obligada ? "Tomar foto (obligatoria)" : "Tomar foto de cómo quedó") : "Tomar o subir fotos")}
       <label>${fin ? "Comentario (opcional)" : "¿Cómo va?"}</label><textarea id="d-n" rows="3" maxlength="800" placeholder="${fin ? "Ej. Quedó listo, faltó pintura para la reja" : "Ej. Llevo la mitad, mañana termino"}"></textarea>
       <button class="btn btn-dark" id="d-ok">${fin ? "Marcar como hecha" : "Mandar avance"}</button></div>`);
     activarFotos(box);
     box.querySelector("#d-ok").onclick = () => { const nota = box.querySelector("#d-n").value.trim();
       if (!fin && !nota && !box.querySelector("#d-fotos").files.length) return alert("Escribe cómo va o sube una foto.");
+      if (obligada && !box.querySelector("#d-fotos").files.length) return alert("Esta tarea pide foto. Toma una foto de cómo quedó para terminarla.");
       enviar(box, {tipo: "tarea_estatus", id, estatus: fin ? "Hecha" : "En proceso", nota}, fin ? "¡Gracias! Tarea marcada como hecha" : "Avance enviado"); };
   }
   if (b.dataset.reabrir) {
@@ -1280,6 +1490,32 @@ document.addEventListener("change", e => {
   if (e.target.id === "c-mes") { st.mes = e.target.value; render(); }
 });
 
+/* formulario de tarea: nueva (asignar), pedir (le llega a Mario y Nico) o aprobar una solicitud */
+function formTarea(modo, t) {
+  const O = YO.org || {}, per = (TAREAS && TAREAS.personas) || [], areas = O.areas && O.areas.length && modo === "nueva" ? O.areas : AREAS;
+  const area0 = t ? t["Área"] : areas.includes(O.area) ? O.area : areas[0];
+  const opcPer = per.map(x => `<option value="${esc(x.nombre)}">${esc(x.nombre)}${x.area ? " · " + esc(x.area) : ""}</option>`).join("");
+  const destino = `<label>¿Para quién?</label><select id="d-a"><option value="">Elige a una persona</option>${opcPer}${per.length > 1 ? `<option value="__disp">Disponible: que la tome alguien que yo elija</option>` : ""}</select>
+    <div id="d-disp" hidden><label>¿Quién puede tomarla? El primero que la tome se la queda.</label><div class="chkgrid">
+      ${(YO.org && O.revisaTodo) || (TAREAS && TAREAS.personas.length >= ((TAREAS.todos || []).length)) ? `<label class="chk"><input type="checkbox" id="d-todos"> Todos</label>` : ""}
+      ${per.map(x => `<label class="chk"><input type="checkbox" data-dp="${esc(x.corto)}"> ${esc(x.corto)}</label>`).join("")}</div></div>`;
+  const foto = `<label class="chk"><input type="checkbox" id="d-foto"${t && t._foto ? " checked" : ""}> 📷 Pide foto al terminar (no se puede marcar como hecha sin foto)</label>`;
+  if (modo === "aprobar") return `<div class="frm"><div class="ctx"><b>${esc(t["Tarea"])}</b><br>Pidió: ${esc(t["Asignó"])}${/Por definir$/.test(t["Asignada a"]) ? "" : " · Sugiere: " + esc(t["Asignada a"].replace(/^Solicitud · /, ""))}${t["Área"] ? " · " + esc(t["Área"]) : ""}</div>
+    ${destino}<label>Detalles</label><textarea id="d-d" rows="3" maxlength="1500">${esc(t["Detalle"] || "")}</textarea>
+    <div class="dos"><div><label>Para cuándo</label><input id="d-l" type="date" value="${esc(lim(t))}"></div><div><label>Prioridad</label><select id="d-p">${opt(["Normal", "Alta", "Baja"], t["Prioridad"] || "Normal")}</select></div></div>
+    ${foto}<button class="btn btn-dark" id="d-ok">Aprobar y asignar</button></div>`;
+  const pedir = modo === "pedir", todos = (TAREAS && TAREAS.todos) || [];
+  return `<div class="frm">${pedir ? `<p class="sub" style="margin:0 0 12px">Le llega a Mario (y a Nico) para que la aprueben y la asignen.</p>` : ""}
+    <label>¿Qué hay que hacer?</label><input id="d-t" maxlength="140" placeholder="Ej. Podar los árboles de la entrada">
+    <label>Detalles (opcional)</label><textarea id="d-d" rows="3" maxlength="1500" placeholder="${pedir ? "Para qué es y cualquier cosa que ayude" : "Explica cómo o qué materiales usar"}"></textarea>
+    ${pedir ? `<label>¿Quién crees que debería hacerla? (opcional)</label><select id="d-a"><option value="">Que lo decida Mario</option>${todos.filter(n => n !== YO.usuario.nombre).map(n => `<option>${esc(n)}</option>`).join("")}</select>` : destino}
+    <div class="dos"><div><label>Área</label><select id="d-ar">${opt(areas, area0)}</select></div><div><label>Para cuándo</label><input id="d-l" type="date" min="${hoyD()}"></div></div>
+    <label>Prioridad</label><select id="d-p">${opt(["Normal", "Alta", "Baja"], "Normal")}</select>
+    ${pedir ? "" : foto}
+    ${campoFotos("Agregar foto de referencia (opcional)")}
+    <button class="btn btn-dark" id="d-ok">${pedir ? "Mandar solicitud" : "Asignar tarea"}</button></div>`;
+}
+
 /* ---------- acciones ---------- */
 function dialogo(titulo, html) { $("#dlg-t").textContent = titulo; $("#dlg-b").innerHTML = html; if (!$("#dlg").open) $("#dlg").showModal(); return $("#dlg-b"); }
 $("#dlg-x").addEventListener("click", () => $("#dlg").close());
@@ -1318,7 +1554,7 @@ document.addEventListener("click", async e => {
   }
 });
 document.addEventListener("input", e => { if (e.target.id === "busca") { st.busca = e.target.value; const pos = e.target.selectionStart; render().then(() => { const i = $("#busca"); if (i) { i.focus(); i.setSelectionRange(pos, pos); } }); } });
-window.addEventListener("hashchange", () => { const h = location.hash.slice(1) || "menu"; if (YO && h !== ACTUAL && (YO.permisos.secciones.includes(h) || h === "menu")) ir(h); });
+window.addEventListener("hashchange", () => { const h = location.hash.slice(1) || "hoy"; if (YO && h !== ACTUAL && (YO.permisos.secciones.includes(h) || h === "menu")) ir(h); });
 iniciar();
 </script>
 </body>
