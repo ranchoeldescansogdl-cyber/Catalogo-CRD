@@ -368,7 +368,7 @@ function armarPortal() {
   /* celular: barra fija abajo · Inicio · Tareas · ➕ · Más (todas las secciones) */
   $("#bnav").innerHTML = `<button type="button" data-bn="hoy"><span class="ico" aria-hidden="true">🏠</span>Inicio</button>
     ${secs.includes("tareas") ? `<button type="button" data-bn="tareas"><span class="ico" aria-hidden="true">✅</span>Tareas<span class="n hide" id="bn-n"></span></button>` : ""}
-    <button type="button" class="plus" data-bn="mas-accion" aria-label="Subir, reportar o pedir"><span class="ico" aria-hidden="true">+</span>Subir</button>
+    <button type="button" class="plus" data-bn="mas-accion" aria-label="Reportar, registrar o pedir"><span class="ico" aria-hidden="true">+</span>Nuevo</button>
     <button type="button" data-bn="menu"><span class="ico" aria-hidden="true">☰</span>Más</button>`;
   $("#bnav").style.gridTemplateColumns = `repeat(${secs.includes("tareas") ? 4 : 3},1fr)`;
   if (!window.__tabs) { window.__tabs = 1; $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) ir(b.dataset.s); });
@@ -497,7 +497,6 @@ function bloque(titulo, html, cls = "") { return html ? `<section class="blk ${c
 function plegado(titulo, html) { return html ? `<details class="mas"><summary>${titulo}</summary>${html}</details>` : ""; }
 function hoyAcciones() {
   const A = YO.permisos.acciones, O = YO.org || {}, b = [];
-  if (A.includes("redes")) b.push(`<button class="qa dark" type="button" data-rsubir="1"><span class="ico">📷</span>Subir fotos o video</button>`);
   if (A.includes("caja") && O.caja === "lleva") b.push(`<button class="qa" type="button" data-caja-nuevo="Gasto"><span class="ico">🧾</span>Gasto de caja chica</button>`, `<button class="qa" type="button" data-caja-nuevo="Efectivo de cliente"><span class="ico">💵</span>Recibí efectivo</button>`);
   if (A.includes("reporte") && tiene("bitacora")) b.push(`<button class="qa" type="button" data-nuevo-rep=""><span class="ico">📝</span>Reportar avance o problema</button>`);
   if (A.includes("reporte") && tiene("salud")) b.push(`<button class="qa" type="button" data-nuevo-rep="Salud"><span class="ico">🩺</span>Registrar salud</button>`);
@@ -1246,7 +1245,7 @@ function rTile(m, cap) {
 function hoyRedes() {
   if (!tiene("redes")) return "";
   const n = rPorAprobar().length;
-  return `<div class="r-hero r-hero-hoy"><button class="r-big" type="button" data-rsubir="1"><span class="ico">📷</span><b>Subir fotos o video</b><span>Para las redes del rancho</span></button>
+  return `<div class="r-hero r-hero-hoy"><button class="r-big" type="button" data-rsubir="1"><span class="ico">📷</span><b>Fotos para redes</b><span>Para las redes del rancho</span></button>
     ${rPuedeAprobar() && n ? `<button class="r-big r-alt" type="button" onclick="st.rTab='aprobar';ir('redes')"><span class="ico">✅</span><b>${n} por aprobar</b><span>Publicaciones listas para revisar</span></button>` : ""}</div>`;
 }
 function rRedesTxt(s) { return String(s || "").split(/[,\s]+/).filter(Boolean).map(r => R_RED[r.toLowerCase()] || r).join(" · "); }
@@ -1273,7 +1272,7 @@ function rCardPub(p, modo) {
 }
 function vRedes() {
   const R = REDES, ofi = R.oficina, yo = YO.usuario.nombre;
-  const hero = `<div class="r-hero"><button class="r-big" type="button" data-rsubir="1"><span class="ico">📷</span><b>Subir fotos o video</b><span>Caballos, potros, el rancho, eventos. Directo del celular.</span></button>
+  const hero = `<div class="r-hero"><button class="r-big" type="button" data-rsubir="1"><span class="ico">📷</span><b>Fotos para redes</b><span>Caballos, potros, el rancho, eventos. Directo del celular.</span></button>
     <button class="r-big r-alt" type="button" data-rpedir="1"><span class="ico">✍️</span><b>Pedir una publicación</b><span>Un anuncio, un evento, una idea</span></button></div>`;
   if (!ofi) { // campo y médicos: solo subir y ver lo suyo
     const mios = R.material.slice().reverse(), pub = R.publicaciones.filter(p => p["Estatus"] === "Publicado").slice(-6).reverse();
@@ -1357,7 +1356,7 @@ window.addEventListener("beforeunload", e => { if (R_SUBIENDO) { e.preventDefaul
 function rOpcionesCaballo() { return ((REDES && REDES.caballos) || []).filter(c => !/vendid|muert/i.test(c.Estatus || "")).map(c => `<option value="${esc(c.Nombre)}">${esc(c.Raza || "")}</option>`).join(""); }
 async function rDialogoSubir() {
   if (!REDES) { try { await cargar("redes"); } catch (e) {} }
-  const box = dialogo("Subir fotos o video", `<div class="frm">
+  const box = dialogo("Fotos para redes", `<div class="frm">
     <p class="r-step">1. Elige las fotos o videos</p>
     <label class="foto-btn r-pick">📷 Tomar o elegir fotos y videos<input type="file" id="r-files" accept="image/*,video/*" multiple></label><div class="fotos-prev" id="r-prev"></div>
     <p class="r-step">2. ¿De qué es?</p><div class="r-temas">${R_TEMAS.map(([t, i]) => `<button type="button" class="r-tema" data-rt="${esc(t)}" aria-pressed="false">${i} ${esc(t)}</button>`).join("")}</div>
