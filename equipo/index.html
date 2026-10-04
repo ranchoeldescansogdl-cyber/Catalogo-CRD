@@ -237,6 +237,8 @@ body.como main .acts,body.como main .big-actions,body.como .hoy-acts,body.como .
 .rad small{display:block;color:var(--muted);font-size:.85rem}
 .frm label.chk{display:flex;gap:8px;align-items:flex-start;color:var(--ink);font-size:.95rem;margin:0 0 12px}
 .frm label.chk[hidden]{display:none}
+.kpi.bajo{border-color:var(--bad);background:var(--bad-bg)} .kpi.bajo b{color:var(--bad)}
+.cc-monto{font-family:var(--display);font-size:1.2rem;white-space:nowrap} .cc-menos{color:var(--bad)} .cc-mas{color:var(--ok)}
 .aviso{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:.9rem;margin:0 0 12px}
 .ok-big{font-family:var(--display);font-size:1.4rem;color:var(--ok);text-align:center;margin:0 0 12px}
 .frm .btn-wa{width:100%;justify-content:center;padding:13px;font-size:1rem;margin:0 0 10px}
@@ -289,10 +291,10 @@ const masDias = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDa
 const fDia = iso => { const t = new Date(iso + "T12:00:00Z").toLocaleDateString("es-MX", {weekday: "long", day: "numeric", month: "long", timeZone: "UTC"}); return t.charAt(0).toUpperCase() + t.slice(1); };
 const fHora = iso => new Date(iso).toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ});
 const fFecha = iso => new Date(iso).toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "2-digit", timeZone: TZ});
-const ROLES = {admin: "Administración", direccion: "Dirección", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
+const ROLES = {admin: "Administración", direccion: "Ventas y eventos", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
 const SECCIONES = {hoy: "Inicio", tareas: "Tareas", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", caballos: "Caballos y ventas",
-  comisiones: "Comisiones", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
-const ICONOS = {hoy: "🏠", tareas: "✅", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", caballos: "🐴", comisiones: "💰", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
+  comisiones: "Comisiones", caja: "Caja chica", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
+const ICONOS = {hoy: "🏠", tareas: "✅", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", caballos: "🐴", comisiones: "💰", caja: "💵", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
 const esCel = () => window.matchMedia("(max-width:899px)").matches;
 const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Administración", "Otro"];
 const TIPOS_SALUD = ["Revisión", "Vacuna", "Desparasitación", "Herraje / cascos", "Dental", "Tratamiento", "Lesión o cólico", "Monta / inseminación", "Palpación / ecografía", "Parto", "Destete", "Trámite KFPS / GVHS", "Otro"];
@@ -301,7 +303,7 @@ const CATS_GASTO = ["Alimento", "Veterinario", "Medicamentos", "Herraje", "Mante
 const TIPO_PAGO = {sesion: "Sesión", evento: "Evento", caballo: "Caballo", potro: "Potro 2027", saldo_sesion: "Resto de sesión"};
 
 let COMO = "", COMO_NOM = ""; // "Ver como…" (Mario y Nico): solo lectura
-let CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
+let CAJA = null, CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
 const st = {agendaFiltro: "todo", busca: "", tFiltro: "pendientes", bArea: "todo", sCaballo: "", mes: "", qFiltro: "abiertas", rTab: "inicio"};
 
 function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3200); }
@@ -352,7 +354,7 @@ async function iniciar() {
 /* Reglamento: botón discreto arriba (no es pestaña ni se pide al entrar); aceptarlo es opcional */
 async function verComo(id) {
   COMO = id; COMO_NOM = id && YO.gente ? ((YO.gente.find(x => x.id === id) || {}).nombre || "") : "";
-  CAMBIOS = REDES = REG = AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null;
+  CAJA = CAMBIOS = REDES = REG = AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null;
   location.hash = "hoy"; await iniciar(); window.scrollTo(0, 0);
 }
 async function aceptarReglamento(b) {
@@ -395,17 +397,18 @@ async function cargar(qué) {
   if (qué === "reglamento" && !REG) REG = await api("accion=reglamento");
   if (qué === "redes" && !REDES) REDES = await api("accion=redes");
   if (qué === "cambios" && !CAMBIOS) CAMBIOS = await api("accion=cambios");
+  if (qué === "caja" && !CAJA) CAJA = await api("accion=caja");
 }
 const tiene = s => YO.permisos.secciones.includes(s);
 async function render() {
   const m = $("#main"); m.innerHTML = `<p class="load">Cargando…</p>`;
   try {
     const s = ACTUAL;
-    if (s === "menu") { if (tiene("tareas")) await cargar("tareas").catch(() => {}); if (tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
+    if (s === "menu") { if (tiene("tareas")) await cargar("tareas").catch(() => {}); if (tiene("caja")) await cargar("caja").catch(() => {}); if (tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
       pintarContador(); if (ACTUAL === "menu") m.innerHTML = vMenu(); return; }
     if (["agenda", "clientes", "eventos"].includes(s)) await cargar("agenda");
     if (s === "hoy") await Promise.all([tiene("agenda") ? cargar("agenda").catch(() => {}) : 0, tiene("tareas") ? cargar("tareas").catch(() => {}) : 0,
-      tiene("salud") || tiene("bitacora") ? cargar("reportes").catch(() => {}) : 0]);
+      tiene("salud") || tiene("bitacora") ? cargar("reportes").catch(() => {}) : 0, tiene("caja") ? cargar("caja").catch(() => {}) : 0]);
     if ((s === "hoy" && tiene("cotizaciones")) || s === "cotizaciones") await cargar("cotizaciones").catch(e => { if (s === "cotizaciones") throw e; });
     if (["pagos", "comisiones"].includes(s)) await cargar("pagos");
     if (s === "caballos") await cargar("caballos");
@@ -415,20 +418,22 @@ async function render() {
     if (s === "equipo") await cargar("equipo");
     if (s === "reglamento") await cargar("reglamento");
     if (s === "redes") await cargar("redes");
+    if (s === "caja") await cargar("caja");
     if (s === "cambios") { await cargar("agenda"); await cargar("cotizaciones").catch(() => {}); await cargar("cambios"); }
     if (s === "hoy" && tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
     if (s !== ACTUAL) return;
     pintarContador();
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
-      tareas: vTareas, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes})[s]();
+      tareas: vTareas, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
-function recargar() { REDES = CAMBIOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
+function recargar() { CAJA = REDES = CAMBIOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
 
 /* ---------- menú de cuadros (celular) ---------- */
 function vMenu() {
   const n = {};
   if (TAREAS) n.tareas = misTareas().length + porRevisar().length + solicitudes().length;
+  if (CAJA) n.caja = ccPendientesMios().length + (ccPapel() === "dir" ? CAJA.movimientos.filter(x => x["Estatus"] === "Por entregar").length : 0);
   if (REDES && YO.permisos.acciones.includes("redes_aprobar")) n.redes = rPorAprobar().length;
   const nombre = String(YO.usuario.nombre || "").split(" ")[0];
   return `<p class="menu-hola">Hola, ${esc(nombre)}</p><p class="sub" style="margin:0">${esc(fDia(hoyISO()))} · Todas las secciones</p>
@@ -438,6 +443,7 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-ir]"
 
 /* ---------- piezas ---------- */
 const eventosReales = () => (AGENDA ? AGENDA.eventos : []).filter(e => !e.prueba && e.estado !== "reservando");
+const miDinero = e => YO.permisos.dinero === "todo" || !!e.propio; // vendedoras: solo el dinero de sus clientes
 function badgeSaldo(e) {
   if (e.tipo !== "sesion") return e.estado === "por_confirmar" ? `<span class="badge b-warn">Por confirmar</span>` : e.tipo === "bloqueo" ? `<span class="badge b-info">Bloqueado</span>` : `<span class="badge b-ok">Confirmado</span>`;
   return ({sin_saldo: `<span class="badge b-ok">Pagada</span>`, pagado: `<span class="badge b-ok">Pagada</span>`, por_cobrar: `<span class="badge b-info">Resto se cobra 2 días antes</span>`,
@@ -461,7 +467,7 @@ function cardEvento(e, opts = {}) {
   if (P.contacto && tel) acts.push(`<a class="btn btn-wa" href="https://wa.me/${tel}" target="_blank" rel="noopener">WhatsApp</a>`);
   if (e.saldo === "pendiente" && P.acciones.includes("liga") && e.folio && tel)
     acts.push(`<button class="btn btn-wa" data-liga="${esc(e.folio)}" data-tel="${tel}" data-nom="${esc(String(e.cliente || "").split(" ")[0])}" data-resta="${esc(e.resta)}" data-fecha="${esc(e.fecha)}">Mandar liga de pago</button>`);
-  if (["pendiente", "por_cobrar"].includes(e.saldo) && P.acciones.includes("saldo_pagado")) acts.push(`<button class="btn" data-pagado="${esc(e.id)}">Marcar resto pagado</button>`);
+  if (["pendiente", "por_cobrar"].includes(e.saldo) && P.acciones.includes("saldo_pagado") && miDinero(e)) acts.push(`<button class="btn" data-pagado="${esc(e.id)}" data-fecha="${esc(e.fecha)}">Marcar resto pagado</button>`);
   if (e.estado === "por_confirmar" && P.acciones.includes("confirmar_evento")) acts.push(`<button class="btn btn-dark" data-confirmar="${esc(e.id)}">Confirmar evento</button>`);
   if (P.acciones.includes("nota")) acts.push(`<button class="btn" data-nota="${esc(e.id)}">Agregar nota</button>`);
   if (P.jefe && ["sesion", "evento"].includes(e.tipo) && e.estado !== "reservando" && !e.prueba) acts.push(`<button class="btn" data-cambio="${esc(e.id)}">Cancelar o reagendar</button>`);
@@ -491,7 +497,8 @@ function bloque(titulo, html, cls = "") { return html ? `<section class="blk ${c
 function plegado(titulo, html) { return html ? `<details class="mas"><summary>${titulo}</summary>${html}</details>` : ""; }
 function hoyAcciones() {
   const A = YO.permisos.acciones, O = YO.org || {}, b = [];
-  if (tiene("redes")) b.push(`<button class="qa dark" type="button" data-rsubir="1"><span class="ico">📷</span>Subir fotos o video</button>`);
+  if (A.includes("redes")) b.push(`<button class="qa dark" type="button" data-rsubir="1"><span class="ico">📷</span>Subir fotos o video</button>`);
+  if (A.includes("caja") && O.caja === "lleva") b.push(`<button class="qa" type="button" data-caja-nuevo="Gasto"><span class="ico">🧾</span>Gasto de caja chica</button>`, `<button class="qa" type="button" data-caja-nuevo="Efectivo de cliente"><span class="ico">💵</span>Recibí efectivo</button>`);
   if (A.includes("reporte") && tiene("bitacora")) b.push(`<button class="qa" type="button" data-nuevo-rep=""><span class="ico">📝</span>Reportar avance o problema</button>`);
   if (A.includes("reporte") && tiene("salud")) b.push(`<button class="qa" type="button" data-nuevo-rep="Salud"><span class="ico">🩺</span>Registrar salud</button>`);
   if (O.asigna && tiene("tareas")) b.push(`<button class="qa" type="button" data-nueva-tarea="1"><span class="ico">➕</span>Nueva tarea</button>`);
@@ -526,6 +533,8 @@ function vHoy() {
     if (sol.length) d += `<p class="lbl oro">Lo que pide el equipo (${sol.length})</p>${sol.map(cardTarea).join("")}`;
     if (rev.length) d += `<p class="lbl oro">Tareas terminadas por revisar (${rev.length})</p>${rev.slice(0, 6).map(cardTarea).join("")}${rev.length > 6 ? `<button class="btn" type="button" onclick="st.tFiltro='revisar';ir('tareas')">Ver las ${rev.length}</button>` : ""}`;
     if (rp) d += `<p class="lbl oro">Redes</p><button class="qa" type="button" onclick="st.rTab='aprobar';ir('redes')"><span class="ico">📷</span>${rp} publicación${rp === 1 ? "" : "es"} por aprobar</button>`;
+    const ent = CAJA && O.caja === "dir" ? CAJA.movimientos.filter(x => x["Estatus"] === "Por entregar") : [];
+    if (ent.length) d += `<p class="lbl oro">Efectivo que te tienen que entregar (${money(ent.reduce((a, x) => a + numv(x["Monto"]), 0))})</p>${ent.map(cardCaja).join("")}`;
     h += bloque("Espera tu decisión", d, "blk-dec");
   }
 
@@ -556,6 +565,8 @@ function vHoy() {
     if (ms.length) h += plegado(`Lo que pediste y espera respuesta (${ms.length})`, ms.map(cardTarea).join(""));
   }
 
+  h += hoyCaja();
+
   /* 3. hoy en el rancho */
   let r = "";
   if (tiene("agenda") && AGENDA) {
@@ -565,7 +576,7 @@ function vHoy() {
       r += `<div class="linea"><b>Mañana:</b> ${deMan.length ? deMan.map(e => esc((e.todoElDia ? "todo el día" : (e.llegada || fHora(e.inicio))) + " · " + e.titulo)).join(" · ") : "nada agendado"}</div>`;
     } else {
       const semana = ev.filter(e => e.fecha > man && e.fecha <= sem), dinero = YO.permisos.dinero !== "nada";
-      const pend = dinero ? ev.filter(e => e.saldo === "pendiente" && e.fecha > hoy) : [], porConf = tiene("eventos") ? ev.filter(e => e.estado === "por_confirmar" && e.fecha >= hoy) : [];
+      const pend = dinero ? ev.filter(e => e.saldo === "pendiente" && e.fecha > hoy && miDinero(e)) : [], porConf = tiene("eventos") ? ev.filter(e => e.estado === "por_confirmar" && e.fecha >= hoy) : [];
       const kpi = [`<div class="kpi"><span>Hoy</span><b>${deHoy.length}</b></div>`, `<div class="kpi"><span>Mañana</span><b>${deMan.length}</b></div>`, `<div class="kpi"><span>Próximos 7 días</span><b>${deHoy.length + deMan.length + semana.length}</b></div>`];
       if (dinero) kpi.push(`<div class="kpi"><span>Restos sin cobrar</span><b>${pend.length}</b></div>`);
       if (tiene("eventos")) kpi.push(`<div class="kpi"><span>Eventos por confirmar</span><b>${porConf.length}</b></div>`);
@@ -616,7 +627,7 @@ function vAgenda() {
   const hoy = hoyISO(), f = st.agendaFiltro;
   let ev = eventosReales().filter(e => e.fecha >= hoy || (e.todoElDia && e.fin >= hoy));
   if (f !== "todo") ev = ev.filter(e => e.tipo === f);
-  const chips = [["todo", "Todo"], ["sesion", "Sesiones"], ["evento", "Eventos"], ["bloqueo", "Bloqueos"], ["otro", "Otras citas"]]
+  const chips = [["todo", "Todo"], ["sesion", "Sesiones"], ["evento", "Eventos"], ["bloqueo", "Bloqueos"], ["otro", "Otras citas"]].filter(([k]) => !(k === "sesion" && YO.permisos.agenda === "rancho"))
     .map(([k, n]) => `<button class="chip" data-fa="${k}" aria-pressed="${f === k}">${n}</button>`).join("");
   const bloquear = YO.permisos.acciones.includes("bloquear") ? `<button class="btn btn-dark" data-bloquear="1">Bloquear un día</button>` : "";
   return `<h2>Agenda</h2><p class="sub">Próximos 6 meses, del calendario "Rancho El Descanso · Agenda".</p><div class="bar">${chips}${bloquear}</div>${porDia(ev, "No hay nada en la agenda con este filtro.")}`;
@@ -638,7 +649,7 @@ function vEventos() {
 function vPagos() {
   const pagos = PAGOS.pagos, ev = eventosReales(), hoy = hoyISO();
   const mes = hoy.slice(0, 7), delMes = pagos.filter(p => p.fecha.slice(0, 7) === mes);
-  const pend = ev.filter(e => e.saldo === "pendiente"), porCobrar = ev.filter(e => e.saldo === "por_cobrar" && e.fecha >= hoy);
+  const pend = ev.filter(e => e.saldo === "pendiente" && miDinero(e)), porCobrar = ev.filter(e => e.saldo === "por_cobrar" && e.fecha >= hoy && miDinero(e));
   const rows = pagos.map(p => `<tr><td>${esc(fFecha(p.fecha))}</td><td>${esc(TIPO_PAGO[p.tipo] || p.tipo)}</td><td>${esc(p.caballo || p.ref)}${p.fechaServicio ? `<br><small class="card-m">para ${esc(fDia(p.fechaServicio))}</small>` : ""}</td>
     <td>${esc(p.cliente)}</td><td>${esc(p.atendio)}</td><td class="num">${money(p.monto)}</td><td>${esc(p.via)}</td></tr>`).join("");
   return `<h2>Pagos y saldos</h2>
@@ -676,6 +687,113 @@ function vComisiones() {
     ${filas.map(f => `<tr><td>${esc(f.nombre)}</td><td class="num">${money(f.ventas)}</td><td class="num">${money(f.comision)}</td><td class="num">${money(f.porPagar)}</td></tr>`).join("")}</tbody></table></div>
     ${filas.map(f => `<h3>${esc(f.nombre)}</h3>${tabla(f.detalle.map(d => ({Origen: d.origen, Monto: money(d.monto), "Comisión $": d.comision ? money(d.comision) : "—", Pagada: d.comision ? (d.pagada ? "Sí" : "No") : ""})), ["Origen", "Monto", "Comisión $", "Pagada"], "")}`).join("")}`;
 }
+
+/* ---------- Caja chica (4 oct 2026): la lleva Olga; Judith repone y captura en GASTOS; Mario y Nico ven todo y reciben el efectivo ---------- */
+const CC_BADGE = {"Por capturar": "b-warn", "Por revisar": "b-warn", "Por entregar": "b-warn", "Por confirmar": "b-warn", "Capturado": "b-ok", "Revisado": "b-ok", "Entregado a Mario": "b-ok", "Recibida": "b-ok", "Cancelado": "b-info"};
+const CC_ICO = {"Gasto": "🧾", "Efectivo de cliente": "💵", "Reposición": "🔄"};
+const CC_PEND = ["Por capturar", "Por revisar", "Por entregar", "Por confirmar"];
+const ccPapel = () => (YO.org && YO.org.caja) || "";
+function ccAcciones(x) {
+  const pp = ccPapel(), e = x["Estatus"], t = x["Tipo"], yo = YO.usuario.nombre, a = [];
+  if (t === "Reposición" && e === "Por confirmar" && pp === "lleva") a.push(`<button class="btn btn-dark" data-caja-acc="recibido" data-caja-id="${esc(x.ID)}">Ya la recibí</button>`);
+  if (t === "Efectivo de cliente" && e === "Por entregar" && pp === "dir") a.push(`<button class="btn btn-dark" data-caja-acc="entregado" data-caja-id="${esc(x.ID)}">Ya me lo dio</button>`);
+  if (t === "Efectivo de cliente" && e === "Por revisar" && ["oficina", "dir"].includes(pp)) a.push(`<button class="btn btn-dark" data-caja-acc="revisado" data-caja-id="${esc(x.ID)}">Revisado</button>`);
+  if (t === "Gasto" && e === "Por capturar" && ["oficina", "dir"].includes(pp)) a.push(`<button class="btn btn-dark" data-caja-acc="capturar" data-caja-id="${esc(x.ID)}">Capturar en GASTOS</button>`);
+  if (CC_PEND.includes(e) && (pp !== "lleva" || (x["Registró"] === yo && e !== "Por confirmar"))) a.push(`<button class="btn" data-caja-acc="cancelar" data-caja-id="${esc(x.ID)}">Cancelar</button>`);
+  return a;
+}
+function cardCaja(x) {
+  const menos = x["Tipo"] === "Gasto", acts = ccAcciones(x), foto = btnFotos(x["Comprobante"], x["Tipo"] === "Gasto" ? "Ticket" : "Foto");
+  const sub = [String(x["Fecha"]).slice(0, 16), x["Registró"], x["Cliente"] ? "de " + x["Cliente"] : "", x["Categoría"], x["Tipo"] === "Efectivo de cliente" ? (x["Destino"] === "Caja" ? "a la caja" : "para Mario") : ""].filter(Boolean).map(esc).join(" · ");
+  return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${CC_ICO[x["Tipo"]] || ""} ${esc(x["Concepto"] || x["Tipo"])}</p><p class="card-m">${sub}</p></div>
+    <div style="text-align:right"><div class="cc-monto ${menos ? "cc-menos" : "cc-mas"}">${menos ? "−" : "+"}${money(numv(x["Monto"]))}</div><span class="badge ${CC_BADGE[x["Estatus"]] || "b-info"}">${esc(x["Estatus"])}</span></div></div>
+    ${x["Notas"] ? `<p class="card-m" style="white-space:pre-wrap">${esc(x["Notas"])}</p>` : ""}
+    ${acts.length || foto ? `<div class="acts">${foto}${acts.join("")}</div>` : ""}</article>`;
+}
+function ccPendientesMios() {
+  if (!CAJA) return [];
+  const pp = ccPapel(), M = CAJA.movimientos;
+  if (pp === "lleva") return M.filter(x => x["Tipo"] === "Reposición" && x["Estatus"] === "Por confirmar");
+  if (pp === "oficina") return M.filter(x => ["Por capturar", "Por revisar"].includes(x["Estatus"]));
+  if (pp === "dir") return M.filter(x => ["Por capturar", "Por revisar"].includes(x["Estatus"])); // lo de entregar sale en "Espera tu decisión"
+  return [];
+}
+function hoyCaja() {
+  if (!CAJA || !tiene("caja")) return "";
+  const pp = ccPapel(), bajo = CAJA.saldo < CAJA.aviso, pend = ccPendientesMios();
+  let d = `<div class="grid-kpi"><div class="kpi${bajo ? " bajo" : ""}"><span>En caja</span><b>${money(CAJA.saldo)}</b></div><div class="kpi"><span>Fondo</span><b>${money(CAJA.fondo)}</b></div>${CAJA.porEntregar ? `<div class="kpi"><span>Por entregar a Mario</span><b>${money(CAJA.porEntregar)}</b></div>` : ""}</div>`;
+  if (bajo) d += `<p class="aviso">${pp === "lleva" ? "Queda poco en la caja. Avísale a Judith para que te reponga." : `Queda poco en la caja: faltan ${money(CAJA.fondo - CAJA.saldo)} para completar el fondo.`}</p>`;
+  if (pend.length) d += `<p class="lbl oro">${pp === "lleva" ? "Dinero que te mandaron" : "Por capturar o revisar"} (${pend.length})</p>${pend.slice(0, 4).map(cardCaja).join("")}`;
+  d += `<button class="btn" type="button" onclick="ir('caja')">Ver la caja chica</button>`;
+  if (pp !== "lleva" && !pend.length && !bajo) return plegado(`Caja chica · ${money(CAJA.saldo)} en caja`, d);
+  return bloque("Caja chica", d);
+}
+function vCaja() {
+  const C = CAJA, pp = ccPapel(), M = C.movimientos.slice().reverse(), mes = hoyISO().slice(0, 7), bajo = C.saldo < C.aviso;
+  const gastoMes = M.filter(x => x["Tipo"] === "Gasto" && x["Estatus"] !== "Cancelado" && String(x["Fecha"]).slice(0, 7) === mes).reduce((a, x) => a + numv(x["Monto"]), 0);
+  const pend = M.filter(x => CC_PEND.includes(x["Estatus"])), f = st.ccFiltro || "todo";
+  const L = (f === "todo" ? M : M.filter(x => x["Tipo"] === f)).filter(x => !CC_PEND.includes(x["Estatus"]));
+  const btns = [];
+  if (pp === "lleva" || pp === "dir") btns.push(`<button class="btn btn-dark" data-caja-nuevo="Gasto">🧾 Registrar gasto</button>`, `<button class="btn btn-dark" data-caja-nuevo="Efectivo de cliente">💵 Recibí efectivo</button>`);
+  if (pp === "oficina" || pp === "dir") btns.push(`<button class="btn btn-dark" data-caja-nuevo="Reposición">🔄 Registrar reposición</button>`);
+  const chips = [["todo", "Todo"], ["Gasto", "Gastos"], ["Efectivo de cliente", "Efectivo"], ["Reposición", "Reposiciones"]].map(([k, n]) => `<button class="chip" data-ccf="${esc(k)}" aria-pressed="${f === k}">${n}</button>`).join("");
+  return `<h2>Caja chica</h2><p class="sub">${pp === "lleva" ? "Anota aquí cada gasto con la foto del ticket y el efectivo que te den los clientes. Judith lo pasa a contabilidad." : "La lleva Olga en el rancho. Cada gasto se pasa a GASTOS con \"Capturar\"; el efectivo de clientes entra a la caja o se le entrega a Mario."}</p>
+    <div class="grid-kpi"><div class="kpi${bajo ? " bajo" : ""}"><span>En caja</span><b>${money(C.saldo)}</b></div><div class="kpi"><span>Fondo</span><b>${money(C.fondo)}</b></div>
+      <div class="kpi"><span>Gastado este mes</span><b>${money(gastoMes)}</b></div><div class="kpi"><span>Por entregar a Mario</span><b>${money(C.porEntregar)}</b></div></div>
+    ${bajo ? `<p class="aviso">${pp === "lleva" ? "Queda poco en la caja. Avísale a Judith para que te reponga." : `Queda poco: faltan ${money(C.fondo - C.saldo)} para completar el fondo de ${money(C.fondo)}.`}</p>` : ""}
+    ${btns.length ? `<div class="big-actions">${btns.join("")}</div>` : ""}
+    <h3>Pendientes (${pend.length})</h3>${pend.length ? pend.map(cardCaja).join("") : `<div class="empty">Nada pendiente. 👍</div>`}
+    <h3>Movimientos</h3><div class="bar">${chips}</div>${L.length ? L.slice(0, 150).map(cardCaja).join("") : `<div class="empty">Sin movimientos todavía.</div>`}`;
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.ccf) { st.ccFiltro = b.dataset.ccf; render(); }
+  if (b.dataset.cajaNuevo) {
+    if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
+    const tipo = b.dataset.cajaNuevo;
+    if (!CAJA) { try { await cargar("caja"); } catch (err) { return alert(err.message); } }
+    const falta = Math.max(0, CAJA.fondo - CAJA.saldo);
+    const cuerpo = tipo === "Gasto" ? `<div class="dos"><div><label>¿Cuánto fue?</label><input id="cc-m" type="number" inputmode="decimal" min="1" step="0.01" placeholder="$"></div><div><label>Fecha</label><input id="cc-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div></div>
+        <label>¿Qué se compró?</label><input id="cc-c" maxlength="120" placeholder="Ej. Bolsas de basura y cloro">
+        <label>Categoría</label><select id="cc-cat">${opt(CATS_GASTO, "Mantenimiento")}</select>
+        ${campoFotos("Foto del ticket (obligatoria)")}
+        <label>Nota (opcional)</label><input id="cc-n" maxlength="300">`
+      : tipo === "Efectivo de cliente" ? `<label>¿Cuánto te dieron?</label><input id="cc-m" type="number" inputmode="decimal" min="1" step="0.01" placeholder="$">
+        <label>¿Quién te lo dio?</label><input id="cc-cl" maxlength="80" placeholder="Nombre del cliente">
+        <label>¿De qué es?</label><input id="cc-c" maxlength="120" placeholder="Ej. Resto de la sesión del sábado">
+        <label>¿Qué haces con el dinero?</label><div class="rads"><label class="rad"><input type="radio" name="cc-d" value="caja" checked> <span><b>Lo meto a la caja chica</b><small>Suma a lo que tienes en caja.</small></span></label>
+          <label class="rad"><input type="radio" name="cc-d" value="mario"> <span><b>Lo guardo para entregárselo a Mario</b><small>Mario confirma en el portal cuando se lo des.</small></span></label></div>
+        ${campoFotos("Foto del recibo (opcional)")}
+        <label>Nota (opcional)</label><input id="cc-n" maxlength="300">`
+      : `<p class="ctx">En caja hay ${money(CAJA.saldo)}. Para completar el fondo de ${money(CAJA.fondo)} faltan <b>${money(falta)}</b>.</p>
+        <label>¿Cuánto le das a Olga?</label><input id="cc-m" type="number" inputmode="decimal" min="1" step="0.01" value="${falta ? Math.round(falta * 100) / 100 : ""}">
+        <label>Nota (opcional)</label><input id="cc-n" maxlength="300" placeholder="Ej. En efectivo, el lunes">
+        <p class="card-m">Olga confirma en el portal cuando le llegue; hasta entonces no suma a la caja.</p>`;
+    const box = dialogo({"Gasto": "Gasto de caja chica", "Efectivo de cliente": "Recibí efectivo", "Reposición": "Reposición de caja chica"}[tipo], `<div class="frm">${cuerpo}<button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+    activarFotos(box);
+    box.querySelector("#d-ok").onclick = () => {
+      const v = id => ((box.querySelector(id) || {}).value || "").trim(), monto = v("#cc-m");
+      if (!(Number(monto) > 0)) return alert("Escribe el monto.");
+      if (tipo !== "Reposición" && v("#cc-c").length < 3) return alert(tipo === "Gasto" ? "Escribe qué se compró." : "Escribe de qué es el pago.");
+      if (tipo === "Gasto" && !box.querySelector("#d-fotos").files.length) return alert("Toma la foto del ticket.");
+      const d = box.querySelector("input[name=cc-d]:checked");
+      enviar(box, {tipo: "caja", op: "registrar", mov: {tipo, monto, concepto: v("#cc-c"), categoria: v("#cc-cat"), cliente: v("#cc-cl"), fecha: v("#cc-f"), destino: d ? d.value : "caja", notas: v("#cc-n")}},
+        tipo === "Gasto" ? "Gasto anotado. Judith lo captura." : tipo === "Reposición" ? "Reposición anotada. Olga la confirma cuando le llegue." : d && d.value === "mario" ? "Anotado: queda por entregar a Mario." : "Anotado: el efectivo entró a la caja.");
+    };
+  }
+  if (b.dataset.cajaAcc) {
+    if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
+    const a = b.dataset.cajaAcc, x = CAJA && CAJA.movimientos.find(m => m.ID === b.dataset.cajaId); if (!x) return;
+    let nota = "";
+    if (a === "cancelar") { nota = prompt("¿Por qué se cancela? (opcional)"); if (nota === null) return; }
+    else if (!confirm({recibido: `¿Ya te llegaron ${money(numv(x["Monto"]))}? Se suman a la caja.`, entregado: `¿Ya te entregaron ${money(numv(x["Monto"]))} de ${x["Cliente"] || "un cliente"}?`,
+      revisado: "¿Marcar este efectivo como revisado?", capturar: `¿Pasar este gasto de ${money(numv(x["Monto"]))} a la pestaña GASTOS?`}[a])) return;
+    b.disabled = true;
+    try { await post({accion: "hacer", tipo: "caja", op: "estatus", id: x.ID, paso: a, nota});
+      toast({recibido: "Listo, se sumó a la caja", entregado: "Listo, quedó como entregado", revisado: "Revisado", capturar: "Capturado en GASTOS", cancelar: "Movimiento cancelado"}[a]); CAJA = null; render(); }
+    catch (err) { alert(err.message); b.disabled = false; }
+  }
+});
 
 /* ---------- fase 2 (2 oct 2026): tareas, salud, bitácora, proveedores, contabilidad, equipo ---------- */
 const hoyD = () => hoyISO();
@@ -920,7 +1038,7 @@ function vCotizaciones() {
   const L = f === "abiertas" ? L0.filter(abierta) : f === "mias" ? L0.filter(q => q["Asignada a"] === yo && abierta(q)) : f === "nuevas" ? L0.filter(q => q["Estatus"] === "Borrador") : f === "cerradas" ? L0.filter(q => !abierta(q)) : L0;
   const apartaron = L0.filter(q => q["Estatus"] === "Apartó").length;
   const chips = [["abiertas", "Abiertas"], ["nuevas", "Nuevas"], ["mias", "Mías"], ["cerradas", "Cerradas"], ["todas", "Todas"]].map(([k, n]) => `<button class="chip" data-qf="${k}" aria-pressed="${f === k}">${n}</button>`).join("");
-  return `<h2>Cotizaciones de eventos</h2><p class="sub">Cada persona que cotiza en la página deja su nombre y WhatsApp y queda aquí como borrador. Contáctala, anota cómo va y cambia el estatus hasta que aparte o se pierda.</p>
+  return `<h2>Cotizaciones de eventos</h2><p class="sub">Cada persona que cotiza en la página deja su nombre y WhatsApp y queda aquí como borrador. Contáctala, anota cómo va y cambia el estatus hasta que aparte o se pierda.${COTIZ.todas ? "" : " Aquí ves las tuyas y las que nadie ha tomado."}</p>
     <div class="grid-kpi"><div class="kpi"><span>Abiertas</span><b>${L0.filter(abierta).length}</b></div><div class="kpi"><span>Nuevas sin contactar</span><b>${L0.filter(q => q["Estatus"] === "Borrador").length}</b></div><div class="kpi"><span>Apartaron</span><b>${apartaron}</b></div></div>
     <div class="bar">${chips}</div>${L.length ? L.slice(0, 120).map(cardCotiz).join("") : `<div class="empty">No hay cotizaciones aquí.</div>`}`;
 }
@@ -1335,7 +1453,7 @@ function activarFotos(box) {
 async function archivosDe(box) { const inp = box.querySelector("#d-fotos"); if (!inp || !inp.files.length) return []; const out = []; for (const f of [...inp.files].slice(0, 6)) out.push(await comprimir(f)); return out; }
 async function enviar(box, body, ok, despues) {
   const b = box.querySelector("#d-ok"); b.disabled = true; b.textContent = "Guardando…";
-  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null; if (despues) despues(j); render(); }
+  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = null; if (despues) despues(j); render(); }
   catch (e) { alert(e.message); b.disabled = false; b.textContent = "Intentar de nuevo"; }
 }
 const opt = (l, sel) => l.map(x => `<option${x === sel ? " selected" : ""}>${esc(x)}</option>`).join("");
@@ -1540,7 +1658,7 @@ document.addEventListener("click", async e => {
   }
   if (b.dataset.pagado) {
     const box = dialogo("Marcar resto pagado", `<p style="text-align:left">¿Cómo pagó el cliente el resto?</p><input id="d-como" value="Transferencia" maxlength="80"><button class="btn btn-dark" id="d-ok">Marcar pagado</button>`);
-    box.querySelector("#d-ok").onclick = () => { const como = box.querySelector("#d-como").value; $("#dlg").close(); hacer({tipo: "saldo_pagado", evento: b.dataset.pagado, como}, "Resto marcado como pagado"); };
+    box.querySelector("#d-ok").onclick = () => { const como = box.querySelector("#d-como").value; $("#dlg").close(); hacer({tipo: "saldo_pagado", evento: b.dataset.pagado, fecha: b.dataset.fecha, como}, "Resto marcado como pagado"); };
   }
   if (b.dataset.confirmar && confirm("¿Confirmar este evento? La cita cambia a \"Confirmado\".")) hacer({tipo: "confirmar_evento", evento: b.dataset.confirmar}, "Evento confirmado");
   if (b.dataset.nota) {
