@@ -33,10 +33,17 @@
    GET  accion=cambios → {filas (pestaña CANCELACIONES Y CAMBIOS), holds (reservas a medias con datos de Stripe)}
    POST hacer tipo:"cambio" objeto: cita|cotizacion|reprogramar (paso: fecha|reenviar|cancelar) · motivo: no_se_hara|reagendar_cliente|reagendar_rancho
         · modo: nosotros|cliente · fecha, horario, llegada, nota, correo, forzar. Una reserva a medias se cancela
-        venciendo primero su pago en Stripe (si ya pagó, no se toca). Nunca se devuelve dinero desde aquí. */
+        venciendo primero su pago en Stripe (si ya pagó, no se toca). Nunca se devuelve dinero desde aquí.
+
+   4 oct 2026 (organigrama e Inicio): quién asigna y revisa tareas sale de api/_organigrama.js (ya no del flag "jefe";
+   "jefe" queda solo para cancelar/reagendar, cotizaciones y la lista del reglamento).
+   Tareas "Disponible" (las toma quien la creadora eligió), "Pide foto al terminar" y "Pedir tarea" (llega a Mario y Nico).
+   POST hacer tipo: tarea_pedir|tarea_aprobar|tarea_tomar (además de tarea_crear|tarea_estatus|tarea_editar)
+   GET  ...&como=<id> → Mario y Nico ven el portal exactamente como esa persona (solo lectura). */
 const crypto = require("crypto");
 const AG = require("./_agenda");
 const REG = require("./_reglamento");
+const ORG = require("./_organigrama");
 const REG_HUELLA = crypto.createHash("sha256").update(REG.texto, "utf8").digest("hex");
 
 const SITIO = () => (process.env.SITE_URL || "https://rancho-el-descanso.vercel.app").replace(/\/$/, "");
@@ -273,6 +280,84 @@ function abrirSesion(res, id, v) {
 const ROL_TXT = {admin: "Administración", direccion: "Dirección", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
 const puede = (u, s) => u.permisos.secciones.includes(s);
 
+/* ---------- tareas y organigrama (4 oct 2026) ---------- */
+function orgDe(u, eq) {
+  const o = ORG.puestoDe(u) || {}, jefe = o.reportaA ? eq.find(x => ORG.claveDe(x) === o.reportaA) : null;
+  return {puesto: o.puesto || "", area: o.area || u.area || "", reportaA: jefe ? jefe.nombre : "", asigna: ORG.asignaAlguien(u), revisaTodo: ORG.revisaTodo(u),
+    pide: ORG.puedePedir(u), areas: ORG.areasDe(u), general: !!o.general};
+}
+async function tareaPorId(id) {
+  const j = await agendaPost("panel_tareas"); if (!j.ok) throw new Error(j.error || "tareas");
+  return j.tareas.find(t => t["ID"] === String(id || "")) || null;
+}
+const limpiaMarcas = d => String(d || "").split("\n").filter(l => l.trim() !== ORG.FOTO && !l.startsWith(ORG.APROBO)).join("\n").trim();
+/* valida "Asignada a" (persona o "Disponible · …") contra lo que quien asigna puede hacer; devuelve el texto a guardar o un error */
+function destinoValido(u, eq, asignada) {
+  const a = String(asignada || "").trim();
+  if (a.startsWith(ORG.DISP)) {
+    const r = a.slice(ORG.DISP.length).trim();
+    if (/^todos$/i.test(r)) return (ORG.puestoDe(u) || {}).asigna === "todos" ? {ok: ORG.DISP + "Todos"} : {error: "Solo puedes dejarla disponible para las personas a las que asignas."};
+    const nombres = r.split(/\s*,\s*/).filter(Boolean), gente = nombres.map(n => eq.find(x => ORG.primerNombre(x.nombre) === ORG.norm(n)));
+    if (!nombres.length || gente.some(x => !x || !ORG.puedeAsignarA(u, x))) return {error: "Elige personas a las que sí puedes asignar tareas."};
+    const txt = ORG.DISP + gente.map(x => String(x.nombre).split(/[\s(]+/)[0]).join(", ");
+    return txt.length > 60 ? {error: "Son demasiadas personas: mejor elige \"Todos\"."} : {ok: txt};
+  }
+  const d = eq.find(x => x.nombre === a);
+  if (!d) return {error: "Elige a quién se la asignas."};
+  return ORG.puedeAsignarA(u, d) ? {ok: d.nombre} : {error: "No puedes asignarle tareas a " + d.nombre + ". Usa \"Pedir tarea\" y le llega a Mario."};
+}
+function areaValida(u, area) { const L = ORG.areasDe(u); return L.length && !L.includes(area) ? L[0] : String(area || "").slice(0, 40); }
+async function tareaPost(u, body, archivos, res) {
+  const eq = await equipo(), tipo = body.tipo, mandar = (b, jefe) => agendaPost("panel_fase2", {quien: u.nombre, jefe: !!jefe, archivos, ...b});
+  const fin = r => res.status(r.ok ? 200 : 400).json(r), no = (m, c = 403) => res.status(c).json({error: m});
+  if (tipo === "tarea_crear" || tipo === "tarea_pedir") {
+    const t = body.tarea || {}, titulo = String(t.tarea || "").trim();
+    if (titulo.length < 3) return no("Escribe qué hay que hacer.", 400);
+    const detalle = [t.pideFoto ? ORG.FOTO : "", limpiaMarcas(t.detalle)].filter(Boolean).join("\n");
+    if (tipo === "tarea_pedir") {
+      if (!ORG.puedePedir(u)) return no("Tú asignas directo; usa \"Nueva tarea\".");
+      const sug = eq.find(x => x.nombre === t.asignada);
+      return fin(await mandar({tipo: "tarea_crear", tarea: {tarea: titulo, detalle, area: String(t.area || "").slice(0, 40), limite: t.limite, prioridad: t.prioridad,
+        asignada: (ORG.SOLI + (sug ? sug.nombre : "Por definir")).slice(0, 60)}}, false));
+    }
+    if (!ORG.asignaAlguien(u)) return no("Tú no asignas tareas: usa \"Pedir tarea\" y le llega a Mario.");
+    const d = destinoValido(u, eq, t.asignada); if (d.error) return no(d.error, 400);
+    return fin(await mandar({tipo: "tarea_crear", tarea: {tarea: titulo, detalle, area: areaValida(u, t.area), limite: t.limite, prioridad: t.prioridad, asignada: d.ok}}, true));
+  }
+  const t = await tareaPorId(body.id); if (!t) return no("No encontré la tarea.", 404);
+  if (tipo === "tarea_tomar") {
+    if (!ORG.puedeTomar(u, t)) return no(ORG.esDisponible(t) && t["Estatus"] === "Pendiente" ? "Esta tarea no está disponible para ti." : "Alguien más ya la tomó.", 409);
+    return fin(await mandar({tipo: "tarea_editar", id: t["ID"], cambios: {asignada: u.nombre}}, true));
+  }
+  if (tipo === "tarea_aprobar") {
+    if (!ORG.revisaTodo(u)) return no("Solo Mario y Nico aprueban lo que pide el equipo.");
+    if (!ORG.esSolicitud(t) || t["Estatus"] !== "Pendiente") return no("Esta solicitud ya se atendió.", 409);
+    const c = body.cambios || {}, d = destinoValido(u, eq, c.asignada); if (d.error) return no(d.error, 400);
+    const detalle = [ORG.APROBO + u.nombre + " · " + hoyMX(), c.pideFoto ? ORG.FOTO : "", limpiaMarcas(c.detalle !== undefined ? c.detalle : t["Detalle"])].filter(Boolean).join("\n");
+    return fin(await mandar({tipo: "tarea_editar", id: t["ID"], cambios: {asignada: d.ok, limite: c.limite, prioridad: c.prioridad, detalle}}, true));
+  }
+  if (tipo === "tarea_editar") {
+    if (ORG.esSolicitud(t) || !ORG.puedeRevisar(u, t, eq)) return no("Solo Mario, Nico o quien asignó la tarea pueden cambiarla.");
+    const c = {...(body.cambios || {})};
+    if (c.asignada !== undefined) { const d = destinoValido(u, eq, c.asignada); if (d.error) return no(d.error, 400); c.asignada = d.ok; }
+    if (c.detalle !== undefined) c.detalle = [ORG.pideFoto(t) || c.pideFoto ? ORG.FOTO : "", limpiaMarcas(c.detalle)].filter(Boolean).join("\n");
+    delete c.pideFoto;
+    return fin(await mandar({tipo: "tarea_editar", id: t["ID"], cambios: c}, true));
+  }
+  if (tipo === "tarea_estatus") {
+    const e = String(body.estatus || ""), mia = t["Asignada a"] === u.nombre, rev = ORG.puedeRevisar(u, t, eq);
+    if (["En proceso", "Hecha"].includes(e)) {
+      if (!mia) return no("Esta tarea no es tuya.");
+      if (e === "Hecha" && ORG.pideFoto(t) && !archivos.length) return no("Esta tarea pide foto: toma una foto de cómo quedó para terminarla.", 400);
+      return fin(await mandar({tipo, id: t["ID"], estatus: e, nota: body.nota}, false));
+    }
+    const suSolicitud = e === "Cancelada" && ORG.esSolicitud(t) && t["Asignó"] === u.nombre;
+    if (!rev && !suSolicitud) return no("Solo Mario, Nico o quien asignó la tarea pueden revisarla, reabrirla o cancelarla.");
+    return fin(await mandar({tipo, id: t["ID"], estatus: e, nota: body.nota}, true));
+  }
+  return no("acción no válida", 400);
+}
+
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store, private");
   res.setHeader("X-Robots-Tag", "noindex, nofollow");
@@ -329,13 +414,14 @@ module.exports = async (req, res) => {
         return res.status(r.ok ? 200 : 400).json(r);
       }
       if (body.tipo === "cambio") return await cambio(u, body, res);
-      const FASE2 = {tarea_crear: "tarea", tarea_estatus: "tarea", tarea_editar: "tarea", reporte: "reporte", registro: "registro", liga_celular: "liga_celular", prospecto: "prospecto"};
+      const FASE2 = {tarea_crear: "tarea", tarea_estatus: "tarea", tarea_editar: "tarea", tarea_pedir: "tarea", tarea_aprobar: "tarea", tarea_tomar: "tarea",
+        reporte: "reporte", registro: "registro", liga_celular: "liga_celular", prospecto: "prospecto"};
       if (FASE2[body.tipo]) {
         const p = u.permisos;
         if (!p.acciones.includes(FASE2[body.tipo])) return res.status(403).json({error: "Tu rol no puede hacer esto."});
-        if ((body.tipo === "tarea_crear" || body.tipo === "tarea_editar") && !p.jefe) return res.status(403).json({error: "Solo Nico, Mario y Judith asignan tareas."});
         const archivos = Array.isArray(body.archivos) ? body.archivos.slice(0, 6) : [];
         if (archivos.reduce((a, x) => a + String(x && x.datos || "").length, 0) > 5.5e6) return res.status(413).json({error: "Las fotos pesan demasiado. Manda menos a la vez."});
+        if (FASE2[body.tipo] === "tarea") return await tareaPost(u, body, archivos, res);
         if (body.tipo === "reporte") {
           const area = String((body.reporte || {}).area || "");
           if (area === "Salud" && !puede(u, "salud")) return res.status(403).json({error: "Tu rol no puede registrar salud."});
@@ -362,10 +448,18 @@ module.exports = async (req, res) => {
     }
     if (req.method !== "GET") return res.status(405).json({error: "Método no permitido."});
     if (q.accion === "config") return res.status(200).json({google: process.env.GOOGLE_CLIENT_ID || ""});
-    const u = await usuarioDe(req);
+    let u = await usuarioDe(req);
     if (!u) return res.status(401).json({error: "sin sesión", google: process.env.GOOGLE_CLIENT_ID || ""});
+    let comoDe = "";
+    if (q.como && ORG.revisaTodo(u)) { // "Ver como…": solo lectura (los POST siempre actúan como quien inició sesión)
+      const x = (await equipo()).find(y => y.id === String(q.como));
+      if (!x || !PERMISOS[x.rol]) return res.status(404).json({error: "No encontré a esa persona."});
+      comoDe = u.nombre; u = {...x, vendedor: canon(x.vendedor), permisos: PERMISOS[x.rol]};
+    }
     const p = u.permisos;
-    if (q.accion === "yo") return res.status(200).json({usuario: {nombre: u.nombre, email: u.email, rol: u.rol, rolTxt: ROL_TXT[u.rol] || u.rol, vendedor: u.vendedor, area: u.area || ""}, permisos: p});
+    if (q.accion === "yo") { const eq = await equipo();
+      return res.status(200).json({usuario: {nombre: u.nombre, email: u.email, rol: u.rol, rolTxt: ROL_TXT[u.rol] || u.rol, vendedor: u.vendedor, area: u.area || "", id: u.id}, permisos: p,
+        org: orgDe(u, eq), comoDe, gente: comoDe || ORG.revisaTodo(u) ? eq.filter(x => x.id !== u.id && PERMISOS[x.rol]).map(x => ({id: x.id, nombre: x.nombre})) : []}); }
     if (q.accion === "redes") {
       if (!puede(u, "redes")) return res.status(403).json({error: "Sin acceso."});
       const j = await agendaPost("panel_redes", {op: "lista"}); if (!j.ok) throw new Error(j.error || "redes");
@@ -380,8 +474,14 @@ module.exports = async (req, res) => {
       if (!puede(u, "tareas")) return res.status(403).json({error: "Sin acceso."});
       const j = await agendaPost("panel_tareas"); if (!j.ok) throw new Error(j.error || "tareas");
       const eq = await equipo();
-      const tareas = j.tareas.filter(t => p.jefe || t["Asignada a"] === u.nombre || t["Asignó"] === u.nombre).map(t => { const x = {...t}; delete x._fila; return x; });
-      return res.status(200).json({tareas, personas: p.jefe ? eq.map(x => ({nombre: x.nombre, rol: ROL_TXT[x.rol] || x.rol, area: x.area || ""})) : []});
+      const todo = ORG.revisaTodo(u);
+      const tareas = j.tareas.filter(t => todo || t["Asignada a"] === u.nombre || t["Asignó"] === u.nombre || ORG.puedeTomar(u, t) || ORG.puedeRevisar(u, t, eq))
+        .map(t => { const x = {...t}; delete x._fila;
+          x._revisar = ORG.puedeRevisar(u, t, eq); x._tomar = ORG.puedeTomar(u, t); x._disponible = ORG.esDisponible(t); x._solicitud = ORG.esSolicitud(t); x._foto = ORG.pideFoto(t);
+          x._aprobo = (String(t["Detalle"] || "").split("\n").find(l => l.startsWith(ORG.APROBO)) || "").slice(ORG.APROBO.length);
+          x["Detalle"] = limpiaMarcas(t["Detalle"]); return x; });
+      const pers = eq.filter(x => ORG.puedeAsignarA(u, x)).map(x => ({nombre: x.nombre, corto: String(x.nombre).split(/[\s(]+/)[0], rol: ROL_TXT[x.rol] || x.rol, area: (ORG.puestoDe(x) || {}).puesto || x.area || ""}));
+      return res.status(200).json({tareas, personas: pers, todos: eq.filter(x => !(ORG.puestoDe(x) || {}).general && PERMISOS[x.rol]).map(x => x.nombre), org: orgDe(u, eq)});
     }
     if (q.accion === "reportes") {
       if (!puede(u, "bitacora") && !puede(u, "salud")) return res.status(403).json({error: "Sin acceso."});
