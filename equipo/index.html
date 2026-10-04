@@ -184,6 +184,19 @@ details.prov summary::-webkit-details-marker{display:none}
 .r-ap{padding:10px 20px;font-size:1rem}
 .r-kpi .kpi span+span{margin-top:4px}
 @media (max-width:600px){ .who span{display:none} .time{min-width:52px;font-size:1.15rem} .frm .dos{grid-template-columns:1fr} }
+/* cancelar y reagendar (3 oct 2026) */
+.ctx{background:var(--mist);border-radius:10px;padding:10px 12px;margin:0 0 14px;font-size:.95rem}
+.rads{display:grid;gap:8px;margin:0 0 14px}
+.frm label.rad{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--rule);border-radius:10px;padding:10px 12px;cursor:pointer;color:var(--ink);font-size:.95rem;margin:0;background:#fff}
+.frm label.rad:has(input:checked){border-color:var(--gold);background:#fffaf0}
+.frm label.rad.off{opacity:.6;cursor:default}
+.frm .rad input,.frm .chk input{width:auto;margin:3px 0 0;flex:none}
+.rad small{display:block;color:var(--muted);font-size:.85rem}
+.frm label.chk{display:flex;gap:8px;align-items:flex-start;color:var(--ink);font-size:.95rem;margin:0 0 12px}
+.frm label.chk[hidden]{display:none}
+.aviso{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:.9rem;margin:0 0 12px}
+.ok-big{font-family:var(--display);font-size:1.4rem;color:var(--ok);text-align:center;margin:0 0 12px}
+.frm .btn-wa{width:100%;justify-content:center;padding:13px;font-size:1rem;margin:0 0 10px}
 </style>
 </head>
 <body>
@@ -232,9 +245,9 @@ const fDia = iso => { const t = new Date(iso + "T12:00:00Z").toLocaleDateString(
 const fHora = iso => new Date(iso).toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ});
 const fFecha = iso => new Date(iso).toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "2-digit", timeZone: TZ});
 const ROLES = {admin: "Administración", direccion: "Dirección", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
-const SECCIONES = {hoy: "Hoy", tareas: "Tareas", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", pagos: "Pagos y saldos", caballos: "Caballos y ventas",
+const SECCIONES = {hoy: "Hoy", tareas: "Tareas", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", caballos: "Caballos y ventas",
   comisiones: "Comisiones", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
-const ICONOS = {hoy: "☀️", tareas: "✅", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", pagos: "💳", caballos: "🐴", comisiones: "💰", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
+const ICONOS = {hoy: "☀️", tareas: "✅", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", caballos: "🐴", comisiones: "💰", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
 const esCel = () => window.matchMedia("(max-width:899px)").matches;
 const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Otro"];
 const TIPOS_SALUD = ["Revisión", "Vacuna", "Desparasitación", "Herraje / cascos", "Dental", "Tratamiento", "Lesión o cólico", "Monta / inseminación", "Palpación / ecografía", "Parto", "Destete", "Trámite KFPS / GVHS", "Otro"];
@@ -242,7 +255,7 @@ const TIPOS_BITACORA = ["Avance", "Problema", "Falta material o compra", "Aviso"
 const CATS_GASTO = ["Alimento", "Veterinario", "Medicamentos", "Herraje", "Mantenimiento", "Jardinería", "Sueldos", "Luz y agua", "Gasolina", "Eventos", "Papelería y trámites", "Otro"];
 const TIPO_PAGO = {sesion: "Sesión", evento: "Evento", caballo: "Caballo", potro: "Potro 2027", saldo_sesion: "Resto de sesión"};
 
-let REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
+let CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
 const st = {agendaFiltro: "todo", busca: "", tFiltro: "pendientes", bArea: "todo", sCaballo: "", mes: "", qFiltro: "abiertas", rTab: "inicio"};
 
 function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3200); }
@@ -315,6 +328,7 @@ async function cargar(qué) {
   if (qué === "cotizaciones" && !COTIZ) COTIZ = await api("accion=cotizaciones");
   if (qué === "reglamento" && !REG) REG = await api("accion=reglamento");
   if (qué === "redes" && !REDES) REDES = await api("accion=redes");
+  if (qué === "cambios" && !CAMBIOS) CAMBIOS = await api("accion=cambios");
 }
 const tiene = s => YO.permisos.secciones.includes(s);
 async function render() {
@@ -335,13 +349,14 @@ async function render() {
     if (s === "equipo") await cargar("equipo");
     if (s === "reglamento") await cargar("reglamento");
     if (s === "redes") await cargar("redes");
+    if (s === "cambios") { await cargar("agenda"); await cargar("cotizaciones").catch(() => {}); await cargar("cambios"); }
     if (s === "hoy" && tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
     if (s !== ACTUAL) return;
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
-      tareas: vTareas, cotizaciones: vCotizaciones, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes})[s]();
+      tareas: vTareas, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
-function recargar() { REDES = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
+function recargar() { REDES = CAMBIOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
 
 /* ---------- menú de cuadros (celular) ---------- */
 function vMenu() {
@@ -382,6 +397,7 @@ function cardEvento(e, opts = {}) {
   if (["pendiente", "por_cobrar"].includes(e.saldo) && P.acciones.includes("saldo_pagado")) acts.push(`<button class="btn" data-pagado="${esc(e.id)}">Marcar resto pagado</button>`);
   if (e.estado === "por_confirmar" && P.acciones.includes("confirmar_evento")) acts.push(`<button class="btn btn-dark" data-confirmar="${esc(e.id)}">Confirmar evento</button>`);
   if (P.acciones.includes("nota")) acts.push(`<button class="btn" data-nota="${esc(e.id)}">Agregar nota</button>`);
+  if (P.jefe && ["sesion", "evento"].includes(e.tipo) && e.estado !== "reservando" && !e.prueba) acts.push(`<button class="btn" data-cambio="${esc(e.id)}">Cancelar o reagendar</button>`);
   return `<article class="card">
     <div class="card-h"><div class="time">${esc(hora)}</div><div style="flex:1;min-width:0"><p class="card-t">${esc(e.titulo)}</p>
       <p class="card-m">${opts.fecha ? esc(fDia(e.fecha)) + " · " : ""}${e.todoElDia ? "Todo el día" : esc(fHora(e.inicio) + "–" + fHora(e.fin))}</p></div>${badgeSaldo(e)}</div>
@@ -703,7 +719,8 @@ function cardCotiz(q) {
       ${q["Próximo contacto"] ? `<dt>Próximo contacto</dt><dd class="${venc ? "t-vencida" : ""}">${esc(fDia(q["Próximo contacto"]))}</dd>` : ""}
       ${q["Seguimiento"] ? `<dt>Seguimiento</dt><dd style="white-space:pre-wrap">${esc(q["Seguimiento"])}</dd>` : ""}</dl>
     <div class="acts">${tel ? `<a class="btn btn-wa" href="https://wa.me/${esc(wtel)}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}
-      ${YO.permisos.acciones.includes("prospecto") ? `<button class="btn btn-dark" data-qseg="${esc(q.ID)}">Dar seguimiento</button>` : ""}</div></article>`;
+      ${YO.permisos.acciones.includes("prospecto") ? `<button class="btn btn-dark" data-qseg="${esc(q.ID)}">Dar seguimiento</button>` : ""}
+      ${YO.permisos.jefe && abierta(q) ? `<button class="btn" data-cambio-q="${esc(q.ID)}">Cancelar o cambiar fecha</button>` : ""}</div></article>`;
 }
 function vCotizaciones() {
   const L0 = COTIZ.prospectos.slice().reverse(), f = st.qFiltro, yo = YO.usuario.nombre;
@@ -727,6 +744,173 @@ document.addEventListener("click", e => {
       <button class="btn btn-dark" id="d-ok">Guardar</button></div>`);
     box.querySelector("#d-ok").onclick = () => enviar(box, {tipo: "prospecto", id: q.ID, cambios: {estatus: box.querySelector("#q-e").value, asignada: box.querySelector("#q-a").value,
       proximo: box.querySelector("#q-p").value, nota: box.querySelector("#q-n").value.trim()}}, "Seguimiento guardado");
+  }
+});
+/* ----- Cancelar y reagendar (3 oct 2026): solo Nico, Mario y Judith (jefe). Sesiones, eventos y cotizaciones.
+   "Ya no se hará" solo sin pago; lo pagado solo se reagenda (nosotros ponemos la fecha o el cliente la elige con una liga). ----- */
+const MOT_TXT = {no_se_hara: "Ya no se hará", reagendar_cliente: "Reagendar · lo pide el cliente", reagendar_rancho: "Reagendar · motivo del rancho"};
+const HOR_TXT = {"10-14": "10:00 a 14:00", "14-18": "14:00 a 18:00"};
+const LLEG = {"10-14": ["10:00", "10:30", "11:00"], "14-18": ["14:00", "14:30", "15:00"]};
+const conPago = e => numv(e.pagado) > 0 || e.saldo === "pagado";
+const puedeCambiar = () => !!(YO && YO.permisos.jefe);
+const telWa = t => { t = String(t || "").replace(/\D/g, ""); return t.length === 10 ? "52" + t : t; };
+function vCambios() {
+  const filas = (CAMBIOS.filas || []).slice().reverse(), repro = filas.filter(r => r["Estatus"] === "Por reprogramar"), holds = CAMBIOS.holds || [];
+  const hoy = hoyISO(), ev = eventosReales();
+  const porConf = ev.filter(e => e.estado === "por_confirmar" && e.fecha >= hoy);
+  const cot = COTIZ ? COTIZ.prospectos.filter(abierta).slice().reverse() : [];
+  const prox = ev.filter(e => ["sesion", "evento"].includes(e.tipo) && e.estado !== "por_confirmar" && e.fecha >= hoy && e.fecha <= masDias(hoy, 120));
+  const cardRepro = r => `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(r["Cliente"] || "Sin nombre")} · ${esc(r["Qué"])}</p>
+      <p class="card-m">Era el ${esc(fDia(String(r["Fecha original"]).slice(0, 10)))}${String(r["Fecha original"]).slice(11) ? " · " + esc(String(r["Fecha original"]).slice(11)) : ""} · ${esc(r["Motivo"])}</p></div>
+      <span class="badge ${r.conPago ? "b-ok" : "b-warn"}">${r.conPago ? "Pagado · queda a favor" : "Sin pago"}</span></div>
+    <dl class="kv"><dt>Desde</dt><dd>${esc(r["Fecha y hora"])} · ${esc(r["Quién"])}</dd>${r["Teléfono"] ? `<dt>Teléfono</dt><dd>${esc(r["Teléfono"])}</dd>` : ""}${r["Correo"] ? `<dt>Correo</dt><dd>${esc(r["Correo"])}</dd>` : ""}
+      ${r["Nota"] ? `<dt>Nota</dt><dd style="white-space:pre-wrap">${esc(r["Nota"])}</dd>` : ""}</dl>
+    <div class="acts"><button class="btn btn-dark" data-repro="${esc(r.ID)}">Opciones</button></div></article>`;
+  const cardHold = h => `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(h.titulo)}</p>
+      <p class="card-m">${esc(fDia(h.fecha))}${h.todoElDia ? "" : " · " + esc(h.llegada || fHora(h.inicio)) + " h"}${h.vence ? " · el pago vence a las " + esc(fHora(h.vence)) : ""}</p></div><span class="badge b-warn">Sin pagar</span></div>
+    <dl class="kv">${h.titular ? `<dt>Titular</dt><dd>${esc(h.titular)}</dd>` : ""}${h.invitados ? `<dt>Invitados</dt><dd>${esc(h.invitados)}</dd>` : ""}${h.monto ? `<dt>Iba a pagar</dt><dd>${money(h.monto)}${h.total ? " de " + money(h.total) : ""}</dd>` : ""}${h.atendio ? `<dt>Atendió</dt><dd>${esc(h.atendio)}</dd>` : ""}</dl>
+    <p class="card-m">Empezó a reservar en la página y no ha terminado de pagar. Si no paga, se borra sola a los 35 min.</p>
+    <div class="acts"><button class="btn btn-dark" data-hold="${esc(h.id)}">Ya no se hará</button></div></article>`;
+  const hist = filas.filter(r => r["Estatus"] !== "Por reprogramar").slice(0, 40);
+  return `<h2>Cancelar y reagendar</h2><p class="sub">Lo que quedó a medias y lo que espera nueva fecha. El botón "Cancelar o reagendar" también está en cada cita de la Agenda y en cada cotización. Lo pagado nunca se cancela: solo se reagenda y queda a favor del cliente.</p>
+    <div class="grid-kpi"><div class="kpi"><span>Por reprogramar</span><b>${repro.length}</b></div><div class="kpi"><span>Reservas a medias</span><b>${holds.length}</b></div>
+      <div class="kpi"><span>Eventos por confirmar</span><b>${porConf.length}</b></div><div class="kpi"><span>Cotizaciones abiertas</span><b>${cot.length}</b></div></div>
+    <h3>Por reprogramar</h3><p class="sub">Salieron del calendario (la fecha quedó libre) y esperan a que el cliente elija con su liga o a que ustedes pongan la fecha.</p>
+    ${repro.length ? repro.map(cardRepro).join("") : `<div class="empty">Nada por reprogramar.</div>`}
+    <h3>Reservas a medias</h3>${holds.length ? holds.map(cardHold).join("") : `<div class="empty">Nadie está a medio pagar en este momento.</div>`}
+    <h3>Eventos por confirmar</h3>${porDia(porConf, "No hay eventos por confirmar.")}
+    <h3>Cotizaciones abiertas</h3>${cot.length ? cot.slice(0, 15).map(cardCotiz).join("") + (cot.length > 15 && tiene("cotizaciones") ? `<button class="btn" onclick="ir('cotizaciones')">Ver todas</button>` : "") : `<div class="empty">No hay cotizaciones abiertas.</div>`}
+    <details class="more"><summary>Sesiones y eventos confirmados (próximos 4 meses) para reagendar</summary>${porDia(prox, "No hay nada confirmado.")}</details>
+    <h3>Historial</h3>${hist.length ? `<div class="tbl-wrap"><table><thead><tr><th>Cuándo</th><th>Quién</th><th>Qué</th><th>Cliente</th><th>Motivo</th><th>Quedó</th></tr></thead><tbody>${hist.map(r =>
+      `<tr><td>${esc(r["Fecha y hora"])}</td><td>${esc(String(r["Quién"]).split(" ")[0])}</td><td>${esc(r["Qué"])}<br><small class="card-m">${esc(String(r["Fecha original"]))}</small></td><td>${esc(r["Cliente"])}</td><td>${esc(r["Motivo"])}${r["Nota"] ? `<br><small class="card-m">${esc(r["Nota"])}</small>` : ""}</td><td>${esc(r["Estatus"])}${r["Nueva fecha"] ? `<br><small class="card-m">${esc(r["Nueva fecha"])}</small>` : ""}</td></tr>`).join("")}</tbody></table></div>`
+      : `<div class="empty">Todavía no hay cancelaciones ni cambios.</div>`}`;
+}
+/* Formulario de la nueva fecha (sesión: día + horario + llegada; evento: día) */
+function campoFecha(sesion, h0) {
+  return `<label>Nueva fecha</label><input id="c-f" type="date" min="${hoyISO()}">
+    ${sesion ? `<div class="dos"><div><label>Horario</label><select id="c-h">${Object.keys(HOR_TXT).map(h => `<option value="${h}"${h === h0 ? " selected" : ""}>${HOR_TXT[h]}</option>`).join("")}</select></div>
+      <div><label>Llegada</label><select id="c-l"></select></div></div>` : ""}`;
+}
+function llenarLlegadas(box, l0) { const h = box.querySelector("#c-h"), l = box.querySelector("#c-l"); if (!h || !l) return;
+  const pinta = () => { l.innerHTML = LLEG[h.value].map(x => `<option${x === l0 ? " selected" : ""}>${x}</option>`).join(""); }; h.onchange = () => { l0 = ""; pinta(); }; pinta(); }
+function avisoReglamento(e) { // el cliente pide reagendar algo pagado con menos aviso del reglamento
+  if (!e || !conPago(e)) return "";
+  const ini = e.todoElDia ? new Date(e.fecha + "T00:00:00-06:00") : new Date(e.inicio), horas = (ini - Date.now()) / 36e5, lim = e.tipo === "sesion" ? 72 : 720;
+  return horas < lim ? `Ojo: el reglamento pide ${e.tipo === "sesion" ? "72 horas" : "30 días"} de aviso para reagendar y faltan ${horas < 48 ? Math.max(0, Math.round(horas)) + " horas" : Math.round(horas / 24) + " días"}.` : "";
+}
+function abrirCambio(o) { // o = {objeto:"cita"|"cotizacion", e (cita) | q (cotización)}
+  const e = o.e, q = o.q, sesion = e && e.tipo === "sesion", pagado = e && conPago(e), correo = e ? (e.correo && e.correo !== "—" ? e.correo : "") : (q["Correo"] || "");
+  const titulo = e ? `${e.titulo}` : `${q["Nombre"]} · ${q["Tipo de evento"]}`;
+  const cuando = e ? fDia(e.fecha) + (e.todoElDia ? "" : " · " + (e.llegada || fHora(e.inicio)) + " h") : (q["Fecha del evento"] ? fDia(q["Fecha del evento"]) : "Fecha por definir");
+  const aviso = avisoReglamento(e);
+  const box = dialogo(e ? "Cancelar o reagendar" : "Cancelar o cambiar fecha", `<div class="frm">
+    <p class="ctx"><b>${esc(titulo)}</b><br>${esc(cuando)}${pagado ? ` · <span class="badge b-ok">Pagado ${money(e.pagado)}</span>` : ""}</p>
+    <label>¿Qué pasó?</label>
+    <div class="rads">
+      <label class="rad${pagado ? " off" : ""}"><input type="radio" name="c-m" value="no_se_hara"${pagado ? " disabled" : ""}> <span><b>Ya no se hará</b><small>${pagado ? "Ya pagó: no se cancela, solo se reagenda." : e ? "Sale del calendario y la fecha queda libre." : "La cotización pasa a \"Perdido\"."}</small></span></label>
+      <label class="rad"><input type="radio" name="c-m" value="reagendar_cliente"> <span><b>Reagendar · lo pide el cliente</b></span></label>
+      <label class="rad"><input type="radio" name="c-m" value="reagendar_rancho"> <span><b>Reagendar · motivo del rancho</b></span></label>
+    </div>
+    <div id="c-re" hidden>
+      ${e ? `<label>¿Quién escoge la nueva fecha?</label><div class="rads">
+        <label class="rad"><input type="radio" name="c-modo" value="nosotros" checked> <span><b>Nosotros la ponemos</b><small>La cita se mueve en el calendario con sus pagos.</small></span></label>
+        <label class="rad"><input type="radio" name="c-modo" value="cliente"> <span><b>Que el cliente la elija con una liga</b><small>La cita sale del calendario (la fecha queda libre) y queda "Por reprogramar" hasta que elija. No vuelve a pagar.</small></span></label></div>
+        <div id="c-nos">${campoFecha(sesion, e.fin && fHora(e.inicio) >= "14:00" ? "14-18" : "10-14")}</div>`
+      : `<label>Nueva fecha del evento (vacía = por definir)</label><input id="c-f" type="date" min="${hoyISO()}">`}
+      ${aviso ? `<p class="aviso" id="c-av" hidden>${esc(aviso)}</p>` : ""}
+    </div>
+    <label>Nota (opcional)</label><textarea id="c-n" rows="2" maxlength="400" placeholder="Ej. Se le cruzó un viaje · Lluvia fuerte en el rancho"></textarea>
+    ${correo ? `<label class="chk"><input type="checkbox" id="c-c" checked> Mandar correo al cliente (${esc(correo)})</label>` : `<p class="card-m">No dejó correo: al guardar te sale el botón de WhatsApp con el mensaje listo.</p>`}
+    <div id="c-err"></div>
+    <label class="chk" id="c-fz-w" hidden><input type="checkbox" id="c-fz"> Aun así reagendar</label>
+    <button class="btn btn-dark" id="d-ok" disabled>Elige qué pasó</button></div>`);
+  const val = n => (box.querySelector(`input[name="${n}"]:checked`) || {}).value || "";
+  const pinta = () => {
+    const m = val("c-m"), re = m && m !== "no_se_hara", modo = val("c-modo");
+    box.querySelector("#c-re").hidden = !re;
+    const nos = box.querySelector("#c-nos"); if (nos) nos.hidden = modo !== "nosotros";
+    const av = box.querySelector("#c-av"); if (av) { av.hidden = m !== "reagendar_cliente"; if (!av.hidden) box.querySelector("#c-fz-w").hidden = false; }
+    const ok = box.querySelector("#d-ok"); ok.disabled = !m;
+    ok.textContent = !m ? "Elige qué pasó" : m === "no_se_hara" ? (e ? "Cancelar y liberar la fecha" : "Marcar como perdida") : e && modo === "cliente" ? "Mandar liga al cliente" : "Guardar nueva fecha";
+  };
+  box.querySelector(".frm").addEventListener("change", pinta); llenarLlegadas(box, e && e.llegada); pinta();
+  box.querySelector("#d-ok").onclick = async () => {
+    const m = val("c-m"), modo = val("c-modo"), body = {accion: "hacer", tipo: "cambio", objeto: o.objeto, motivo: m, nota: box.querySelector("#c-n").value.trim(),
+      correo: !!(box.querySelector("#c-c") && box.querySelector("#c-c").checked), forzar: !!box.querySelector("#c-fz").checked};
+    if (e) Object.assign(body, {evento: e.id, modo: modo || "nosotros"}); else body.id = q.ID;
+    if (m !== "no_se_hara" && (!e || modo === "nosotros")) {
+      body.fecha = box.querySelector("#c-f").value;
+      if (e && !body.fecha) { box.querySelector("#c-err").innerHTML = `<div class="err">Elige la nueva fecha.</div>`; return; }
+      if (sesion) { body.horario = box.querySelector("#c-h").value; body.llegada = box.querySelector("#c-l").value; }
+    }
+    if (m === "no_se_hara" && !confirm(e ? "¿Cancelar? La cita se borra del calendario y la fecha queda libre (queda guardada en el historial)." : "¿Marcar la cotización como perdida?")) return;
+    await mandarCambio(box, body);
+  };
+}
+async function mandarCambio(box, body) {
+  const b = box.querySelector("#d-ok"), txt = b.textContent; b.disabled = true; b.textContent = "Guardando…"; box.querySelector("#c-err").innerHTML = "";
+  try {
+    const r = await fetch("/api/equipo", {method: "POST", credentials: "same-origin", headers: {"Content-Type": "application/json", "x-equipo": "1"}, body: JSON.stringify(body)});
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 401) { mostrarLogin(); return; }
+    if (!r.ok) { box.querySelector("#c-err").innerHTML = `<div class="err">${esc(j.error || "No se pudo guardar.")}</div>`; if (j.aviso) box.querySelector("#c-fz-w").hidden = false; b.disabled = false; b.textContent = txt; return; }
+    AGENDA = COTIZ = CAMBIOS = null; resultadoCambio(j); render();
+  } catch (err) { box.querySelector("#c-err").innerHTML = `<div class="err">Revisa tu conexión e intenta de nuevo.</div>`; b.disabled = false; b.textContent = txt; }
+}
+function resultadoCambio(j) {
+  const tel = telWa(j.telefono);
+  const box = dialogo("Listo", `<div class="frm"><p class="ok-big">✓ Guardado</p>
+    ${j.liga ? `<label>Liga para que el cliente elija su nueva fecha</label><input id="r-liga" readonly value="${esc(j.liga)}"><button class="btn" type="button" id="r-copiar">Copiar liga</button>` : ""}
+    ${j.correo ? `<p class="card-m">Correo al cliente: ${esc(j.correo)}</p>` : ""}
+    ${j.mensaje ? `<label>Mensaje para el cliente</label><textarea id="r-msj" rows="5">${esc(j.mensaje)}</textarea>
+      ${tel ? `<a class="btn btn-wa" id="r-wa" href="https://wa.me/${esc(tel)}" target="_blank" rel="noopener">Mandarlo por WhatsApp</a>` : `<button class="btn" type="button" id="r-cm">Copiar mensaje</button>`}` : ""}
+    <button class="btn btn-dark" type="button" onclick="$('#dlg').close()">Cerrar</button></div>`);
+  const wa = box.querySelector("#r-wa"); if (wa) wa.onclick = () => { wa.href = `https://wa.me/${tel}?text=${encodeURIComponent(box.querySelector("#r-msj").value)}`; };
+  const cp = (id, src) => { const x = box.querySelector(id); if (x) x.onclick = async () => { try { await navigator.clipboard.writeText(box.querySelector(src).value); toast("Copiado"); } catch (e) { box.querySelector(src).select(); } }; };
+  cp("#r-copiar", "#r-liga"); cp("#r-cm", "#r-msj");
+}
+const postCambio = x => post({accion: "hacer", tipo: "cambio", ...x});
+function opcionesRepro(r) {
+  const sesion = r.tipo === "sesion", correo = r["Correo"];
+  const box = dialogo("Por reprogramar", `<div class="frm"><p class="ctx"><b>${esc(r["Cliente"] || "Sin nombre")} · ${esc(r["Qué"])}</b><br>Era el ${esc(fDia(String(r["Fecha original"]).slice(0, 10)))} · ${esc(r["Motivo"])}</p>
+    <label>Liga del cliente</label><input id="r-liga" readonly value="${esc(r["Liga del cliente"])}">
+    <div class="acts" style="margin:0 0 14px"><button class="btn" type="button" id="p-copiar">Copiar liga</button>${correo ? `<button class="btn" type="button" id="p-reenv">Reenviar por correo</button>` : ""}
+      ${r["Teléfono"] ? `<button class="btn btn-wa" type="button" id="p-wa">WhatsApp con la liga</button>` : ""}</div>
+    <h3 style="margin-top:4px">O ponemos la fecha nosotros</h3>${campoFecha(sesion, "10-14")}
+    ${correo ? `<label class="chk"><input type="checkbox" id="c-c" checked> Mandar correo al cliente (${esc(correo)})</label>` : ""}
+    <div id="c-err"></div><label class="chk" id="c-fz-w" hidden><input type="checkbox" id="c-fz"> Aun así reagendar</label>
+    <button class="btn btn-dark" id="d-ok">Guardar nueva fecha</button>
+    ${r.conPago ? "" : `<button class="btn" type="button" id="p-cancel" style="width:100%;justify-content:center;margin-top:10px">Ya no se hará</button>`}</div>`);
+  llenarLlegadas(box, "");
+  box.querySelector("#p-copiar").onclick = async () => { try { await navigator.clipboard.writeText(r["Liga del cliente"]); toast("Liga copiada"); } catch (e) { box.querySelector("#r-liga").select(); } };
+  const re = box.querySelector("#p-reenv"); if (re) re.onclick = async () => { re.disabled = true; try { const j = await postCambio({objeto: "reprogramar", id: r.ID, paso: "reenviar"}); AGENDA = CAMBIOS = null; resultadoCambio(j); render(); } catch (e) { alert(e.message); re.disabled = false; } };
+  const wa = box.querySelector("#p-wa"); if (wa) wa.onclick = () => {
+    const nom = String(r["Cliente"] || "").split(" ")[0], que = sesion ? "tu sesión de fotos" : "tu evento";
+    const msg = `Hola${nom ? " " + nom : ""}, te escribimos de Rancho El Descanso. Aquí puedes elegir la nueva fecha de ${que}: ${r["Liga del cliente"]} .${r.conPago ? " Lo que ya pagaste queda a tu favor." : ""} Cualquier duda, por aquí te ayudamos.`;
+    window.open(`https://wa.me/${telWa(r["Teléfono"])}?text=${encodeURIComponent(msg)}`, "_blank", "noopener"); };
+  const ca = box.querySelector("#p-cancel"); if (ca) ca.onclick = async () => { if (!confirm("¿Ya no se hará? Queda como cancelada en el historial.")) return;
+    try { const j = await postCambio({objeto: "reprogramar", id: r.ID, paso: "cancelar"}); AGENDA = CAMBIOS = null; resultadoCambio(j); render(); } catch (e) { alert(e.message); } };
+  box.querySelector("#d-ok").onclick = async () => {
+    const body = {accion: "hacer", tipo: "cambio", objeto: "reprogramar", paso: "fecha", id: r.ID, fecha: box.querySelector("#c-f").value,
+      correo: !!(box.querySelector("#c-c") && box.querySelector("#c-c").checked), forzar: !!box.querySelector("#c-fz").checked};
+    if (!body.fecha) { box.querySelector("#c-err").innerHTML = `<div class="err">Elige la nueva fecha.</div>`; return; }
+    if (sesion) { body.horario = box.querySelector("#c-h").value; body.llegada = box.querySelector("#c-l").value; }
+    await mandarCambio(box, body);
+  };
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b || !puedeCambiar()) return;
+  if (b.dataset.cambio) { const ev = (AGENDA ? AGENDA.eventos : []).find(x => x.id === b.dataset.cambio); if (ev) abrirCambio({objeto: "cita", e: ev}); }
+  if (b.dataset.cambioQ) { const q = COTIZ && COTIZ.prospectos.find(x => x.ID === b.dataset.cambioQ); if (q) abrirCambio({objeto: "cotizacion", q}); }
+  if (b.dataset.repro) { const r = CAMBIOS && CAMBIOS.filas.find(x => x.ID === b.dataset.repro); if (r) opcionesRepro(r); }
+  if (b.dataset.hold) {
+    const h = CAMBIOS && CAMBIOS.holds.find(x => x.id === b.dataset.hold); if (!h) return;
+    const box = dialogo("Reserva a medias", `<div class="frm"><p class="ctx"><b>${esc(h.titulo)}</b><br>${esc(fDia(h.fecha))}${h.titular ? " · " + esc(h.titular) : ""}</p>
+      <p class="card-m" style="margin:0 0 12px">Se cancela su pago en proceso (ya no lo podrá completar) y el horario queda libre. Si ya alcanzó a pagar, no se toca.</p>
+      <label>Nota (opcional)</label><textarea id="c-n" rows="2" maxlength="400" placeholder="Ej. Nos escribió que ya no viene"></textarea>
+      <div id="c-err"></div><label class="chk" id="c-fz-w" hidden><input type="checkbox" id="c-fz"> Aun así</label>
+      <button class="btn btn-dark" id="d-ok">Cancelar y liberar el horario</button></div>`);
+    box.querySelector("#d-ok").onclick = () => mandarCambio(box, {accion: "hacer", tipo: "cambio", objeto: "cita", evento: h.id, folio: h.folio || "", motivo: "no_se_hara", nota: box.querySelector("#c-n").value.trim()});
   }
 });
 /* ----- Redes sociales (3 oct 2026): el equipo sube fotos/videos directo a Drive; Nico y Mario aprueban; el agente de Claude arma y agenda en Metricool ----- */
@@ -1091,7 +1275,7 @@ document.addEventListener("change", e => {
 });
 
 /* ---------- acciones ---------- */
-function dialogo(titulo, html) { $("#dlg-t").textContent = titulo; $("#dlg-b").innerHTML = html; $("#dlg").showModal(); return $("#dlg-b"); }
+function dialogo(titulo, html) { $("#dlg-t").textContent = titulo; $("#dlg-b").innerHTML = html; if (!$("#dlg").open) $("#dlg").showModal(); return $("#dlg-b"); }
 $("#dlg-x").addEventListener("click", () => $("#dlg").close());
 $("#dlg").addEventListener("close", () => { $("#dlg-b").innerHTML = ""; });
 async function hacer(body, ok) { try { await post({accion: "hacer", ...body}); toast(ok); AGENDA = null; render(); } catch (e) { alert(e.message); } }
