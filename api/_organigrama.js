@@ -8,7 +8,7 @@
    con el que está en la pestaña EQUIPO de la Maestra. Quien no aparezca aquí reporta a Mario y no asigna.
    asigna: "todos" o lista de claves · areas: áreas permitidas en sus tareas (vacío = cualquiera) · revisaTodo: revisa y aprueba todo
    caja: lleva la caja chica en el rancho (4 oct 2026: Olga). Judith la captura desde la oficina; Mario y Nico la ven completa.
-   quitar: secciones del rol que esa persona no usa (4 oct 2026: Olga sin Salud de caballos; Chito sí la tiene). */
+   quitar: secciones del rol que esa persona no usa (4 oct 2026: Olga sin Salud de caballos ni Herrajes y servicios; Chito sí los tiene). */
 const ORG = [
   {clave: "mario",   busca: ["mcampero@ceica.com.mx", "mario"], puesto: "Dueño y director general", area: "Dirección", reportaA: null, asigna: "todos", revisaTodo: true},
   {clave: "nico",    busca: ["nicolas@legaius.com", "nicolas", "nico"], puesto: "Ventas y sistemas", area: "Dirección", reportaA: "mario", asigna: "todos", revisaTodo: true},
@@ -18,7 +18,7 @@ const ORG = [
   {clave: "joaquin", busca: ["joaquin"], puesto: "Médico de planta", area: "Salud", reportaA: "mario", asigna: ["chito"], areas: ["Salud", "Reproducción"]},
   {clave: "roberto", busca: ["rcmenaz@hotmail.com", "roberto"], puesto: "Reproducción y registros", area: "Reproducción", reportaA: "mario", asigna: ["chito"], areas: ["Salud", "Reproducción"]},
   {clave: "chito",   busca: ["chito"], puesto: "Caballos y caballerizas", area: "Caballos", reportaA: "mario"},
-  {clave: "olga",    busca: ["olgaespinoza419@gmail.com", "olga"], puesto: "Jardinería, mantenimiento y caja chica", area: "Jardinería", reportaA: "mario", caja: true, quitar: ["salud"]}
+  {clave: "olga",    busca: ["olgaespinoza419@gmail.com", "olga"], puesto: "Jardinería, mantenimiento y caja chica", area: "Jardinería", reportaA: "mario", caja: true, quitar: ["salud", "servicios"]}
 ];
 const CUENTAS_GENERALES = ["ranchoeldescansogdl@gmail.com"]; // no es una persona: fuera del organigrama, no asigna ni pide
 
