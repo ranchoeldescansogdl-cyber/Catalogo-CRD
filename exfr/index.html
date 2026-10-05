@@ -119,6 +119,7 @@ button{font:inherit;color:inherit}
 .countdown b{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.6vw,2.5rem);color:var(--white);line-height:1;font-variant-numeric:tabular-nums}
 .countdown span{font-family:var(--display);font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mist-50);margin-top:8px}
 .hero .btn-row{justify-content:center}
+.hero-note{margin:18px auto 0;max-width:42ch;font-size:.95rem;line-height:1.55;color:rgba(255,255,255,.75);text-align:center}
 .hero-vert{position:absolute;right:clamp(12px,6vw,90px);top:26%;writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--display);font-size:.7rem;letter-spacing:.4em;text-transform:uppercase;color:var(--mist-50);margin:0;white-space:nowrap}
 .hero-vert b{color:var(--bright);font-weight:400}
 @media (max-width:720px){
@@ -381,7 +382,7 @@ button{font:inherit;color:inherit}
     <nav class="bar-nav" aria-label="Secciones de La Experiencia Friesian">
       <a href="#evento">El evento</a><a href="#programa">Programa</a><a href="#materiales">Materiales</a><a href="#galeria">Galería</a><a href="#trayectoria">Trayectoria</a><a href="#patrocinio">Patrocinio</a>
     </nav>
-    <a class="btn btn-primary" data-wa-invite href="#" target="_blank" rel="noopener">Solicitar invitación</a>
+    <a class="btn btn-primary" href="../#avisos">Recibir avisos</a>
   </div>
 </header>
 
@@ -403,9 +404,10 @@ button{font:inherit;color:inherit}
       <li><b data-cd="d">—</b><span>Días</span></li><li><b data-cd="h">—</b><span>Horas</span></li><li><b data-cd="m">—</b><span>Min</span></li><li><b data-cd="s">—</b><span>Seg</span></li>
     </ul>
     <div class="btn-row">
-      <a class="btn btn-primary" data-wa-invite href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Solicitar invitación</a>
+      <a class="btn btn-primary" href="../#avisos">Recibir avisos</a>
       <a class="btn btn-line" href="#materiales">Materiales oficiales</a>
     </div>
+    <p class="hero-note">Las novedades llegan por la app de Rancho El Descanso. Descárgala y activa las notificaciones.</p>
   </div>
 </section>
 
@@ -678,7 +680,7 @@ button{font:inherit;color:inherit}
     <p class="hero-place">Rancho El Descanso · Guadalajara, Jalisco</p>
     <p class="quote" style="margin:26px auto 0">Te esperamos.</p>
     <div class="btn-row">
-      <a class="btn btn-primary" data-wa-invite href="#" target="_blank" rel="noopener">Solicitar invitación</a>
+      <a class="btn btn-primary" href="../#avisos">Recibir avisos</a>
       <a class="btn btn-line" href="../">Conoce Rancho El Descanso</a>
     </div>
   </div>
@@ -718,7 +720,6 @@ button{font:inherit;color:inherit}
    ===================================================================== */
 const EXFR = {
   INICIO: "2027-11-20T14:00:00-06:00",       // sábado 20 de noviembre de 2027, 2:00 pm (Guadalajara)
-  WHATSAPP_INVITACION: "523316045548",       // a quién llega "Solicitar invitación"
   WHATSAPP_COMERCIAL: "523316045548",        // a quién llegan los patrocinios
 
   /* Materiales oficiales. Las presentaciones Gamma se ven en vivo (embed): lo que edites en Gamma aparece aquí solo.
@@ -842,7 +843,6 @@ const WA_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 $$("img[data-g]").forEach(im=>{ im.src=foto(im.dataset.g,+im.dataset.w||1200); });
 
 /* WhatsApp */
-$$("[data-wa-invite]").forEach(a=>a.href=wa(EXFR.WHATSAPP_INVITACION,"Hola, me gustaría recibir invitación a La Experiencia Friesian 2027 (sábado 20 de noviembre) en Rancho El Descanso."));
 $$("[data-wa-spons]").forEach(a=>a.href=wa(EXFR.WHATSAPP_COMERCIAL,"Hola, me interesa conocer los niveles de patrocinio de La Experiencia Friesian 2027."));
 
 /* Barra superior */
@@ -870,7 +870,7 @@ const bar=$("#bar"); const onScroll=()=>bar.classList.toggle("solid",scrollY>40)
     if(m.gamma) btns=`<button class="btn btn-primary" type="button" data-open="${esc(m.key)}">Ver</button><a class="btn btn-line" href="https://gamma.app/docs/${esc(m.slug)}" target="_blank" rel="noopener">Abrir ↗</a>`;
     else if(m.video) btns=`<button class="btn btn-primary" type="button" data-open="${esc(m.key)}">Ver video</button><a class="btn btn-line" href="${esc(m.video)}" download>Descargar</a>`;
     else if(m.img) btns=`<button class="btn btn-primary" type="button" data-open="${esc(m.key)}">Ver</button>`+(m.archivo||m.img?`<a class="btn btn-line" href="${esc(m.archivo||m.img)}" download>Descargar</a>`:"");
-    else btns=`<a class="btn btn-line" data-wa-invite href="${wa(EXFR.WHATSAPP_INVITACION,"Hola, quiero recibir el save the date de La Experiencia Friesian 2027.")}" target="_blank" rel="noopener">Avísame</a>`;
+    else btns=`<a class="btn btn-line" href="../#avisos">Avísame</a>`;
     return `<article class="doc reveal${m.destacado?" featured":""}${listo?"":" soon"}">
       <div class="doc-cover${m.key==="savethedate"?" portrait":""}">${tag}<img src="${esc(cover)}" alt="" loading="lazy">${listo?"":'<div class="soon-badge"><span>Muy pronto</span></div>'}</div>
       <div class="doc-body"><p class="doc-n">${esc(m.n)}</p><h3>${esc(m.titulo)}</h3><p>${esc(m.texto)}</p><div class="btn-row">${btns}</div></div>
