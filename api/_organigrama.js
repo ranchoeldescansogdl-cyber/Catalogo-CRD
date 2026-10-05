@@ -8,17 +8,20 @@
    con el que está en la pestaña EQUIPO de la Maestra. Quien no aparezca aquí reporta a Mario y no asigna.
    asigna: "todos" o lista de claves · areas: áreas permitidas en sus tareas (vacío = cualquiera) · revisaTodo: revisa y aprueba todo
    caja: lleva la caja chica en el rancho (4 oct 2026: Olga). Judith la captura desde la oficina; Mario y Nico la ven completa.
-   quitar: secciones del rol que esa persona no usa (Olga sin Salud de caballos, Herrajes ni Servicios médicos; Chito sí los tiene). */
+   quitar: secciones del rol que esa persona no usa (Olga sin Salud de caballos ni Herrajes; Chito sí los tiene).
+   5 oct 2026 · decide: lo que le toca aprobar a cada director (Mario: dinero y rancho · Nico: ventas, sistemas y caballos nuevos, porque él los da de alta en la Maestra). Los dos siguen viendo todo
+   y pueden actuar de respaldo, pero en Inicio y en los avisos a cada quien le llega solo lo suyo.
+   aprueba: quién de los dos atiende lo que pide o termina esa persona (por omisión, Mario). */
 const ORG = [
-  {clave: "mario",   busca: ["mcampero@ceica.com.mx", "mario"], puesto: "Dueño y director general", area: "Dirección", reportaA: null, asigna: "todos", revisaTodo: true},
-  {clave: "nico",    busca: ["nicolas@legaius.com", "nicolas", "nico"], puesto: "Ventas y sistemas", area: "Dirección", reportaA: "mario", asigna: "todos", revisaTodo: true},
-  {clave: "monica",  busca: ["mo730222@hotmail.com", "monica"], puesto: "Ventas, eventos y sesiones", area: "Eventos y sesiones", reportaA: "mario"},
-  {clave: "yuliana", busca: ["yulgr2616@gmail.com", "yuliana"], puesto: "Ventas", area: "Ventas", reportaA: "mario"},
+  {clave: "mario",   busca: ["mcampero@ceica.com.mx", "mario"], puesto: "Dueño y director general", area: "Dirección", reportaA: null, asigna: "todos", revisaTodo: true, decide: ["dinero", "rancho"]},
+  {clave: "nico",    busca: ["nicolas@legaius.com", "nicolas", "nico"], puesto: "Ventas y sistemas", area: "Dirección", reportaA: "mario", asigna: "todos", revisaTodo: true, decide: ["ventas", "sistemas", "caballos"]},
+  {clave: "monica",  busca: ["mo730222@hotmail.com", "monica"], puesto: "Ventas y eventos", area: "Ventas y eventos", reportaA: "mario", aprueba: "nico"},
+  {clave: "yuliana", busca: ["yulgr2616@gmail.com", "yuliana"], puesto: "Ventas", area: "Ventas", reportaA: "mario", aprueba: "nico"},
   {clave: "judith",  busca: ["contabilidad1@ceica.com.mx", "judith"], puesto: "Administración y contabilidad", area: "Administración", reportaA: "mario", asigna: "todos", areas: ["Administración"]},
   {clave: "joaquin", busca: ["joaquin"], puesto: "Médico de planta", area: "Salud", reportaA: "mario", asigna: ["chito"], areas: ["Salud", "Reproducción"]},
   {clave: "roberto", busca: ["rcmenaz@hotmail.com", "roberto"], puesto: "Reproducción y registros", area: "Reproducción", reportaA: "mario", asigna: ["chito"], areas: ["Salud", "Reproducción"]},
   {clave: "chito",   busca: ["chito"], puesto: "Caballos y caballerizas", area: "Caballos", reportaA: "mario"},
-  {clave: "olga",    busca: ["olgaespinoza419@gmail.com", "olga"], puesto: "Jardinería, mantenimiento y caja chica", area: "Jardinería", reportaA: "mario", caja: true, quitar: ["salud", "herrajes", "medicos"]}
+  {clave: "olga",    busca: ["olgaespinoza419@gmail.com", "olga"], puesto: "Jardinería, mantenimiento y caja chica", area: "Jardinería", reportaA: "mario", caja: true, quitar: ["salud", "herrajes"]}
 ];
 const CUENTAS_GENERALES = ["ranchoeldescansogdl@gmail.com"]; // no es una persona: fuera del organigrama, no asigna ni pide
 
@@ -47,6 +50,17 @@ const areasDe = p => (puestoDe(p) || {}).areas || [];
 const llevaCaja = p => { const o = puestoDe(p); return !!o && !!o.caja; };
 const seccionesQuitadas = p => (puestoDe(p) || {}).quitar || [];
 
+const decideDe = p => (puestoDe(p) || {}).decide || [];
+/* quién de los dos directores atiende lo de esta persona (o la tarea): el que la asignó, o según quién la hace o la pidió */
+function responsableTarea(t, equipo) {
+  const eq = equipo || [], porNombre = n => eq.find(x => x.nombre === n), deClave = k => eq.find(x => claveDe(x) === k);
+  const jefe = p => { const o = p ? puestoDe(p) : null; if (o && o.revisaTodo) return p; return deClave((o && o.aprueba) || "mario"); };
+  const asigno = porNombre(t["Asignó"]);
+  if (esSolicitud(t)) return (jefe(asigno) || {}).nombre || "";
+  if (asigno && revisaTodo(asigno)) return asigno.nombre;
+  return (jefe(porNombre(t["Asignada a"]) || asigno) || {}).nombre || "";
+}
+
 /* Tareas "Disponible": en la columna "Asignada a" se guarda "Disponible · Todos" o "Disponible · Olga, Chito"
    (primeros nombres). Pedidas: "Solicitud · <sugerencia>" hasta que Mario o Nico la aprueban y la asignan. */
 const DISP = "Disponible · ", SOLI = "Solicitud · ";
@@ -69,5 +83,5 @@ function puedeRevisar(p, t, equipo) {
   return !!dest && puedeAsignarA(p, dest);
 }
 
-module.exports = {ORG, puestoDe, claveDe, revisaTodo, asignaAlguien, puedePedir, puedeAsignarA, areasDe, llevaCaja, seccionesQuitadas, DISP, SOLI,
+module.exports = {ORG, puestoDe, claveDe, revisaTodo, decideDe, responsableTarea, asignaAlguien, puedePedir, puedeAsignarA, areasDe, llevaCaja, seccionesQuitadas, DISP, SOLI,
   esDisponible, esSolicitud, candidatos, FOTO, APROBO, pideFoto, puedeTomar, puedeRevisar, primerNombre, norm};
