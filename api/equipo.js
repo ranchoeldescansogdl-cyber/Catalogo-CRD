@@ -57,7 +57,12 @@
    4 oct 2026 (herrajes y servicios): Chito registra la jornada del herrero y los médicos sus servicios (varios caballos de un jalón,
    costo, nota, próxima fecha y evidencia). Caballos de clientes → CARGOS A CLIENTES con precio sugerido (MÁRGENES) que Judith confirma.
    La jornada llega a Mario y Judith: Mario la paga, Judith la pasa a GASTOS. Caballo que no está en la lista → Nico/Mario lo aprueban.
-   GET  accion=servicios · POST hacer tipo:"servicio" op: jornada|caballo_nuevo|pagar|capturar|cancelar_jornada|cargo_precio|cargo_cancelar|caballo_resolver */
+   GET  accion=servicios · POST hacer tipo:"servicio" op: jornada|caballo_nuevo|pagar|capturar|cancelar_jornada|cargo_precio|cargo_cancelar|caballo_resolver
+
+   5 oct 2026: dos secciones, "herrajes" (Chito y oficina) y "medicos" (Chito, médicos y oficina); mismos datos.
+   Alimento y compras (sección "compras"): Chito, Olga y médicos capturan "Hace falta", "Llegó" y el conteo semanal de alimento;
+   la oficina (Judith, Nico, Mario) pide, recibe y pasa a GASTOS. El portal calcula cuántos días alcanza el alimento.
+   GET  accion=compras · POST hacer tipo:"compra" op: falta|llego|conteo|pedir|llego_oficina|costo|capturar|cancelar */
 const crypto = require("crypto");
 const AG = require("./_agenda");
 const REG = require("./_reglamento");
@@ -72,18 +77,18 @@ const VERSION = "2026-08-26.dahlia";
 
 /* jefe = asigna, edita, revisa y cancela tareas (Nico, Mario y Judith) */
 const PERMISOS = {
-  admin:        {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "cambios", "pagos", "caballos", "comisiones", "caja", "servicios", "redes", "salud", "bitacora", "proveedores", "conta", "equipo"], dinero: "todo", contacto: true, ine: true, jefe: true,
-                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "registro", "liga_celular", "prospecto", "redes", "redes_aprobar", "caja", "servicio"]},
+  admin:        {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "cambios", "pagos", "caballos", "comisiones", "caja", "herrajes", "medicos", "compras", "redes", "salud", "bitacora", "proveedores", "conta", "equipo"], dinero: "todo", contacto: true, ine: true, jefe: true,
+                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "registro", "liga_celular", "prospecto", "redes", "redes_aprobar", "caja", "servicio", "insumo"]},
   /* "direccion" = Mónica: vendedora con eventos (4 oct 2026). Solo su dinero; confirma eventos, bloquea fechas y marca pagado solo lo suyo */
   direccion:    {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "bitacora"], dinero: "propio", contacto: true, ine: true, jefe: false,
                  acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "prospecto"]},
   ventas:       {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones"], dinero: "propio", contacto: true, ine: true, jefe: false, acciones: ["nota", "liga", "tarea", "prospecto"]},
-  contabilidad: {secciones: ["hoy", "tareas", "agenda", "cambios", "pagos", "caballos", "comisiones", "caja", "servicios", "proveedores", "conta", "bitacora"], dinero: "todo", contacto: true, ine: false, jefe: true,
+  contabilidad: {secciones: ["hoy", "tareas", "agenda", "cambios", "pagos", "caballos", "comisiones", "caja", "herrajes", "medicos", "compras", "proveedores", "conta", "bitacora"], dinero: "todo", contacto: true, ine: false, jefe: true,
                  acciones: ["saldo_pagado", "nota", "tarea", "reporte", "registro", "caja"]},
   /* campo: contacto del cliente y notas de la cita (sin montos) por si hay que llamarle el día de la sesión o evento */
-  campo:        {secciones: ["hoy", "tareas", "servicios", "bitacora", "salud", "agenda"], dinero: "nada", contacto: true, ine: true, jefe: false, acciones: ["nota", "tarea", "reporte", "servicio"]},
+  campo:        {secciones: ["hoy", "tareas", "herrajes", "medicos", "compras", "bitacora", "salud", "agenda"], dinero: "nada", contacto: true, ine: true, jefe: false, acciones: ["nota", "tarea", "reporte", "servicio", "insumo"]},
   /* médicos: qué pasa en el rancho (eventos, bloqueos, citas), sin sesiones de fotos ni datos del cliente */
-  medico:       {secciones: ["hoy", "tareas", "servicios", "salud", "bitacora", "agenda"], dinero: "nada", contacto: false, ine: false, jefe: false, agenda: "rancho", acciones: ["tarea", "reporte", "servicio"]}
+  medico:       {secciones: ["hoy", "tareas", "medicos", "compras", "salud", "bitacora", "agenda"], dinero: "nada", contacto: false, ine: false, jefe: false, agenda: "rancho", acciones: ["tarea", "reporte", "servicio", "insumo"]}
 };
 /* Redes sociales (3 oct 2026; 4 oct: solo Mario, Nico y la cuenta del rancho). Ellos suben el material ("Fotos para redes",
    dentro de la sección Redes), piden publicaciones y aprueban. El resto del equipo ya no sube material ni ve la sección. */
@@ -144,7 +149,8 @@ function permisosDe(u) {
   const b = PERMISOS[u.rol]; if (!b) return null;
   const p = {...b, secciones: [...b.secciones], acciones: [...b.acciones]};
   ORG.seccionesQuitadas(u).forEach(x => { const i = p.secciones.indexOf(x); if (i >= 0) p.secciones.splice(i, 1);
-    if (x === "servicios") p.acciones = p.acciones.filter(a => a !== "servicio"); });
+  });
+  if (!p.secciones.includes("herrajes") && !p.secciones.includes("medicos")) p.acciones = p.acciones.filter(a => a !== "servicio");
   if (ORG.llevaCaja(u)) { if (!p.secciones.includes("caja")) p.secciones.splice(p.secciones.indexOf("tareas") + 1, 0, "caja"); if (!p.acciones.includes("caja")) p.acciones.push("caja"); }
   return p;
 }
@@ -402,8 +408,70 @@ async function tareaPost(u, body, archivos, res) {
   return no("acción no válida", 400);
 }
 
+/* ---------- alimento y compras (5 oct 2026) ---------- */
+const CATS_INSUMO = ["Alimento", "Aseo", "Caballeriza", "Médico", "Otro"];
+const papelCompras = u => !puede(u, "compras") ? "" : u.permisos.dinero === "todo" ? "oficina" : "rancho";
+const fechaDe = t => isoFecha(t) || String(t || "").slice(0, 10);
+const diasEntre = (a, b) => Math.round((new Date(b + "T12:00:00Z") - new Date(a + "T12:00:00Z")) / 864e5);
+/* cuánto alimento queda y cuántos días alcanza: último conteo + llegadas después − consumo diario (de los dos últimos conteos o de INSUMOS) */
+function estadoAlimento(insumos, inv, pedidos) {
+  const hoy = new Date(Date.now() - 6 * 36e5).toISOString().slice(0, 10), num = x => Number(String(x || "").replace(/[^0-9.]/g, "")) || 0;
+  return insumos.filter(i => i["Categoría"] === "Alimento").map(i => {
+    const art = i["Artículo"], mov = inv.filter(r => r["Artículo"] === art).map(r => ({f: fechaDe(r["Fecha"]), t: r["Tipo"], q: num(r["Cantidad"])})).sort((a, b) => a.f < b.f ? -1 : 1);
+    const conteos = mov.filter(m => m.t === "Conteo"), ult = conteos[conteos.length - 1], ant = conteos[conteos.length - 2];
+    const llegadas = (de, a) => mov.filter(m => m.t === "Llegada" && m.f > de && (!a || m.f <= a)).reduce((s, m) => s + m.q, 0);
+    let porDia = num(i["Consumo por semana"]) / 7;
+    if (!porDia && ult && ant && diasEntre(ant.f, ult.f) > 0) { const c = ant.q + llegadas(ant.f, ult.f) - ult.q; if (c > 0) porDia = c / diasEntre(ant.f, ult.f); }
+    const estimado = ult ? Math.max(0, ult.q + llegadas(ult.f) - porDia * Math.max(0, diasEntre(ult.f, hoy))) : null;
+    const dias = estimado !== null && porDia > 0 ? Math.floor(estimado / porDia) : null, avisar = num(i["Avisar con (días)"]) || 10;
+    const enLista = pedidos.some(p => p["Artículo"] === art && ["Hace falta", "Pedido"].includes(p["Estatus"]));
+    return {articulo: art, unidad: i["Unidad"], conteo: ult ? {fecha: ult.f, cantidad: ult.q} : null, estimado: estimado === null ? null : Math.round(estimado * 10) / 10,
+      porSemana: porDia ? Math.round(porDia * 7 * 10) / 10 : null, dias, alerta: dias !== null && dias <= avisar, enLista};
+  });
+}
+function comprasVista(j, u) {
+  const papel = papelCompras(u), of = papel === "oficina", hoy = new Date(Date.now() - 6 * 36e5).toISOString().slice(0, 10);
+  const pedidos = j.pedidos.map(limpia).map(p => of ? p : (({Costo, ...x}) => x)(p));
+  const conteos = j.inventario.filter(r => r["Tipo"] === "Conteo").map(r => fechaDe(r["Fecha"])).sort();
+  const ultimoConteo = conteos[conteos.length - 1] || "";
+  return {papel, insumos: j.insumos.map(i => ({articulo: i["Artículo"], categoria: i["Categoría"], unidad: i["Unidad"], proveedor: of ? i["Proveedor habitual"] : ""})), categorias: CATS_INSUMO,
+    pedidos, alimento: estadoAlimento(j.insumos, j.inventario, j.pedidos), ultimoConteo, tocaContar: !ultimoConteo || diasEntre(ultimoConteo, hoy) >= 7,
+    proveedores: of ? [...new Set(j.pedidos.map(p => p["Proveedor"]).filter(Boolean))].slice(-20) : []};
+}
+async function compraPost(u, body, res) {
+  const papel = papelCompras(u), no = (m, c = 403) => res.status(c).json({error: m}), op = String(body.op || "");
+  if (!papel) return no("No tienes acceso a Alimento y compras.");
+  const archivos = Array.isArray(body.archivos) ? body.archivos.slice(0, 4) : [];
+  if (archivos.reduce((a, x) => a + String(x && x.datos || "").length, 0) > 5.5e6) return no("Las fotos pesan demasiado. Manda menos a la vez.", 413);
+  const manda = extra => agendaPost("panel_compras", {quien: u.nombre, ...extra}).then(r => res.status(r.ok ? 200 : 400).json(r));
+  const cant = x => Math.max(0, Number(String(x == null ? "" : x).replace(/[^0-9.]/g, "")) || 0);
+  const base = {articulo: String(body.articulo || "").trim().slice(0, 60), categoria: CATS_INSUMO.includes(body.categoria) ? body.categoria : "Otro", unidad: String(body.unidad || "").slice(0, 20),
+    cantidad: cant(body.cantidad), notas: String(body.notas || "").slice(0, 300)};
+  if (op === "falta" || op === "llego") {
+    if (papel !== "oficina" && !u.permisos.acciones.includes("insumo")) return no("Tu puesto no captura compras.");
+    if (base.articulo.length < 2) return no(op === "falta" ? "Escribe qué hace falta." : "Escribe qué llegó.", 400);
+    return manda({op, ...base, cuando: ["Hoy", "Esta semana", "Sin prisa"].includes(body.cuando) ? body.cuando : "Esta semana", proveedor: String(body.proveedor || "").slice(0, 60), id: body.id, archivos});
+  }
+  if (op === "conteo") {
+    if (papel !== "oficina" && u.rol !== "campo") return no("El conteo de alimento lo hace el rancho.");
+    const conteos = (Array.isArray(body.conteos) ? body.conteos : []).slice(0, 40).map(x => ({articulo: String(x.articulo || "").slice(0, 60), cantidad: String(x.cantidad == null ? "" : x.cantidad).trim() === "" ? "" : cant(x.cantidad), nota: String(x.nota || "").slice(0, 200)}));
+    return manda({op, conteos});
+  }
+  if (["pedir", "llego_oficina", "costo", "capturar"].includes(op)) {
+    if (papel !== "oficina") return no("Esto lo hace la oficina (Judith, Nico o Mario).");
+    return manda({op, id: body.id, proveedor: String(body.proveedor || "").slice(0, 60), costo: body.costo, cantidad: body.cantidad, llega: body.llega, forma: String(body.forma || "").slice(0, 40)});
+  }
+  if (op === "cancelar") {
+    if (papel !== "oficina") { const j = await agendaPost("panel_compras", {op: "lista"}), p = j.ok && j.pedidos.find(r => r["ID"] === String(body.id || ""));
+      if (!p || p["Registró"] !== u.nombre || p["Estatus"] !== "Hace falta") return no("Eso ya no lo puedes cancelar. Avísale a la oficina."); }
+    return manda({op, id: body.id, notas: base.notas});
+  }
+  return no("Acción no válida.", 400);
+}
+
 /* ---------- herrajes y servicios (4 oct 2026) ---------- */
-const SERV_HERRAJE = ["Recorte", "Herrada completa", "Herrada (solo manos)", "Otro herraje"];
+const puedeServ = u => puede(u, "herrajes") || puede(u, "medicos");
+const SERV_HERRAJE = ["Recorte", "Herrada"]; // + "Otro herraje: <qué>" (5 oct 2026: solo recorte, herrada u otro)
 const SERV_MEDICO = ["Palpación / ecografía", "Vacuna", "Desparasitación", "Dental", "Revisión", "Tratamiento", "Monta / inseminación", "Otro servicio médico"];
 const papelServ = u => ORG.revisaTodo(u) ? "dir" : u.permisos.dinero === "todo" ? "oficina" : u.permisos.acciones.includes("servicio") ? "registra" : "";
 const limpia = r => { const x = {...r}; delete x._fila; return x; };
@@ -425,7 +493,7 @@ function serviciosVista(j, m, u) {
   /* último servicio de cada caballo, por tipo */
   const ultimo = {};
   serv.forEach(r => { const k = r["ID caballo"] || r["Caballo"], f = isoFecha(r["Fecha"]); if (!k || !f) return;
-    String(r["Servicio"] || "").split(" + ").filter(Boolean).forEach(s => { ultimo[k] = ultimo[k] || {}; if (!ultimo[k][s] || ultimo[k][s] < f) ultimo[k][s] = f; }); });
+    String(r["Servicio"] || "").split(" + ").filter(Boolean).map(s => /^Herrada/.test(s) ? "Herrada" : s.replace(/:.*$/, "")).forEach(s => { ultimo[k] = ultimo[k] || {}; if (!ultimo[k][s] || ultimo[k][s] < f) ultimo[k][s] = f; }); });
   const jornadas = j.jornadas.map(x => ({...limpia(x), items: (porJornada[x["ID"]] || []).map(r => ({caballo: r["Caballo"], id: r["ID caballo"], dueno: r["Dueño"], folio: r["Folio cliente"],
     servicio: r["Servicio"], costo: r["Costo"], nota: String(r["Descripción"] || ""), proxima: r["Próxima fecha"]}))}));
   return {papel, jornadas, nuevos: j.nuevos.map(limpia), caballos: caballosRancho(m, j.nuevos), ultimo, herraje: SERV_HERRAJE, medico: SERV_MEDICO,
@@ -435,17 +503,20 @@ function serviciosVista(j, m, u) {
 }
 async function servicioPost(u, body, res) {
   const papel = papelServ(u), no = (m, c = 403) => res.status(c).json({error: m}), op = String(body.op || "");
-  if (!papel || !puede(u, "servicios")) return no("No tienes acceso a Herrajes y servicios.");
+  if (!papel || !puedeServ(u)) return no("No tienes acceso a Herrajes ni a Servicios médicos.");
   const archivos = Array.isArray(body.archivos) ? body.archivos.slice(0, 6) : [];
   if (archivos.reduce((a, x) => a + String(x && x.datos || "").length, 0) > 5.5e6) return no("Las fotos pesan demasiado. Manda menos a la vez.", 413);
   const manda = (extra) => agendaPost("panel_servicios", {quien: u.nombre, ...extra}).then(r => res.status(r.ok ? 200 : 400).json(r));
   if (op === "jornada") {
     if (!u.permisos.acciones.includes("servicio")) return no("Tu puesto no registra servicios.");
-    const j = body.jornada || {}, validos = [...SERV_HERRAJE, ...SERV_MEDICO];
+    const j = body.jornada || {}, validos = [...SERV_HERRAJE, ...SERV_MEDICO], otro = /^Otro (herraje|servicio médico): \S.{0,58}$/;
     const items = (Array.isArray(j.items) ? j.items : []).slice(0, 150).map(x => ({idCaballo: String(x.idCaballo || "").slice(0, 30), caballo: String(x.caballo || "").slice(0, 60),
-      dueno: String(x.dueno || "Rancho").slice(0, 60), folio: /^[PM]-\d+$/.test(String(x.folio || "")) ? x.folio : "", servicios: (x.servicios || []).filter(s => validos.includes(s)).slice(0, 6),
+      dueno: String(x.dueno || "Rancho").slice(0, 60), folio: /^[PM]-\d+$/.test(String(x.folio || "")) ? x.folio : "", servicios: (x.servicios || []).map(s => String(s || "").trim()).filter(s => validos.includes(s) || otro.test(s)).slice(0, 6),
       costo: Math.max(0, Number(String(x.costo || "").replace(/[^0-9.]/g, "")) || 0), nota: String(x.nota || "").slice(0, 300), proxima: x.proxima})).filter(x => x.caballo && x.servicios.length);
     if (!items.length) return no("Marca al menos un caballo con su servicio.", 400);
+    const herr = s => /^(Recorte|Herrada|Otro herraje)/.test(s);
+    if (items.some(x => x.servicios.some(herr)) && !puede(u, "herrajes")) return no("Tu puesto no registra herrajes.");
+    if (items.some(x => x.servicios.some(s => !herr(s))) && !puede(u, "medicos")) return no("Tu puesto no registra servicios médicos.");
     return manda({op, jornada: {fecha: j.fecha, proveedor: String(j.proveedor || "").slice(0, 60), notas: String(j.notas || "").slice(0, 500), items}, archivos});
   }
   if (op === "caballo_nuevo") {
@@ -583,6 +654,7 @@ module.exports = async (req, res) => {
       if (body.tipo === "cambio") return await cambio(u, body, res);
       if (body.tipo === "caja") return await cajaPost(u, body, res);
       if (body.tipo === "servicio") return await servicioPost(u, body, res);
+      if (body.tipo === "compra") return await compraPost(u, body, res);
       const FASE2 = {tarea_crear: "tarea", tarea_estatus: "tarea", tarea_editar: "tarea", tarea_pedir: "tarea", tarea_aprobar: "tarea", tarea_tomar: "tarea",
         reporte: "reporte", registro: "registro", liga_celular: "liga_celular", prospecto: "prospecto"};
       if (FASE2[body.tipo]) {
@@ -705,9 +777,14 @@ module.exports = async (req, res) => {
       return res.status(200).json({filas: j.filas, holds});
     }
     if (q.accion === "servicios") {
-      if (!puede(u, "servicios")) return res.status(403).json({error: "Sin acceso."});
+      if (!puedeServ(u)) return res.status(403).json({error: "Sin acceso."});
       const [j, m] = await Promise.all([agendaPost("panel_servicios", {op: "lista"}), maestraSegura()]); if (!j.ok) throw new Error(j.error || "servicios");
       return res.status(200).json(serviciosVista(j, m, u));
+    }
+    if (q.accion === "compras") {
+      if (!puede(u, "compras")) return res.status(403).json({error: "Sin acceso."});
+      const j = await agendaPost("panel_compras", {op: "lista"}); if (!j.ok) throw new Error(j.error || "compras");
+      return res.status(200).json(comprasVista(j, u));
     }
     if (q.accion === "caja") {
       if (!puede(u, "caja")) return res.status(403).json({error: "Sin acceso."});
@@ -731,7 +808,7 @@ module.exports = async (req, res) => {
       return res.status(200).json({equipo: (await equipo()).map(x => ({id: x.id, nombre: x.nombre, rol: ROL_TXT[x.rol] || x.rol, area: x.area || "", correo: x.email || "", liga: x.liga || 0}))});
     }
     if (q.accion === "foto") {
-      if (!["tareas", "bitacora", "salud", "conta", "caja", "servicios"].some(s => puede(u, s))) return res.status(403).json({error: "Sin acceso."});
+      if (!["tareas", "bitacora", "salud", "conta", "caja", "herrajes", "medicos", "compras"].some(s => puede(u, s))) return res.status(403).json({error: "Sin acceso."});
       if (!/^[A-Za-z0-9_-]{20,}$/.test(String(q.id || ""))) return res.status(400).json({error: "archivo"});
       const j = await agendaPost("panel_foto", {id: String(q.id)});
       return res.status(j.ok ? 200 : 404).json(j);
