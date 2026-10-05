@@ -237,8 +237,19 @@ body.como main .acts,body.como main .big-actions,body.como .hoy-acts,body.como .
 .rad small{display:block;color:var(--muted);font-size:.85rem}
 .frm label.chk{display:flex;gap:8px;align-items:flex-start;color:var(--ink);font-size:.95rem;margin:0 0 12px}
 .frm label.chk[hidden]{display:none}
-.sv-row{border:1px solid var(--rule);border-radius:12px;padding:10px 12px;margin:0 0 8px;background:#fff}
-.sv-row .sv-sel{margin:0!important} .sv-det{margin:10px 0 0} .sv-det input{margin:0 0 8px}
+.cp-ali{display:grid;gap:8px} .cp-a{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;background:#fff;border:1px solid var(--rule);border-radius:12px;padding:10px 12px}
+.cp-a b{grid-column:1} .cp-a span{grid-column:1;font-size:.9rem} .cp-a .btn{grid-column:2;grid-row:1/4} .cp-a.bajo{border-color:var(--bad);background:var(--bad-bg)}
+.sv-paso{font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold-deep);margin:0 0 12px}
+.sv-row{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;border-bottom:1px solid var(--rule);padding:9px 2px}
+.sv-row.on .sv-nom b{color:var(--gold-deep)} .sv-nom small{display:block;color:var(--muted);font-size:.8rem}
+.sv-ops{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end} .sv-ops .chip{font-size:.82rem;padding:5px 9px}
+.frm .sv-otro,.sv-row .sv-mas{grid-column:1/-1} .frm .sv-precio{width:96px;margin:0;text-align:right}
+.sv-mas summary{font-size:.82rem;color:var(--muted);cursor:pointer} .sv-mas input,.sv-mas select{margin:6px 0 0}
+.sv-grupo{border:1px solid var(--rule);border-radius:12px;padding:0 12px;margin:0 0 8px;background:#fff}
+.sv-grupo summary{display:flex;justify-content:space-between;align-items:center;padding:12px 0;cursor:pointer;font-weight:600}
+.sv-grupo[open] summary{border-bottom:1px solid var(--rule)} .sv-grupo .sv-row:last-child{border-bottom:0}
+.sv-pie{position:sticky;bottom:-1px;background:var(--paper,#fff);display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 0 4px;margin-top:12px;border-top:1px solid var(--rule)}
+.sv-pie b{font-size:.9rem;text-align:center} .sv-repetir{width:100%;margin:6px 0 0;justify-content:center} .sv-repetir small{color:var(--muted);font-weight:400}
 .sv-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px} .sv-chips .chip{font-size:.85rem;padding:5px 10px}
 .kpi.bajo{border-color:var(--bad);background:var(--bad-bg)} .kpi.bajo b{color:var(--bad)}
 .cc-monto{font-family:var(--display);font-size:1.2rem;white-space:nowrap} .cc-menos{color:var(--bad)} .cc-mas{color:var(--ok)}
@@ -296,8 +307,8 @@ const fHora = iso => new Date(iso).toLocaleTimeString("es-MX", {hour: "2-digit",
 const fFecha = iso => new Date(iso).toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "2-digit", timeZone: TZ});
 const ROLES = {admin: "Administración", direccion: "Ventas y eventos", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
 const SECCIONES = {hoy: "Inicio", tareas: "Tareas", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", caballos: "Caballos y ventas",
-  comisiones: "Comisiones", caja: "Caja chica", servicios: "Herrajes y servicios", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
-const ICONOS = {hoy: "🏠", tareas: "✅", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", caballos: "🐴", comisiones: "💰", caja: "💵", servicios: "🔨", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
+  comisiones: "Comisiones", caja: "Caja chica", herrajes: "Herrajes", medicos: "Servicios médicos", compras: "Alimento y compras", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
+const ICONOS = {hoy: "🏠", tareas: "✅", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", caballos: "🐴", comisiones: "💰", caja: "💵", herrajes: "🔨", medicos: "💉", compras: "📦", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
 const esCel = () => window.matchMedia("(max-width:899px)").matches;
 const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Administración", "Otro"];
 const TIPOS_SALUD = ["Revisión", "Vacuna", "Desparasitación", "Herraje / cascos", "Dental", "Tratamiento", "Lesión o cólico", "Monta / inseminación", "Palpación / ecografía", "Parto", "Destete", "Trámite KFPS / GVHS", "Otro"];
@@ -306,7 +317,7 @@ const CATS_GASTO = ["Alimento", "Veterinario", "Medicamentos", "Herraje", "Mante
 const TIPO_PAGO = {sesion: "Sesión", evento: "Evento", caballo: "Caballo", potro: "Potro 2027", saldo_sesion: "Resto de sesión"};
 
 let COMO = "", COMO_NOM = ""; // "Ver como…" (Mario y Nico): solo lectura
-let SERV = null, CAJA = null, CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
+let COMP = null, SERV = null, CAJA = null, CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
 const st = {agendaFiltro: "todo", busca: "", tFiltro: "pendientes", bArea: "todo", sCaballo: "", mes: "", qFiltro: "abiertas", rTab: "inicio"};
 
 function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3200); }
@@ -357,7 +368,7 @@ async function iniciar() {
 /* Reglamento: botón discreto arriba (no es pestaña ni se pide al entrar); aceptarlo es opcional */
 async function verComo(id) {
   COMO = id; COMO_NOM = id && YO.gente ? ((YO.gente.find(x => x.id === id) || {}).nombre || "") : "";
-  SERV = CAJA = CAMBIOS = REDES = REG = AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null;
+  COMP = SERV = CAJA = CAMBIOS = REDES = REG = AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null;
   location.hash = "hoy"; await iniciar(); window.scrollTo(0, 0);
 }
 async function aceptarReglamento(b) {
@@ -377,7 +388,8 @@ function armarPortal() {
   if (!window.__tabs) { window.__tabs = 1; $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) ir(b.dataset.s); });
     $("#bnav").addEventListener("click", e => { const b = e.target.closest("[data-bn]"); if (!b) return; if (b.dataset.bn === "mas-accion") abrirAcciones(); else ir(b.dataset.bn); });
     const alto = () => document.documentElement.style.setProperty("--hdr", $(".top").offsetHeight + "px"); alto(); window.addEventListener("resize", () => { alto(); if (!esCel() && ACTUAL === "menu") ir("hoy"); }); }
-  const h = location.hash.slice(1); ir(secs.includes(h) || h === "reglamento" ? h : secs.includes("hoy") ? "hoy" : secs[0]);
+  let h = location.hash.slice(1); if (h === "servicios") h = secs.includes("herrajes") ? "herrajes" : "medicos";
+  ir(secs.includes(h) || h === "reglamento" ? h : secs.includes("hoy") ? "hoy" : secs[0]);
 }
 function ir(s) {
   if (s === "menu" && !esCel()) s = "hoy";
@@ -402,18 +414,19 @@ async function cargar(qué) {
   if (qué === "cambios" && !CAMBIOS) CAMBIOS = await api("accion=cambios");
   if (qué === "caja" && !CAJA) CAJA = await api("accion=caja");
   if (qué === "servicios" && !SERV) SERV = await api("accion=servicios");
+  if (qué === "compras" && !COMP) COMP = await api("accion=compras");
 }
 const tiene = s => YO.permisos.secciones.includes(s);
 async function render() {
   const m = $("#main"); m.innerHTML = `<p class="load">Cargando…</p>`;
   try {
     const s = ACTUAL;
-    if (s === "menu") { if (tiene("tareas")) await cargar("tareas").catch(() => {}); if (tiene("servicios") && YO.permisos.dinero === "todo") await cargar("servicios").catch(() => {}); if (tiene("caja")) await cargar("caja").catch(() => {}); if (tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
+    if (s === "menu") { if (tiene("tareas")) await cargar("tareas").catch(() => {}); if ((tiene("herrajes") || tiene("medicos")) && YO.permisos.dinero === "todo") await cargar("servicios").catch(() => {}); if (tiene("compras")) await cargar("compras").catch(() => {}); if (tiene("caja")) await cargar("caja").catch(() => {}); if (tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
       pintarContador(); if (ACTUAL === "menu") m.innerHTML = vMenu(); return; }
     if (["agenda", "clientes", "eventos"].includes(s)) await cargar("agenda");
     if (s === "hoy") await Promise.all([tiene("agenda") ? cargar("agenda").catch(() => {}) : 0, tiene("tareas") ? cargar("tareas").catch(() => {}) : 0,
       tiene("salud") || tiene("bitacora") ? cargar("reportes").catch(() => {}) : 0, tiene("caja") ? cargar("caja").catch(() => {}) : 0,
-      tiene("servicios") && YO.permisos.dinero === "todo" ? cargar("servicios").catch(() => {}) : 0]);
+      (tiene("herrajes") || tiene("medicos")) && YO.permisos.dinero === "todo" ? cargar("servicios").catch(() => {}) : 0, tiene("compras") ? cargar("compras").catch(() => {}) : 0]);
     if ((s === "hoy" && tiene("cotizaciones")) || s === "cotizaciones") await cargar("cotizaciones").catch(e => { if (s === "cotizaciones") throw e; });
     if (["pagos", "comisiones"].includes(s)) await cargar("pagos");
     if (s === "caballos") await cargar("caballos");
@@ -424,22 +437,24 @@ async function render() {
     if (s === "reglamento") await cargar("reglamento");
     if (s === "redes") await cargar("redes");
     if (s === "caja") await cargar("caja");
-    if (s === "servicios") await cargar("servicios");
+    if (s === "herrajes" || s === "medicos") await cargar("servicios");
+    if (s === "compras") await cargar("compras");
     if (s === "cambios") { await cargar("agenda"); await cargar("cotizaciones").catch(() => {}); await cargar("cambios"); }
     if (s === "hoy" && tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
     if (s !== ACTUAL) return;
     pintarContador();
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
-      tareas: vTareas, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, servicios: vServicios})[s]();
+      tareas: vTareas, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), medicos: () => vServicios("medico"), compras: vCompras})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
-function recargar() { SERV = CAJA = REDES = CAMBIOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
+function recargar() { COMP = SERV = CAJA = REDES = CAMBIOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
 
 /* ---------- menú de cuadros (celular) ---------- */
 function vMenu() {
   const n = {};
   if (TAREAS) n.tareas = misTareas().length + porRevisar().length + solicitudes().length;
-  if (SERV) { const sp = svPendientes(); n.servicios = sp.pagar.length + sp.capturar.length + sp.precios.length + sp.nuevos.length; }
+  if (SERV) ["herraje", "medico"].forEach(m => { const sp = svPendientes(m); n[m === "herraje" ? "herrajes" : "medicos"] = sp.pagar.length + sp.capturar.length + sp.precios.length + (m === "herraje" ? sp.nuevos.length : 0); });
+  if (COMP) n.compras = cpOf() ? COMP.pedidos.filter(p => ["Hace falta", "Llegó"].includes(p["Estatus"])).length : (COMP.tocaContar && YO.usuario.rol === "campo" ? 1 : 0);
   if (CAJA) n.caja = ccPendientesMios().length + (ccPapel() === "dir" ? CAJA.movimientos.filter(x => x["Estatus"] === "Por entregar").length : 0);
   if (REDES && YO.permisos.acciones.includes("redes_aprobar")) n.redes = rPorAprobar().length;
   const nombre = String(YO.usuario.nombre || "").split(" ")[0];
@@ -505,7 +520,9 @@ function plegado(titulo, html) { return html ? `<details class="mas"><summary>${
 function hoyAcciones() {
   const A = YO.permisos.acciones, O = YO.org || {}, b = [];
   if (A.includes("caja") && O.caja === "lleva") b.push(`<button class="qa" type="button" data-caja-nuevo="Gasto"><span class="ico">🧾</span>Gasto de caja chica</button>`, `<button class="qa" type="button" data-caja-nuevo="Efectivo de cliente"><span class="ico">💵</span>Recibí efectivo</button>`);
-  if (A.includes("servicio") && tiene("servicios")) b.push(`<button class="qa" type="button" data-sv-jornada="1"><span class="ico">🔨</span>${YO.usuario.rol === "medico" ? "Registrar servicios" : "Jornada de herraje"}</button>`);
+  if (A.includes("servicio") && tiene("herrajes")) b.push(`<button class="qa" type="button" data-sv-jornada="herraje"><span class="ico">🔨</span>Registrar herraje</button>`);
+  else if (A.includes("servicio") && tiene("medicos")) b.push(`<button class="qa" type="button" data-sv-jornada="medico"><span class="ico">🩺</span>Servicios médicos</button>`);
+  if (A.includes("insumo") && tiene("compras")) b.push(`<button class="qa" type="button" data-cp-falta=""><span class="ico">🛒</span>Hace falta</button>`, `<button class="qa" type="button" data-cp-llego=""><span class="ico">📦</span>Llegó algo</button>`);
   if (A.includes("reporte") && tiene("bitacora")) b.push(`<button class="qa" type="button" data-nuevo-rep=""><span class="ico">📝</span>Reportar avance o problema</button>`);
   if (A.includes("reporte") && tiene("salud")) b.push(`<button class="qa" type="button" data-nuevo-rep="Salud"><span class="ico">🩺</span>Registrar salud</button>`);
   if (O.asigna && tiene("tareas")) b.push(`<button class="qa" type="button" data-nueva-tarea="1"><span class="ico">➕</span>Nueva tarea</button>`);
@@ -577,6 +594,7 @@ function vHoy() {
 
   h += hoyCaja();
   h += hoyServicios();
+  h += hoyCompras();
 
   /* 3. hoy en el rancho */
   let r = "";
@@ -816,12 +834,15 @@ function svUltimo(id) {
   const k = Object.entries(u).sort((a, b) => a[1] < b[1] ? 1 : -1)[0]; const d = diasDesde(k[1]);
   return `${k[0]} hace ${d === 0 ? "hoy" : d === 1 ? "1 día" : d + " días"}`;
 }
-function svPendientes() {
+const svEsHerr = s => /^(Recorte|Herrada|Otro herraje)/.test(String(s || ""));
+const svDeModo = (j, modo) => !modo || (modo === "herraje" ? /Herraje/.test(j["Tipo"]) : /Médico/.test(j["Tipo"]));
+const svCargoDeModo = (c, modo) => !modo || (modo === "herraje") === svEsHerr(c["Servicio"]);
+function svPendientes(modo) {
   if (!SERV) return {pagar: [], capturar: [], precios: [], nuevos: []};
-  const pp = svPapel();
-  return {pagar: pp === "dir" ? SERV.jornadas.filter(j => j["Estatus"] === "Por pagar") : [],
-    capturar: ["dir", "oficina"].includes(pp) ? SERV.jornadas.filter(j => j["Estatus"] === "Pagada") : [],
-    precios: ["dir", "oficina"].includes(pp) ? SERV.cargos.filter(c => c["Estatus"] === "Por revisar precio") : [],
+  const pp = svPapel(), J = SERV.jornadas.filter(j => svDeModo(j, modo));
+  return {pagar: pp === "dir" ? J.filter(j => j["Estatus"] === "Por pagar") : [],
+    capturar: ["dir", "oficina"].includes(pp) ? J.filter(j => j["Estatus"] === "Pagada") : [],
+    precios: ["dir", "oficina"].includes(pp) ? SERV.cargos.filter(c => c["Estatus"] === "Por revisar precio" && svCargoDeModo(c, modo)) : [],
     nuevos: pp === "dir" ? SERV.nuevos.filter(n => n["Estatus"] === "Por aprobar") : []};
 }
 function cardJornada(j) {
@@ -856,21 +877,21 @@ function hoyServicios() {
   if (!SERV || !["dir", "oficina"].includes(svPapel())) return "";
   const p = svPendientes(); let d = "";
   if (p.capturar.length) d += `<p class="lbl oro">Jornadas pagadas por capturar en GASTOS (${p.capturar.length})</p>${p.capturar.map(cardJornada).join("")}`;
-  if (p.precios.length) d += `<div class="linea"><b>${p.precios.length} cargo${p.precios.length === 1 ? "" : "s"} a clientes</b> esperan que confirmes el precio. <button class="btn" type="button" onclick="st.svTab='cargos';ir('servicios')">Revisar</button></div>`;
+  if (p.precios.length) d += `<div class="linea"><b>${p.precios.length} cargo${p.precios.length === 1 ? "" : "s"} a clientes</b> esperan que confirmes el precio. <button class="btn" type="button" onclick="st.svTab='cargos';ir(tiene('herrajes') ? 'herrajes' : 'medicos')">Revisar</button></div>`;
   if (svPapel() === "oficina" && SERV.jornadas.some(j => j["Estatus"] === "Por pagar")) d += `<div class="linea">${SERV.jornadas.filter(j => j["Estatus"] === "Por pagar").length} jornada(s) esperan que Mario las pague.</div>`;
-  return d ? bloque("Herrajes y servicios", d) : "";
+  return d ? bloque("Herrajes y servicios médicos", d) : "";
 }
-function vServicios() {
-  const S = SERV, pp = S.papel, f = st.svTab || "jornadas", p = svPendientes(), dinero = YO.permisos.dinero === "todo";
+function vServicios(modo) {
+  const S0 = SERV, S = {...S0, jornadas: S0.jornadas.filter(j => svDeModo(j, modo)), cargos: S0.cargos.filter(c => svCargoDeModo(c, modo))}, pp = S.papel, f = st.svTab || "jornadas", p = svPendientes(modo), dinero = YO.permisos.dinero === "todo";
   const tabs = [["jornadas", "Jornadas"], ["caballos", "Por caballo"], ...(dinero ? [["cargos", `Cargos a clientes${p.precios.length ? " (" + p.precios.length + ")" : ""}`]] : []), ["nuevos", `Caballos nuevos${S.nuevos.filter(n => n["Estatus"] === "Por aprobar").length ? " (" + S.nuevos.filter(n => n["Estatus"] === "Por aprobar").length + ")" : ""}`]];
   let cuerpo = "";
   if (f === "jornadas") {
     const pend = [...p.pagar, ...p.capturar], resto = S.jornadas.slice().reverse().filter(j => !pend.includes(j));
     cuerpo = `${pend.length ? `<h3>Pendientes (${pend.length})</h3>${pend.map(cardJornada).join("")}` : ""}${p.nuevos.length ? `<h3>Caballos nuevos por aprobar (${p.nuevos.length})</h3>${p.nuevos.map(cardNuevo).join("")}` : ""}
-      <h3>Jornadas</h3>${resto.length ? resto.slice(0, 60).map(cardJornada).join("") : `<div class="empty">Todavía no hay jornadas registradas.</div>`}`;
+      <h3>${modo === "herraje" ? "Visitas del herrero" : "Servicios registrados"}</h3>${resto.length ? resto.slice(0, 60).map(cardJornada).join("") : `<div class="empty">Todavía no hay nada registrado.</div>`}`;
   }
   if (f === "caballos") {
-    const tipos = ["Recorte", "Herrada completa", "Herrada (solo manos)", "Palpación / ecografía"];
+    const tipos = modo === "herraje" ? ["Recorte", "Herrada"] : ["Palpación / ecografía", "Vacuna", "Desparasitación", "Revisión"];
     cuerpo = `<p class="sub">Hace cuántos días se le hizo cada servicio a cada caballo que está en el rancho.</p><div class="tbl-wrap"><table><thead><tr><th>Caballo</th><th>Grupo</th>${tipos.map(t => `<th>${esc(t)}</th>`).join("")}</tr></thead><tbody>${
       S.caballos.map(c => { const u = S.ultimo[c.id] || {}; return `<tr><td><b>${esc(c.nombre)}</b>${c.dueno !== "Rancho" ? `<br><small class="card-m">${esc(c.dueno)}</small>` : ""}</td><td>${esc(c.grupo)}</td>${tipos.map(t => { const d = diasDesde(u[t]); return `<td>${d === null ? "—" : d + " d"}</td>`; }).join("")}</tr>`; }).join("")}</tbody></table></div>`;
   }
@@ -883,90 +904,153 @@ function vServicios() {
       <h3>Por cliente en el mes</h3>${Object.keys(g).length ? Object.entries(g).map(([k, l]) => `<details class="prov"><summary><span>${esc(k)}</span><span>${money(l.reduce((a, c) => a + numv(c["Precio"] || c["Precio sugerido"]), 0))}${l.some(c => c["Estatus"] !== "Confirmado") ? ` <span class="badge b-warn">falta confirmar</span>` : ""}</span></summary>${l.map(cardCargo).join("")}</details>`).join("") : `<div class="empty">Sin cargos este mes.</div>`}`;
   }
   if (f === "nuevos") cuerpo = S.nuevos.length ? S.nuevos.slice().reverse().map(cardNuevo).join("") : `<div class="empty">Nadie ha agregado caballos nuevos.</div>`;
-  return `<h2>Herrajes y servicios</h2><p class="sub">Cada visita del herrero o del médico: qué se le hizo a cada caballo, cuánto costó y cuándo le toca otra vez.</p>
-    ${YO.permisos.acciones.includes("servicio") ? `<div class="big-actions"><button class="btn btn-dark" data-sv-jornada="1">🔨 Nueva jornada</button></div>` : ""}
+  const her = modo === "herraje";
+  return `<h2>${her ? "Herrajes" : "Servicios médicos"}</h2><p class="sub">${her ? "Recortes y herradas de cada visita del herrero: a qué caballo, cuánto costó y cuándo le toca otra vez." : "Palpaciones, vacunas, chequeos, medicamentos y lo demás que hacen los médicos a cada caballo."}</p>
+    ${YO.permisos.acciones.includes("servicio") ? `<div class="big-actions"><button class="btn btn-dark" data-sv-jornada="${modo}">${her ? "🔨 Registrar herraje" : "🩺 Registrar servicio médico"}</button></div>` : ""}
     <div class="bar">${tabs.map(([k, n]) => `<button class="chip" data-sv-tab="${k}" aria-pressed="${f === k}">${n}</button>`).join("")}</div>${cuerpo}`;
 }
-/* ----- formulario de jornada: lista de caballos con casillas ----- */
+/* ----- registrar herraje (Chito) o servicios médicos (médicos) en 3 pasos: visita · caballos · revisar ----- */
+const SV_LEG = s => /^Herrada/.test(s) ? "Herrada" : /^Otro herraje/.test(s) ? "Otro" : s; // nombres viejos → nuevos
+let SVJ = null; // estado del formulario
+function svUltimaJornada(modo) {
+  const L = (SERV.jornadas || []).filter(j => j["Estatus"] !== "Cancelada" && (modo === "herraje" ? /Herraje/.test(j["Tipo"]) : /Médico/.test(j["Tipo"])) && (j.items || []).length);
+  return L.sort((a, b) => String(a["Fecha"]) < String(b["Fecha"]) ? 1 : -1)[0] || null;
+}
+function svPrecioPrevio(servicio) {
+  for (const j of (SERV.jornadas || []).slice().reverse()) for (const x of j.items || []) if (SV_LEG(String(x.servicio)) === servicio && numv(x.costo)) return numv(x.costo);
+  return "";
+}
+function svOpciones() { return SVJ.modo === "herraje" ? ["Recorte", "Herrada", "Otro"] : [...SERV.medico.filter(s => !/^Otro/.test(s)), "Otro"]; }
+function svPaso1() {
+  const ult = svUltimaJornada(SVJ.modo), her = SVJ.modo === "herraje";
+  return `<p class="sv-paso">Paso 1 de 3 · La visita</p>
+    <div class="dos"><div><label>Día de la visita</label><input id="sv-f" type="date" value="${esc(SVJ.fecha)}" max="${hoyISO()}"></div>
+      <div><label>${her ? "Herrero" : "Médico"}</label><input id="sv-p" list="sv-ps" value="${esc(SVJ.proveedor)}" placeholder="${her ? "Nombre del herrero" : "Nombre"}"><datalist id="sv-ps">${(SERV.proveedores || []).map(x => `<option value="${esc(x)}">`).join("")}</datalist></div></div>
+    ${her ? `<p class="card-m" style="margin:4px 0 8px">Precios de esta visita: se llenan solos en cada caballo.</p><div class="dos"><div><label>Recorte $</label><input id="sv-pr-Recorte" type="number" inputmode="decimal" min="0" value="${esc(SVJ.precios.Recorte)}"></div><div><label>Herrada $</label><input id="sv-pr-Herrada" type="number" inputmode="decimal" min="0" value="${esc(SVJ.precios.Herrada)}"></div></div>`
+      : `<label>¿Qué se hizo? (lo más común; se puede cambiar por caballo)</label><div class="sv-chips">${svOpciones().filter(s => s !== "Otro").map(s => `<button type="button" class="chip" data-sv-def="${esc(s)}" aria-pressed="${SVJ.def === s}">${esc(s)}</button>`).join("")}</div>
+        <label>Costo por caballo</label><input id="sv-pr-def" type="number" inputmode="decimal" min="0" placeholder="$" value="${esc(SVJ.precios.def)}">`}
+    ${ult ? `<button type="button" class="btn sv-repetir" data-sv-repetir="1">↻ Repetir la última visita <small>(${esc(fCorta(isoDe(ult["Fecha"])))} · ${ult.items.length} caballos)</small></button>` : ""}
+    <div class="sv-pie"><span></span><button class="btn btn-dark" type="button" data-sv-ir="2">Siguiente: caballos →</button></div>`;
+}
 function svFila(c, i) {
-  const ult = svUltimo(c.id);
-  return `<div class="sv-row" data-i="${i}"><label class="chk sv-sel"><input type="checkbox" data-sv-on="${i}"> <span><b>${esc(c.nombre)}</b>${c.dueno !== "Rancho" ? ` <span class="badge b-info">${esc(c.dueno)}</span>` : ""}${c.nuevo ? ` <span class="badge b-warn">nuevo</span>` : ""}<br><small class="card-m">${esc([c.raza, c.sexo].filter(Boolean).join(" · "))}${ult ? (c.raza || c.sexo ? " · " : "") + "último: " + esc(ult) : ""}</small></span></label>
-    <div class="sv-det hide"><div class="sv-chips">${[...SERV.herraje, ...SERV.medico].map(s => `<button type="button" class="chip" data-sv-s="${esc(s)}" aria-pressed="false">${esc(s)}</button>`).join("")}</div>
-      <div class="dos"><div><label>Costo</label><input type="number" inputmode="decimal" min="0" step="1" data-sv-costo placeholder="$"></div><div><label>Próxima (opcional)</label><input type="date" data-sv-prox min="${hoyISO()}"></div></div>
-      <input data-sv-nota maxlength="300" placeholder="Nota (opcional)"></div></div>`;
+  const s = SVJ.sel[i], ult = svUltimo(c.id);
+  return `<div class="sv-row${s ? " on" : ""}" data-i="${i}"><div class="sv-nom"><b>${esc(c.nombre)}</b>${c.dueno !== "Rancho" ? ` <span class="badge b-info">${esc(c.dueno)}</span>` : ""}${c.nuevo ? ` <span class="badge b-warn">nuevo</span>` : ""}${ult ? `<small>${esc(ult)}</small>` : ""}</div>
+    <div class="sv-ops">${SVJ.modo === "herraje" ? svOpciones().map(o => `<button type="button" class="chip" data-sv-op="${esc(o)}" aria-pressed="${!!s && s.servicio === o}">${esc(o)}</button>`).join("")
+      : `<button type="button" class="chip" data-sv-op="${esc(SVJ.def || svOpciones()[0])}" aria-pressed="${!!s}">${s ? "✓ " + esc(s.servicio === "Otro" ? "Otro" : s.servicio) : "Marcar"}</button>`}</div>
+    ${s && s.servicio === "Otro" ? `<input class="sv-otro" data-sv-otro="${i}" maxlength="60" placeholder="¿Qué se le hizo?" value="${esc(s.otro || "")}">` : ""}</div>`;
 }
-function svCaballosHtml(lista) {
-  const g = {}; lista.forEach((c, i) => (g[c.grupo] = g[c.grupo] || []).push([c, i]));
-  return Object.entries(g).map(([k, l]) => `<p class="lbl gris">${esc(k)} (${l.length})</p>${l.map(([c, i]) => svFila(c, i)).join("")}`).join("");
-}
-let SV_LISTA = [];
-async function abrirJornada() {
-  if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
-  if (!SERV) { try { await cargar("servicios"); } catch (err) { return alert(err.message); } }
-  SV_LISTA = SERV.caballos.slice();
-  const medico = YO.usuario.rol === "medico", prov = medico ? YO.usuario.nombre : "";
-  const box = dialogo(medico ? "Registrar servicios" : "Jornada de herraje", `<div class="frm">
-    <div class="dos"><div><label>Fecha</label><input id="sv-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div><div><label>¿Quién lo hizo?</label><input id="sv-p" list="sv-ps" value="${esc(prov)}" placeholder="Ej. el herrero"><datalist id="sv-ps">${(SERV.proveedores || []).map(x => `<option value="${esc(x)}">`).join("")}</datalist></div></div>
-    <div class="ctx"><b>Para varios a la vez:</b> marca los caballos, elige el servicio y el costo aquí, y aprieta "Aplicar a los marcados".
-      <div class="sv-chips" id="sv-gs">${[...SERV.herraje, ...SERV.medico].map(s => `<button type="button" class="chip" data-sv-gs="${esc(s)}" aria-pressed="false">${esc(s)}</button>`).join("")}</div>
-      <div class="dos"><div><input id="sv-gc" type="number" inputmode="decimal" min="0" placeholder="Costo por caballo $"></div><div><input id="sv-gp" type="date" min="${hoyISO()}" title="Próxima fecha"></div></div>
-      <button type="button" class="btn" id="sv-apl">Aplicar a los marcados</button></div>
-    <input class="search" id="sv-q" placeholder="Buscar caballo" style="margin:0 0 8px">
-    <div id="sv-lista">${svCaballosHtml(SV_LISTA)}</div>
-    <details class="more" id="sv-nuevo-w"><summary>+ Caballo que no está en la lista</summary>
+function svPaso2() {
+  const g = {}; SVJ.lista.forEach((c, i) => (g[c.grupo] = g[c.grupo] || []).push(i));
+  const q = SVJ.q.toLowerCase();
+  return `<p class="sv-paso">Paso 2 de 3 · ${SVJ.modo === "herraje" ? "Toca Recorte, Herrada u Otro en cada caballo" : "Marca los caballos atendidos"}</p>
+    <input class="search" id="sv-q" placeholder="Buscar caballo" value="${esc(SVJ.q)}" style="margin:0 0 8px">
+    ${Object.entries(g).map(([k, idx]) => { const vis = idx.filter(i => !q || (SVJ.lista[i].nombre + " " + SVJ.lista[i].dueno).toLowerCase().includes(q)); if (!vis.length) return "";
+      const n = idx.filter(i => SVJ.sel[i]).length;
+      return `<details class="sv-grupo"${q || SVJ.abiertos[k] ? " open" : ""} data-g="${esc(k)}"><summary><span>${esc(k)} <small>(${idx.length})</small></span>${n ? `<span class="badge b-ok">${n} marcado${n === 1 ? "" : "s"}</span>` : ""}</summary>${vis.map(i => svFila(SVJ.lista[i], i)).join("")}</details>`; }).join("")}
+    <details class="more" id="sv-nuevo-w"><summary>+ Caballo que no está en la lista</summary><div class="frm">
       <div class="dos"><div><label>Nombre</label><input id="nv-n" maxlength="60"></div><div><label>Raza</label><select id="nv-r"><option>Friesian</option><option>Gypsy Vanner</option><option>Otra</option></select></div></div>
       <div class="dos"><div><label>Sexo</label><select id="nv-s"><option>Hembra</option><option>Macho</option></select></div><div><label>Capa</label><input id="nv-c" maxlength="40" placeholder="Ej. negra, pinta"></div></div>
-      <label>¿De quién es?</label><input id="nv-d" maxlength="60" placeholder="Rancho, o nombre del cliente" value="Rancho">
-      <label>Nota (opcional)</label><input id="nv-x" maxlength="300">
-      <label class="foto-btn">📷 Foto del caballo (opcional)<input type="file" id="nv-f" accept="image/*"></label>
-      <button type="button" class="btn btn-dark" id="nv-ok">Agregar a la lista</button><p class="card-m">Le llega a Nico para darlo de alta; mientras, ya le puedes registrar servicios.</p></details>
-    <label>Fotos o documentos de la jornada (opcional)</label>${campoFotos("Tomar o subir", true)}
-    <label>Notas generales (opcional)</label><textarea id="sv-n" rows="2" maxlength="500"></textarea>
-    <p class="ok-big" id="sv-tot">Total: $0 · 0 caballos</p>
-    <button class="btn btn-dark" id="d-ok" type="button">Guardar jornada</button></div>`);
-  activarFotos(box);
-  const filas = () => [...box.querySelectorAll(".sv-row")];
-  const total = () => { let t = 0, n = 0; filas().forEach(r => { if (r.querySelector("[data-sv-on]").checked) { n++; t += Number(r.querySelector("[data-sv-costo]").value) || 0; } });
-    box.querySelector("#sv-tot").textContent = `Total: ${money(t)} · ${n} caballo${n === 1 ? "" : "s"}`; };
-  const enlazar = () => {
-    filas().forEach(r => { if (r.dataset.ok) return; r.dataset.ok = 1;
-      r.querySelector("[data-sv-on]").addEventListener("change", e => { r.querySelector(".sv-det").classList.toggle("hide", !e.target.checked); total(); });
-      r.querySelectorAll("[data-sv-s]").forEach(b => b.addEventListener("click", () => b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true")));
-      r.querySelector("[data-sv-costo]").addEventListener("input", total); });
-  };
-  enlazar();
-  box.querySelectorAll("[data-sv-gs]").forEach(b => b.addEventListener("click", () => b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true")));
-  box.querySelector("#sv-q").addEventListener("input", e => { const q = e.target.value.trim().toLowerCase(); filas().forEach(r => { const c = SV_LISTA[r.dataset.i]; r.style.display = !q || (c.nombre + " " + c.dueno).toLowerCase().includes(q) ? "" : "none"; }); });
-  box.querySelector("#sv-apl").addEventListener("click", () => {
-    const sel = [...box.querySelectorAll("[data-sv-gs][aria-pressed=true]")].map(b => b.dataset.svGs), c = box.querySelector("#sv-gc").value, px = box.querySelector("#sv-gp").value;
-    const marc = filas().filter(r => r.querySelector("[data-sv-on]").checked); if (!marc.length) return alert("Primero marca los caballos.");
-    marc.forEach(r => { if (sel.length) r.querySelectorAll("[data-sv-s]").forEach(b => b.setAttribute("aria-pressed", sel.includes(b.dataset.svS)));
-      if (c !== "") r.querySelector("[data-sv-costo]").value = c; if (px) r.querySelector("[data-sv-prox]").value = px; });
-    total(); toast(`Aplicado a ${marc.length} caballo${marc.length === 1 ? "" : "s"}`);
-  });
-  box.querySelector("#nv-ok").addEventListener("click", async e => {
-    const v = id => box.querySelector(id).value.trim(), nombre = v("#nv-n"); if (nombre.length < 2) return alert("Escribe el nombre del caballo.");
-    const bt = e.target; bt.disabled = true; bt.textContent = "Agregando…";
-    try { const f = box.querySelector("#nv-f").files[0], archivos = f ? [await comprimir(f)] : [];
-      const j = await post({accion: "hacer", tipo: "servicio", op: "caballo_nuevo", caballo: {nombre, raza: v("#nv-r"), sexo: v("#nv-s"), capa: v("#nv-c"), dueno: v("#nv-d") || "Rancho", notas: v("#nv-x")}, archivos});
-      const c = {id: j.id, nombre: j.nombre || nombre.toUpperCase(), raza: v("#nv-r"), sexo: v("#nv-s"), grupo: "Nuevos (por aprobar)", dueno: v("#nv-d") || "Rancho", folio: "", nuevo: true};
-      SV_LISTA.push(c); box.querySelector("#sv-lista").insertAdjacentHTML("beforeend", `<p class="lbl gris">Recién agregado</p>` + svFila(c, SV_LISTA.length - 1)); enlazar();
-      const r = filas().pop(); r.querySelector("[data-sv-on]").checked = true; r.querySelector(".sv-det").classList.remove("hide"); r.scrollIntoView({block: "center"});
-      box.querySelector("#sv-nuevo-w").open = false; ["#nv-n", "#nv-c", "#nv-x"].forEach(id => box.querySelector(id).value = ""); toast("Agregado. Ya le puedes registrar servicios.");
-    } catch (err) { alert(err.message); } bt.disabled = false; bt.textContent = "Agregar a la lista";
-  });
-  box.querySelector("#d-ok").onclick = () => {
-    const items = filas().filter(r => r.querySelector("[data-sv-on]").checked).map(r => { const c = SV_LISTA[r.dataset.i];
-      return {idCaballo: c.id, caballo: c.nombre, dueno: c.dueno, folio: c.folio, servicios: [...r.querySelectorAll("[data-sv-s][aria-pressed=true]")].map(b => b.dataset.svS),
-        costo: r.querySelector("[data-sv-costo]").value, proxima: r.querySelector("[data-sv-prox]").value, nota: r.querySelector("[data-sv-nota]").value.trim()}; });
-    if (!items.length) return alert("Marca los caballos que se atendieron.");
-    const sin = items.filter(x => !x.servicios.length); if (sin.length) return alert("Falta elegir el servicio de: " + sin.map(x => x.caballo).join(", "));
-    const vacios = items.filter(x => x.costo === ""); if (vacios.length && !confirm(`${vacios.length} caballo(s) sin costo. ¿Guardar así (sin costo)?`)) return;
-    const jor = {fecha: box.querySelector("#sv-f").value, proveedor: box.querySelector("#sv-p").value.trim(), notas: box.querySelector("#sv-n").value.trim(), items};
-    enviar(box, {tipo: "servicio", op: "jornada", jornada: jor}, "Jornada guardada. Ya les llegó a Mario y Judith.", j => {
-      if (confirm("¿Compartir la lista por WhatsApp?")) window.open(wa(svTexto({Fecha: jor.fecha, Proveedor: jor.proveedor, Total: j.total, items: items.map(x => ({caballo: x.caballo, servicio: x.servicios.join(" + "), costo: x.costo, dueno: x.dueno}))})), "_blank", "noopener"); });
-  };
+      <label>¿De quién es?</label><input id="nv-d" maxlength="60" value="Rancho" placeholder="Rancho, o nombre del cliente">
+      <label class="foto-btn">📷 Foto (opcional)<input type="file" id="nv-f" accept="image/*"></label>
+      <button type="button" class="btn btn-dark" id="nv-ok">Agregar a la lista</button><p class="card-m">Le llega a Nico para darlo de alta; mientras, ya le puedes registrar el servicio.</p></div></details>
+    <div class="sv-pie"><button class="btn" type="button" data-sv-ir="1">← Atrás</button><b id="sv-cuenta"></b><button class="btn btn-dark" type="button" data-sv-ir="3">Revisar →</button></div>`;
 }
+function svPaso3() {
+  const idx = Object.keys(SVJ.sel).map(Number), sem = [4, 6, 8];
+  return `<p class="sv-paso">Paso 3 de 3 · Revisa y guarda</p>
+    ${idx.map(i => { const c = SVJ.lista[i], s = SVJ.sel[i];
+      return `<div class="sv-row on"><div class="sv-nom"><b>${esc(c.nombre)}</b>${c.dueno !== "Rancho" ? ` <span class="badge b-info">${esc(c.dueno)}</span>` : ""}<small>${esc(s.servicio === "Otro" ? "Otro: " + (s.otro || "¿qué?") : s.servicio)}</small></div>
+        <div class="sv-ops"><input class="sv-precio" type="number" inputmode="decimal" min="0" data-sv-costo="${i}" value="${esc(s.costo)}" placeholder="$"></div>
+        <details class="sv-mas"><summary>Nota o aviso distinto</summary><input data-sv-nota="${i}" maxlength="300" placeholder="Nota (opcional)" value="${esc(s.nota || "")}">
+          <select data-sv-prox="${i}"><option value="">Aviso: igual que todos</option>${sem.map(w => `<option value="${w}"${s.prox === String(w) ? " selected" : ""}>Le toca en ${w} semanas</option>`).join("")}<option value="0"${s.prox === "0" ? " selected" : ""}>Sin aviso</option></select></details></div>`; }).join("")}
+    <label>¿Cuándo le toca otra vez?</label><div class="sv-chips">${[...sem.map(w => [String(w), w + " semanas"]), ["0", "Sin aviso"]].map(([v, t]) => `<button type="button" class="chip" data-sv-aviso="${v}" aria-pressed="${SVJ.aviso === v}">${t}</button>`).join("")}</div>
+    <label>Fotos o documentos (opcional)</label>${campoFotos("Tomar o subir", true)}
+    <label>Notas (opcional)</label><textarea id="sv-n" rows="2" maxlength="500">${esc(SVJ.notas)}</textarea>
+    <div class="sv-pie"><button class="btn" type="button" data-sv-ir="2">← Atrás</button><b id="sv-cuenta"></b><button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`;
+}
+function svCuenta() {
+  const L = Object.values(SVJ.sel), t = L.reduce((a, s) => a + (Number(s.costo) || 0), 0), el = $("#sv-cuenta");
+  if (el) el.textContent = `${L.length} caballo${L.length === 1 ? "" : "s"} · ${money(t)}`;
+}
+function svPintar() {
+  const box = $("#dlg-b"), q = SVJ.paso === 2 && box.querySelector("#sv-q") === document.activeElement;
+  box.innerHTML = `<div class="frm">${[0, svPaso1, svPaso2, svPaso3][SVJ.paso]()}</div>`;
+  if (SVJ.paso === 3) activarFotos(box);
+  if (q) { const i = box.querySelector("#sv-q"); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+  svCuenta();
+}
+function svLeer() { // guarda lo escrito en el paso actual antes de cambiar de paso
+  const box = $("#dlg-b"), v = id => (box.querySelector(id) || {}).value;
+  if (SVJ.paso === 1) { SVJ.fecha = v("#sv-f") || SVJ.fecha; SVJ.proveedor = (v("#sv-p") || "").trim();
+    if (SVJ.modo === "herraje") ["Recorte", "Herrada"].forEach(k => SVJ.precios[k] = v("#sv-pr-" + k) || ""); else SVJ.precios.def = v("#sv-pr-def") || ""; }
+  if (SVJ.paso === 3) { SVJ.notas = v("#sv-n") || ""; }
+}
+function svPrecioDe(servicio) { return SVJ.modo === "herraje" ? (SVJ.precios[servicio] || "") : (SVJ.precios.def || ""); }
+async function abrirJornada(modo) {
+  if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
+  if (!SERV) { try { await cargar("servicios"); } catch (err) { return alert(err.message); } }
+  modo = modo === "medico" || (modo !== "herraje" && !tiene("herrajes")) ? "medico" : "herraje";
+  const ult = svUltimaJornada(modo);
+  SVJ = {modo, paso: 1, fecha: hoyISO(), proveedor: modo === "medico" && YO.usuario.rol === "medico" ? YO.usuario.nombre : (ult && ult["Proveedor"]) || "",
+    precios: modo === "herraje" ? {Recorte: svPrecioPrevio("Recorte"), Herrada: svPrecioPrevio("Herrada")} : {def: ""}, def: modo === "medico" ? (SERV.medico || [])[0] || "" : "",
+    lista: SERV.caballos.slice(), sel: {}, q: "", abiertos: {}, aviso: modo === "herraje" ? "6" : "0", notas: ""};
+  dialogo(modo === "herraje" ? "Registrar herraje" : "Servicios médicos", "");
+  svPintar();
+}
+document.addEventListener("click", async e => {
+  if (!SVJ || !e.target.closest("#dlg-b")) return;
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.svIr) { const a = Number(b.dataset.svIr);
+    svLeer();
+    if (a === 3 && !Object.keys(SVJ.sel).length) return alert("Marca al menos un caballo.");
+    if (a === 3) { const faltan = Object.entries(SVJ.sel).filter(([, s]) => s.servicio === "Otro" && !String(s.otro || "").trim()).map(([i]) => SVJ.lista[i].nombre);
+      if (faltan.length) return alert("Escribe qué se le hizo (Otro) a: " + faltan.join(", ")); }
+    SVJ.paso = a; svPintar(); $("#dlg-b").scrollTop = 0; return; }
+  if (b.dataset.svDef) { SVJ.def = b.dataset.svDef; $("#dlg-b").querySelectorAll("[data-sv-def]").forEach(x => x.setAttribute("aria-pressed", x === b)); return; }
+  if (b.dataset.svRepetir) { svLeer(); const j = svUltimaJornada(SVJ.modo); SVJ.sel = {};
+    (j.items || []).forEach(x => { const i = SVJ.lista.findIndex(c => c.id === x.id || c.nombre === x.caballo); if (i < 0) return; const sv = SV_LEG(String(x.servicio).split(" + ")[0]);
+      const otro = /^Otro/.test(x.servicio) ? String(x.servicio).replace(/^Otro[^:]*:\s*/, "") : "";
+      SVJ.sel[i] = {servicio: svOpciones().includes(sv) ? sv : "Otro", otro: otro || (svOpciones().includes(sv) ? "" : sv), costo: numv(x.costo) ? String(numv(x.costo)) : svPrecioDe(sv)}; SVJ.abiertos[SVJ.lista[i].grupo] = true; });
+    SVJ.paso = 2; svPintar(); toast(`Listo: ${Object.keys(SVJ.sel).length} caballos como la última vez. Ajusta lo que cambió.`); return; }
+  if (b.dataset.svOp) { const r = b.closest(".sv-row"), i = Number(r.dataset.i), o = b.dataset.svOp;
+    if (SVJ.sel[i] && (SVJ.sel[i].servicio === o || SVJ.modo === "medico")) delete SVJ.sel[i];
+    else SVJ.sel[i] = {servicio: o, otro: "", costo: svPrecioDe(o), nota: "", prox: ""};
+    r.outerHTML = svFila(SVJ.lista[i], i); const g = $("#dlg-b").querySelector(`[data-g="${CSS.escape(SVJ.lista[i].grupo)}"] summary`);
+    if (g) { const n = SVJ.lista.filter((c, k) => c.grupo === SVJ.lista[i].grupo && SVJ.sel[k]).length; const bd = g.querySelector(".badge"); if (bd) bd.remove(); if (n) g.insertAdjacentHTML("beforeend", `<span class="badge b-ok">${n} marcado${n === 1 ? "" : "s"}</span>`); }
+    svCuenta(); return; }
+  if (b.dataset.svAviso) { SVJ.aviso = b.dataset.svAviso; $("#dlg-b").querySelectorAll("[data-sv-aviso]").forEach(x => x.setAttribute("aria-pressed", x === b)); return; }
+  if (b.id === "nv-ok") {
+    const box = $("#dlg-b"), v = id => box.querySelector(id).value.trim(), nombre = v("#nv-n"); if (nombre.length < 2) return alert("Escribe el nombre del caballo.");
+    b.disabled = true; b.textContent = "Agregando…";
+    try { const f = box.querySelector("#nv-f").files[0], archivos = f ? [await comprimir(f)] : [];
+      const j = await post({accion: "hacer", tipo: "servicio", op: "caballo_nuevo", caballo: {nombre, raza: v("#nv-r"), sexo: v("#nv-s"), capa: v("#nv-c"), dueno: v("#nv-d") || "Rancho"}, archivos});
+      SVJ.lista.push({id: j.id, nombre: j.nombre || nombre.toUpperCase(), raza: v("#nv-r"), sexo: v("#nv-s"), grupo: "Nuevos (por aprobar)", dueno: v("#nv-d") || "Rancho", folio: "", nuevo: true});
+      SVJ.abiertos["Nuevos (por aprobar)"] = true; svPintar(); toast("Agregado. Ahora márcale su servicio."); }
+    catch (err) { alert(err.message); b.disabled = false; b.textContent = "Agregar a la lista"; }
+    return; }
+  if (b.id === "d-ok" && SVJ.paso === 3) {
+    svLeer();
+    const box = $("#dlg-b"), base = new Date(SVJ.fecha + "T12:00:00Z"), prox = w => { if (!Number(w)) return ""; const d = new Date(base); d.setUTCDate(d.getUTCDate() + Number(w) * 7); return d.toISOString().slice(0, 10); };
+    const items = Object.entries(SVJ.sel).map(([i, s]) => { const c = SVJ.lista[i];
+      const serv = s.servicio === "Otro" ? (SVJ.modo === "herraje" ? "Otro herraje: " : "Otro servicio médico: ") + String(s.otro || "").trim() : s.servicio;
+      return {idCaballo: c.id, caballo: c.nombre, dueno: c.dueno, folio: c.folio, servicios: [serv], costo: s.costo, nota: s.nota || "", proxima: prox(s.prox !== "" && s.prox !== undefined ? s.prox : SVJ.aviso)}; });
+    const vacios = items.filter(x => String(x.costo) === ""); if (vacios.length && !confirm(`${vacios.length} caballo(s) sin precio: ${vacios.map(x => x.caballo).join(", ")}. ¿Guardar así?`)) return;
+    const jor = {fecha: SVJ.fecha, proveedor: SVJ.proveedor, notas: SVJ.notas, items}, modo = SVJ.modo;
+    enviar(box, {tipo: "servicio", op: "jornada", jornada: jor}, "Guardado. Ya les llegó a Mario y Judith.", j => { SVJ = null;
+      if (confirm("¿Compartir la lista por WhatsApp?")) window.open(wa(svTexto({Tipo: modo === "herraje" ? "Herraje" : "Servicios médicos", Fecha: jor.fecha, Proveedor: jor.proveedor, Total: j.total,
+        items: items.map(x => ({caballo: x.caballo, servicio: x.servicios[0], costo: x.costo, dueno: x.dueno}))})), "_blank", "noopener"); });
+  }
+});
+document.addEventListener("input", e => {
+  if (!SVJ) return; const t = e.target;
+  if (t.id === "sv-q") { SVJ.q = t.value; svPintar(); return; }
+  if (t.dataset.svOtro !== undefined) { const s = SVJ.sel[t.dataset.svOtro]; if (s) s.otro = t.value; }
+  if (t.dataset.svCosto !== undefined) { const s = SVJ.sel[t.dataset.svCosto]; if (s) s.costo = t.value; svCuenta(); }
+  if (t.dataset.svNota !== undefined) { const s = SVJ.sel[t.dataset.svNota]; if (s) s.nota = t.value; }
+});
+document.addEventListener("change", e => { if (SVJ && e.target.dataset && e.target.dataset.svProx !== undefined) { const s = SVJ.sel[e.target.dataset.svProx]; if (s) s.prox = e.target.value; } });
+document.addEventListener("toggle", e => { if (SVJ && e.target.classList && e.target.classList.contains("sv-grupo")) SVJ.abiertos[e.target.dataset.g] = e.target.open; }, true);
+$("#dlg").addEventListener("close", () => { SVJ = null; });
 function svTexto(j) {
   const L = (j.items || []).map(x => `• ${x.caballo}${x.dueno && x.dueno !== "Rancho" ? " (" + x.dueno + ")" : ""}: ${x.servicio}${numv(x.costo) ? " · " + money(numv(x.costo)) : ""}`);
   return `Rancho El Descanso · ${j.Tipo || "Jornada"} del ${fDia(isoDe(j.Fecha) || hoyISO())}${j.Proveedor ? " · " + j.Proveedor : ""}\n${L.join("\n")}\nTotal: ${money(numv(j.Total))} · ${L.length} caballos`;
@@ -982,7 +1066,7 @@ function svImprimir(j) {
 document.addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.svTab) { st.svTab = b.dataset.svTab; render(); }
-  if (b.dataset.svJornada) abrirJornada();
+  if (b.dataset.svJornada) abrirJornada(b.dataset.svJornada);
   if (b.dataset.svVer) {
     const j = SERV && SERV.jornadas.find(x => x.ID === b.dataset.svVer); if (!j) return;
     const box = dialogo("Jornada · " + fDia(isoDe(j.Fecha) || hoyISO()), `<p class="card-m" style="text-align:left">${esc(j.Tipo)}${j.Proveedor ? " · " + esc(j.Proveedor) : ""} · ${esc(j.Estatus)}</p>${tabla(j.items.map(x => ({Caballo: x.caballo + (x.dueno && x.dueno !== "Rancho" ? " (" + x.dueno + ")" : ""), Servicio: x.servicio, Costo: numv(x.costo) ? money(numv(x.costo)) : "—", Próxima: x.proxima || ""})), ["Caballo", "Servicio", "Costo", "Próxima"], "Sin caballos.")}
@@ -1014,6 +1098,153 @@ document.addEventListener("click", async e => {
   }
 });
 document.addEventListener("change", e => { if (e.target.id === "sv-mes") { st.svMes = e.target.value; render(); } });
+
+/* ---------- Alimento y compras (5 oct 2026): el rancho captura "Hace falta", "Llegó" y el conteo de alimento;
+   la oficina pide, recibe y pasa a GASTOS. El portal calcula cuántos días alcanza el alimento. ---------- */
+const CP_BADGE = {"Hace falta": "b-warn", "Pedido": "b-info", "Llegó": "b-ok", "Capturado": "b-ok", "Cancelado": "b-info"};
+const CP_URG = {"Hoy": 0, "Esta semana": 1, "Sin prisa": 2, "": 3};
+const cpOf = () => COMP && COMP.papel === "oficina";
+function cpAlimentoHtml(compacto) {
+  const A = (COMP.alimento || []).filter(a => a.conteo || !compacto);
+  if (!A.length) return compacto ? "" : `<div class="empty">Todavía no hay conteos de alimento. Con el primer conteo empieza el cálculo.</div>`;
+  return `<div class="cp-ali">${A.map(a => `<div class="cp-a${a.alerta ? " bajo" : ""}"><b>${esc(a.articulo)}</b>
+    <span>${a.estimado === null ? "Sin conteo" : `Quedan ~${a.estimado} ${esc(a.unidad || "")}`}</span>
+    <span class="${a.alerta ? "t-vencida" : "card-m"}">${a.dias === null ? (a.conteo ? "Falta otro conteo para calcular" : "") : a.dias <= 0 ? "Ya se acabó o está por acabarse" : `Alcanza ~${a.dias} día${a.dias === 1 ? "" : "s"}`}${a.enLista ? " · ya está en la lista" : ""}</span>
+    ${a.alerta && !a.enLista ? `<button class="btn" type="button" data-cp-falta="${esc(a.articulo)}">Pedir</button>` : ""}</div>`).join("")}</div>`;
+}
+function cardPedido(p) {
+  const of = cpOf(), e = p["Estatus"], a = [], cant = p["Cantidad"] ? `${p["Cantidad"]} ${p["Unidad"] || ""}`.trim() : "";
+  if (of && e === "Hace falta") a.push(`<button class="btn btn-dark" data-cp-pedir="${esc(p.ID)}">Ya lo pedí</button>`);
+  if (of && ["Hace falta", "Pedido"].includes(e)) a.push(`<button class="btn" data-cp-llego-of="${esc(p.ID)}">Ya llegó</button>`);
+  if (!of && e === "Pedido") a.push(`<button class="btn btn-dark" data-cp-llego="${esc(p.ID)}">Ya llegó</button>`);
+  if (of && e === "Llegó") a.push(`<button class="btn btn-dark" data-cp-capturar="${esc(p.ID)}">Capturar en GASTOS</button>`);
+  if (["Hace falta", "Pedido", "Llegó"].includes(e) && (of || (p["Registró"] === YO.usuario.nombre && e === "Hace falta"))) a.push(`<button class="btn" data-cp-cancelar="${esc(p.ID)}">Cancelar</button>`);
+  const foto = btnFotos(p["Evidencias"], "Foto");
+  return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(p["Artículo"])}${cant ? ` · ${esc(cant)}` : ""}</p>
+    <p class="card-m">${esc(String(p["Fecha"]).slice(0, 10))} · ${esc(p["Registró"])}${p["Para cuándo"] && e === "Hace falta" ? ` · <b class="${p["Para cuándo"] === "Hoy" ? "t-vencida" : ""}">${esc(p["Para cuándo"])}</b>` : ""}${p["Proveedor"] ? " · " + esc(p["Proveedor"]) : ""}${p["Llega"] && e === "Pedido" ? " · llega " + esc(fCorta(p["Llega"])) : ""}</p>
+    ${p["Notas"] ? `<p class="card-m">${esc(p["Notas"])}</p>` : ""}</div>
+    <div style="text-align:right">${of && numv(p["Costo"]) ? `<div class="cc-monto">${money(numv(p["Costo"]))}</div>` : ""}<span class="badge ${CP_BADGE[e] || "b-info"}">${esc(e)}</span></div></div>
+    ${a.length || foto ? `<div class="acts">${foto}${a.join("")}</div>` : ""}</article>`;
+}
+function hoyCompras() {
+  if (!COMP) return "";
+  const of = cpOf(), P = COMP.pedidos, al = (COMP.alimento || []).filter(a => a.alerta && !a.enLista);
+  let d = "";
+  if (!of && COMP.tocaContar && YO.usuario.rol === "campo") d += `<div class="linea"><b>Toca contar el alimento</b> (una vez por semana). <button class="btn" type="button" data-cp-conteo="1">Contar ahora</button></div>`;
+  if (al.length) d += `<p class="lbl rojo">Se está acabando</p>${al.map(a => `<div class="linea"><b>${esc(a.articulo)}</b>: alcanza ~${Math.max(0, a.dias)} días. <button class="btn" type="button" data-cp-falta="${esc(a.articulo)}">Pedir</button></div>`).join("")}`;
+  if (of) {
+    const falta = P.filter(p => p["Estatus"] === "Hace falta").sort((a, b) => CP_URG[a["Para cuándo"] || ""] - CP_URG[b["Para cuándo"] || ""]), capt = P.filter(p => p["Estatus"] === "Llegó");
+    if (falta.length) d += `<p class="lbl oro">Hace falta comprar (${falta.length})</p>${falta.slice(0, 4).map(cardPedido).join("")}`;
+    if (capt.length) d += `<div class="linea"><b>${capt.length}</b> compra${capt.length === 1 ? "" : "s"} ya llegaron y faltan de capturar en GASTOS.</div>`;
+    if (falta.length > 4 || capt.length) d += `<button class="btn" type="button" onclick="ir('compras')">Ver la lista de compras</button>`;
+  } else {
+    const camino = P.filter(p => p["Estatus"] === "Pedido");
+    if (camino.length) d += plegado(`Pedidos en camino (${camino.length})`, camino.map(cardPedido).join(""));
+  }
+  return d ? bloque("Alimento y compras", d) : "";
+}
+function vCompras() {
+  const C = COMP, of = cpOf(), f = st.cpTab || (of ? "lista" : "rancho"), P = C.pedidos.slice().reverse();
+  const btns = `<div class="big-actions"><button class="btn btn-dark" type="button" data-cp-falta="">🛒 Hace falta</button><button class="btn btn-dark" type="button" data-cp-llego="">📦 Llegó</button>${YO.usuario.rol === "campo" || of ? `<button class="btn" type="button" data-cp-conteo="1">🌾 Contar alimento${C.tocaContar ? " (toca)" : ""}</button>` : ""}</div>`;
+  const tabs = (of ? [["lista", "Lista de compras"], ["alimento", "Alimento"], ["historial", "Historial"]] : [["rancho", "Pedidos"], ["alimento", "Alimento"]]);
+  let cuerpo = "";
+  if (f === "lista") {
+    const falta = P.filter(p => p["Estatus"] === "Hace falta").sort((a, b) => CP_URG[a["Para cuándo"] || ""] - CP_URG[b["Para cuándo"] || ""]);
+    const pedido = P.filter(p => p["Estatus"] === "Pedido"), llego = P.filter(p => p["Estatus"] === "Llegó"), al = (C.alimento || []).filter(a => a.alerta && !a.enLista);
+    const g = {}; falta.forEach(p => { const k = (C.insumos.find(i => i.articulo === p["Artículo"]) || {}).proveedor || "Sin proveedor habitual"; (g[k] = g[k] || []).push(p); });
+    cuerpo = `${al.length ? `<h3>Se está acabando</h3>${al.map(a => `<div class="linea"><b>${esc(a.articulo)}</b>: quedan ~${a.estimado} ${esc(a.unidad || "")}, alcanza ~${Math.max(0, a.dias)} días. <button class="btn" type="button" data-cp-falta="${esc(a.articulo)}">Agregar a la lista</button></div>`).join("")}` : ""}
+      <h3>Hace falta comprar (${falta.length})</h3>${falta.length ? Object.entries(g).map(([k, l]) => `<p class="lbl gris">${esc(k)}</p>${l.map(cardPedido).join("")}`).join("") : `<div class="empty">Nada pendiente por comprar.</div>`}
+      ${pedido.length ? `<h3>Pedido, en camino (${pedido.length})</h3>${pedido.map(cardPedido).join("")}` : ""}
+      ${llego.length ? `<h3>Llegó · por capturar en GASTOS (${llego.length})</h3>${llego.map(cardPedido).join("")}` : ""}`;
+  }
+  if (f === "rancho") {
+    const abiertos = P.filter(p => ["Hace falta", "Pedido"].includes(p["Estatus"])), recientes = P.filter(p => ["Llegó", "Capturado"].includes(p["Estatus"])).slice(0, 15);
+    cuerpo = `<h3>Lo que se pidió (${abiertos.length})</h3>${abiertos.length ? abiertos.map(cardPedido).join("") : `<div class="empty">No hay nada pendiente.</div>`}
+      ${recientes.length ? plegado(`Lo que ya llegó (${recientes.length})`, recientes.map(cardPedido).join("")) : ""}`;
+  }
+  if (f === "alimento") {
+    const mes = hoyISO().slice(0, 7), gasto = of ? P.filter(p => p["Estatus"] === "Capturado" && p["Categoría"] === "Alimento" && String(p["Fecha"]).slice(0, 7) === mes).reduce((a, p) => a + numv(p["Costo"]), 0) : 0;
+    cuerpo = `<p class="sub">Con el conteo de cada semana y lo que va llegando, el portal calcula cuánto queda y cuántos días alcanza. Último conteo: ${C.ultimoConteo ? esc(fDia(C.ultimoConteo)) : "nunca"}.</p>
+      ${cpAlimentoHtml(false)}${of ? `<div class="grid-kpi" style="margin-top:12px"><div class="kpi"><span>Gastado en alimento este mes</span><b>${money(gasto)}</b></div></div>
+      ${tabla((C.alimento || []).filter(a => a.porSemana).map(a => ({Alimento: a.articulo, "Por semana": a.porSemana + " " + (a.unidad || "")})), ["Alimento", "Por semana"], "")}` : ""}`;
+  }
+  if (f === "historial") cuerpo = P.length ? P.slice(0, 120).map(cardPedido).join("") : `<div class="empty">Sin movimientos todavía.</div>`;
+  return `<h2>Alimento y compras</h2><p class="sub">${of ? "Lo que el rancho avisa que hace falta y lo que llega. Pídelo, confirma que llegó y pásalo a GASTOS." : "Avisa aquí lo que hace falta y lo que llega. La oficina lo compra."}</p>${btns}
+    <div class="bar">${tabs.map(([k, n]) => `<button class="chip" data-cp-tab="${k}" aria-pressed="${f === k}">${n}</button>`).join("")}</div>${cuerpo}`;
+}
+function cpElegir(titulo, preArt) {
+  const I = COMP.insumos, cats = [...new Set(I.map(i => i.categoria))];
+  return `<label>${titulo}</label>${cats.map(c => `<p class="lbl gris" style="margin:8px 0 4px">${esc(c)}</p><div class="sv-chips" style="margin:0">${I.filter(i => i.categoria === c).map(i => `<button type="button" class="chip" data-cp-art="${esc(i.articulo)}" aria-pressed="${preArt === i.articulo}">${esc(i.articulo)}</button>`).join("")}</div>`).join("")}
+    <div class="sv-chips"><button type="button" class="chip" data-cp-art="__otro" aria-pressed="false">Otro</button></div>
+    <div id="cp-otro-w" class="hide"><div class="dos"><div><input id="cp-otro" maxlength="60" placeholder="¿Qué es?"></div><div><select id="cp-cat">${COMP.categorias.map(c => `<option>${esc(c)}</option>`).join("")}</select></div></div></div>`;
+}
+function cpLeerArt(box) {
+  const b = box.querySelector("[data-cp-art][aria-pressed=true]"); if (!b) return null;
+  if (b.dataset.cpArt === "__otro") { const t = box.querySelector("#cp-otro").value.trim(); return t ? {articulo: t, categoria: box.querySelector("#cp-cat").value, unidad: ""} : null; }
+  const i = COMP.insumos.find(x => x.articulo === b.dataset.cpArt); return {articulo: i.articulo, categoria: i.categoria, unidad: i.unidad};
+}
+function cpActivarArt(box) {
+  box.querySelectorAll("[data-cp-art]").forEach(b => b.addEventListener("click", () => {
+    box.querySelectorAll("[data-cp-art]").forEach(x => x.setAttribute("aria-pressed", x === b)); box.querySelector("#cp-otro-w").classList.toggle("hide", b.dataset.cpArt !== "__otro");
+    const i = COMP.insumos.find(x => x.articulo === b.dataset.cpArt), u = box.querySelector("#cp-u"); if (u) u.textContent = i && i.unidad ? "(" + i.unidad + ")" : ""; }));
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.cpTab) { st.cpTab = b.dataset.cpTab; render(); return; }
+  const ver = () => COMO ? (toast("Estás en \"Ver como\": solo se puede ver."), true) : false;
+  if (b.dataset.cpFalta !== undefined) { if (ver()) return; if (!COMP) { try { await cargar("compras"); } catch (err) { return alert(err.message); } }
+    const box = dialogo("Hace falta", `<div class="frm">${cpElegir("¿Qué hace falta?", b.dataset.cpFalta)}
+      <label>¿Cuánto? <span id="cp-u" class="card-m"></span></label><input id="cp-q" type="number" inputmode="decimal" min="0" placeholder="Opcional">
+      <label>¿Para cuándo?</label><div class="sv-chips">${["Hoy", "Esta semana", "Sin prisa"].map(x => `<button type="button" class="chip" data-cp-cu="${x}" aria-pressed="${x === "Esta semana"}">${x}</button>`).join("")}</div>
+      <label>Nota (opcional)</label><input id="cp-n" maxlength="300" placeholder="Ej. la marca de siempre">${campoFotos("Foto (opcional)")}
+      <button class="btn btn-dark" id="d-ok" type="button">Avisar a la oficina</button></div>`);
+    cpActivarArt(box); activarFotos(box);
+    box.querySelectorAll("[data-cp-cu]").forEach(x => x.addEventListener("click", () => box.querySelectorAll("[data-cp-cu]").forEach(y => y.setAttribute("aria-pressed", y === x))));
+    if (b.dataset.cpFalta) { const i = COMP.insumos.find(x => x.articulo === b.dataset.cpFalta); if (i) box.querySelector("#cp-u").textContent = "(" + (i.unidad || "") + ")"; }
+    box.querySelector("#d-ok").onclick = () => { const a = cpLeerArt(box); if (!a) return alert("Elige qué hace falta (o escribe en Otro).");
+      enviar(box, {tipo: "compra", op: "falta", ...a, cantidad: box.querySelector("#cp-q").value, cuando: box.querySelector("[data-cp-cu][aria-pressed=true]").dataset.cpCu, notas: box.querySelector("#cp-n").value.trim()},
+        "Listo, ya le llegó a la oficina", () => { COMP = null; }); };
+    return; }
+  if (b.dataset.cpLlego !== undefined) { if (ver()) return; if (!COMP) { try { await cargar("compras"); } catch (err) { return alert(err.message); } }
+    const p = b.dataset.cpLlego ? COMP.pedidos.find(x => x.ID === b.dataset.cpLlego) : null, esperando = COMP.pedidos.filter(x => x["Estatus"] === "Pedido");
+    const box = dialogo("Llegó", `<div class="frm">${esperando.length && !p ? `<p class="ctx">Esperando: ${esperando.map(x => esc(x["Artículo"]) + (x["Cantidad"] ? " (" + esc(x["Cantidad"]) + ")" : "")).join(" · ")}</p>` : ""}
+      ${cpElegir("¿Qué llegó?", p ? p["Artículo"] : "")}
+      <label>¿Cuánto llegó? <span id="cp-u" class="card-m"></span></label><input id="cp-q" type="number" inputmode="decimal" min="0" value="${p ? esc(p["Cantidad"] || "") : ""}">
+      <label>¿Quién lo trajo?</label><input id="cp-pv" maxlength="60" value="${p ? esc(p["Proveedor"] || "") : ""}" placeholder="Proveedor">
+      <label>Nota (opcional)</label><input id="cp-n" maxlength="300" placeholder="Ej. llegaron 2 bultos rotos">${campoFotos("Foto de la nota o remisión")}
+      <button class="btn btn-dark" id="d-ok" type="button">Registrar llegada</button></div>`);
+    cpActivarArt(box); activarFotos(box);
+    box.querySelector("#d-ok").onclick = () => { const a = cpLeerArt(box); if (!a) return alert("Elige qué llegó (o escribe en Otro).");
+      enviar(box, {tipo: "compra", op: "llego", ...a, id: p ? p.ID : "", cantidad: box.querySelector("#cp-q").value, proveedor: box.querySelector("#cp-pv").value.trim(), notas: box.querySelector("#cp-n").value.trim()},
+        "Llegada registrada", () => { COMP = null; }); };
+    return; }
+  if (b.dataset.cpConteo) { if (ver()) return; if (!COMP) { try { await cargar("compras"); } catch (err) { return alert(err.message); } }
+    const A = COMP.insumos.filter(i => i.categoria === "Alimento");
+    const box = dialogo("Contar alimento", `<div class="frm"><p class="ctx">Cuenta lo que hay ahorita en la bodega. Deja vacío lo que no contaste.</p>
+      ${A.map((i, k) => { const a = (COMP.alimento || []).find(x => x.articulo === i.articulo) || {}; return `<div class="sv-row"><div class="sv-nom"><b>${esc(i.articulo)}</b><small>${a.conteo ? "La vez pasada: " + a.conteo.cantidad + " " + esc(i.unidad || "") + " · " + esc(fCorta(a.conteo.fecha)) : "Primer conteo"}</small></div>
+        <div class="sv-ops"><input class="sv-precio" type="number" inputmode="decimal" min="0" data-cp-c="${k}" placeholder="${esc(i.unidad || "")}"></div></div>`; }).join("")}
+      <button class="btn btn-dark" id="d-ok" type="button">Guardar conteo</button></div>`);
+    box.querySelector("#d-ok").onclick = () => { const conteos = A.map((i, k) => ({articulo: i.articulo, cantidad: box.querySelector(`[data-cp-c="${k}"]`).value})).filter(x => x.cantidad !== "");
+      if (!conteos.length) return alert("Escribe cuánto queda de al menos uno.");
+      enviar(box, {tipo: "compra", op: "conteo", conteos}, "Conteo guardado. Gracias.", () => { COMP = null; }); };
+    return; }
+  const accion = async (body, ok) => { if (ver()) return; b.disabled = true;
+    try { await post({accion: "hacer", tipo: "compra", ...body}); toast(ok); COMP = null; render(); } catch (err) { alert(err.message); b.disabled = false; } };
+  if (b.dataset.cpPedir) { const p = COMP.pedidos.find(x => x.ID === b.dataset.cpPedir); if (!p) return; const ins = COMP.insumos.find(i => i.articulo === p["Artículo"]) || {};
+    const box = dialogo("Ya lo pedí · " + p["Artículo"], `<div class="frm"><div class="dos"><div><label>Cantidad</label><input id="cp-q" type="number" inputmode="decimal" value="${esc(p["Cantidad"] || "")}"></div><div><label>Costo total (si ya lo sabes)</label><input id="cp-c" type="number" inputmode="decimal" placeholder="$"></div></div>
+      <label>Proveedor</label><input id="cp-pv" list="cp-pvs" value="${esc(p["Proveedor"] || ins.proveedor || "")}"><datalist id="cp-pvs">${(COMP.proveedores || []).map(x => `<option value="${esc(x)}">`).join("")}</datalist>
+      <label>¿Cuándo llega?</label><input id="cp-l" type="date" min="${hoyISO()}"><button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+    box.querySelector("#d-ok").onclick = () => enviar(box, {tipo: "compra", op: "pedir", id: p.ID, cantidad: box.querySelector("#cp-q").value, costo: box.querySelector("#cp-c").value, proveedor: box.querySelector("#cp-pv").value.trim(), llega: box.querySelector("#cp-l").value}, "Marcado como pedido", () => { COMP = null; });
+    return; }
+  if (b.dataset.cpLlegoOf && confirm("¿Ya llegó?")) accion({op: "llego_oficina", id: b.dataset.cpLlegoOf}, "Marcado como recibido");
+  if (b.dataset.cpCapturar) { const p = COMP.pedidos.find(x => x.ID === b.dataset.cpCapturar); if (!p) return;
+    const box = dialogo("Capturar en GASTOS · " + p["Artículo"], `<div class="frm"><div class="dos"><div><label>Costo total</label><input id="cp-c" type="number" inputmode="decimal" value="${esc(numv(p["Costo"]) || "")}"></div><div><label>Forma de pago</label><input id="cp-fp" maxlength="40" placeholder="Transferencia, efectivo…"></div></div>
+      <label>Proveedor</label><input id="cp-pv" value="${esc(p["Proveedor"] || "")}"><button class="btn btn-dark" id="d-ok" type="button">Pasar a GASTOS</button></div>`);
+    box.querySelector("#d-ok").onclick = () => { if (!(Number(box.querySelector("#cp-c").value) > 0)) return alert("Escribe cuánto costó.");
+      enviar(box, {tipo: "compra", op: "capturar", id: p.ID, costo: box.querySelector("#cp-c").value, forma: box.querySelector("#cp-fp").value.trim(), proveedor: box.querySelector("#cp-pv").value.trim()}, "Capturado en GASTOS", () => { COMP = null; }); };
+    return; }
+  if (b.dataset.cpCancelar) { const n = prompt("¿Por qué se cancela? (opcional)"); if (n === null) return; accion({op: "cancelar", id: b.dataset.cpCancelar, notas: n}, "Cancelado"); }
+});
 
 /* ---------- fase 2 (2 oct 2026): tareas, salud, bitácora, proveedores, contabilidad, equipo ---------- */
 const hoyD = () => hoyISO();
@@ -1673,7 +1904,7 @@ function activarFotos(box) {
 async function archivosDe(box) { const inp = box.querySelector("#d-fotos"); if (!inp || !inp.files.length) return []; const out = []; for (const f of [...inp.files].slice(0, 6)) out.push(await comprimir(f)); return out; }
 async function enviar(box, body, ok, despues) {
   const b = box.querySelector("#d-ok"); b.disabled = true; b.textContent = "Guardando…";
-  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = SERV = null; if (despues) despues(j); render(); }
+  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = SERV = COMP = null; if (despues) despues(j); render(); }
   catch (e) { alert(e.message); b.disabled = false; b.textContent = "Intentar de nuevo"; }
 }
 const opt = (l, sel) => l.map(x => `<option${x === sel ? " selected" : ""}>${esc(x)}</option>`).join("");
