@@ -26,6 +26,14 @@ a{color:inherit}
 button,input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .hide{display:none!important}
+.ev-mini{background:#fff;border:1px solid var(--rule);border-radius:12px;margin:0 0 8px}.ev-mini>summary{padding:12px 14px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:10px}.ev-mini>summary>span{flex:1;min-width:0}.ev-mini>summary::-webkit-details-marker{display:none}
+.ev-mini>summary::after{content:"Ver ▾";flex:none;color:var(--gold-deep);font-size:.85rem}.ev-mini[open]>summary::after{content:"Ocultar ▴"}.ev-mini .card{border:0;margin:0;box-shadow:none}
+.qa.qa-ya{border-color:var(--gold);background:#fffaf0}.qa small{display:block;color:var(--muted);font-size:.8rem}
+.es-tabla{border:1px solid var(--rule);border-radius:12px;background:#fff;overflow:hidden;text-align:left}
+.es-r{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid var(--rule)}.es-r:last-child{border-bottom:0}
+.es-r small{display:block;color:var(--muted);font-size:.85rem}.es-r .n{white-space:nowrap;font-variant-numeric:tabular-nums}
+.es-r.ant{background:var(--mist)}.es-r.pago .n{color:var(--ok)}.es-tot{background:var(--ink);color:#fff}.es-tot .n{font-weight:600}
+.es-acc{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.es-acc .btn{padding:4px 10px;font-size:.85rem}
 
 /* barra superior */
 .top{position:sticky;top:0;z-index:5;background:var(--black);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 0}
@@ -306,9 +314,9 @@ const fDia = iso => { const t = new Date(iso + "T12:00:00Z").toLocaleDateString(
 const fHora = iso => new Date(iso).toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ});
 const fFecha = iso => new Date(iso).toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "2-digit", timeZone: TZ});
 const ROLES = {admin: "Administración", direccion: "Ventas y eventos", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
-const SECCIONES = {hoy: "Inicio", tareas: "Tareas", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", caballos: "Caballos y ventas",
-  comisiones: "Comisiones", caja: "Caja chica", herrajes: "Herrajes", medicos: "Servicios médicos", compras: "Alimento y compras", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
-const ICONOS = {hoy: "🏠", tareas: "✅", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", caballos: "🐴", comisiones: "💰", caja: "💵", herrajes: "🔨", medicos: "💉", compras: "📦", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
+const SECCIONES = {hoy: "Inicio", tareas: "Tareas", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", estados: "Estados de cuenta", caballos: "Caballos y ventas",
+  comisiones: "Comisiones", caja: "Caja chica", herrajes: "Herrajes", compras: "Alimento y compras", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
+const ICONOS = {hoy: "🏠", tareas: "✅", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", estados: "🧾", caballos: "🐴", comisiones: "💰", caja: "💵", herrajes: "🔨", compras: "📦", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
 const esCel = () => window.matchMedia("(max-width:899px)").matches;
 const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Administración", "Otro"];
 const TIPOS_SALUD = ["Revisión", "Vacuna", "Desparasitación", "Herraje / cascos", "Dental", "Tratamiento", "Lesión o cólico", "Monta / inseminación", "Palpación / ecografía", "Parto", "Destete", "Trámite KFPS / GVHS", "Otro"];
@@ -317,7 +325,7 @@ const CATS_GASTO = ["Alimento", "Veterinario", "Medicamentos", "Herraje", "Mante
 const TIPO_PAGO = {sesion: "Sesión", evento: "Evento", caballo: "Caballo", potro: "Potro 2027", saldo_sesion: "Resto de sesión"};
 
 let COMO = "", COMO_NOM = ""; // "Ver como…" (Mario y Nico): solo lectura
-let COMP = null, SERV = null, CAJA = null, CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
+let EST = null, COMP = null, SERV = null, CAJA = null, CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
 const st = {agendaFiltro: "todo", busca: "", tFiltro: "pendientes", bArea: "todo", sCaballo: "", mes: "", qFiltro: "abiertas", rTab: "inicio"};
 
 function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3200); }
@@ -368,7 +376,7 @@ async function iniciar() {
 /* Reglamento: botón discreto arriba (no es pestaña ni se pide al entrar); aceptarlo es opcional */
 async function verComo(id) {
   COMO = id; COMO_NOM = id && YO.gente ? ((YO.gente.find(x => x.id === id) || {}).nombre || "") : "";
-  COMP = SERV = CAJA = CAMBIOS = REDES = REG = AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null;
+  EST = COMP = SERV = CAJA = CAMBIOS = REDES = REG = AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null;
   location.hash = "hoy"; await iniciar(); window.scrollTo(0, 0);
 }
 async function aceptarReglamento(b) {
@@ -388,7 +396,7 @@ function armarPortal() {
   if (!window.__tabs) { window.__tabs = 1; $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) ir(b.dataset.s); });
     $("#bnav").addEventListener("click", e => { const b = e.target.closest("[data-bn]"); if (!b) return; if (b.dataset.bn === "mas-accion") abrirAcciones(); else ir(b.dataset.bn); });
     const alto = () => document.documentElement.style.setProperty("--hdr", $(".top").offsetHeight + "px"); alto(); window.addEventListener("resize", () => { alto(); if (!esCel() && ACTUAL === "menu") ir("hoy"); }); }
-  let h = location.hash.slice(1); if (h === "servicios") h = secs.includes("herrajes") ? "herrajes" : "medicos";
+  let h = location.hash.slice(1); if (h === "servicios") h = secs.includes("herrajes") ? "herrajes" : "salud"; if (h === "medicos") { h = "salud"; st.saTab = "jornadas"; }
   ir(secs.includes(h) || h === "reglamento" ? h : secs.includes("hoy") ? "hoy" : secs[0]);
 }
 function ir(s) {
@@ -415,18 +423,19 @@ async function cargar(qué) {
   if (qué === "caja" && !CAJA) CAJA = await api("accion=caja");
   if (qué === "servicios" && !SERV) SERV = await api("accion=servicios");
   if (qué === "compras" && !COMP) COMP = await api("accion=compras");
+  if (qué === "estados" && (!EST || EST.mes !== (st.estMes || EST.mes))) EST = await api("accion=estados" + (st.estMes ? "&mes=" + st.estMes : ""));
 }
 const tiene = s => YO.permisos.secciones.includes(s);
 async function render() {
   const m = $("#main"); m.innerHTML = `<p class="load">Cargando…</p>`;
   try {
     const s = ACTUAL;
-    if (s === "menu") { if (tiene("tareas")) await cargar("tareas").catch(() => {}); if ((tiene("herrajes") || tiene("medicos")) && YO.permisos.dinero === "todo") await cargar("servicios").catch(() => {}); if (tiene("compras")) await cargar("compras").catch(() => {}); if (tiene("caja")) await cargar("caja").catch(() => {}); if (tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
+    if (s === "menu") { if (tiene("tareas")) await cargar("tareas").catch(() => {}); if ((tiene("herrajes") || tiene("salud")) && YO.permisos.dinero === "todo") await cargar("servicios").catch(() => {}); if (tiene("compras")) await cargar("compras").catch(() => {}); if (tiene("caja")) await cargar("caja").catch(() => {}); if (tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
       pintarContador(); if (ACTUAL === "menu") m.innerHTML = vMenu(); return; }
     if (["agenda", "clientes", "eventos"].includes(s)) await cargar("agenda");
     if (s === "hoy") await Promise.all([tiene("agenda") ? cargar("agenda").catch(() => {}) : 0, tiene("tareas") ? cargar("tareas").catch(() => {}) : 0,
       tiene("salud") || tiene("bitacora") ? cargar("reportes").catch(() => {}) : 0, tiene("caja") ? cargar("caja").catch(() => {}) : 0,
-      (tiene("herrajes") || tiene("medicos")) && YO.permisos.dinero === "todo" ? cargar("servicios").catch(() => {}) : 0, tiene("compras") ? cargar("compras").catch(() => {}) : 0]);
+      (tiene("herrajes") || tiene("salud")) && YO.permisos.dinero === "todo" ? cargar("servicios").catch(() => {}) : 0, tiene("compras") ? cargar("compras").catch(() => {}) : 0]);
     if ((s === "hoy" && tiene("cotizaciones")) || s === "cotizaciones") await cargar("cotizaciones").catch(e => { if (s === "cotizaciones") throw e; });
     if (["pagos", "comisiones"].includes(s)) await cargar("pagos");
     if (s === "caballos") await cargar("caballos");
@@ -437,23 +446,25 @@ async function render() {
     if (s === "reglamento") await cargar("reglamento");
     if (s === "redes") await cargar("redes");
     if (s === "caja") await cargar("caja");
-    if (s === "herrajes" || s === "medicos") await cargar("servicios");
+    if (s === "herrajes") await cargar("servicios");
+    if (s === "salud") await cargar("servicios").catch(() => {});
     if (s === "compras") await cargar("compras");
+    if (s === "estados") await cargar("estados");
     if (s === "cambios") { await cargar("agenda"); await cargar("cotizaciones").catch(() => {}); await cargar("cambios"); }
     if (s === "hoy" && tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
     if (s !== ACTUAL) return;
     pintarContador();
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
-      tareas: vTareas, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), medicos: () => vServicios("medico"), compras: vCompras})[s]();
+      tareas: vTareas, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
-function recargar() { COMP = SERV = CAJA = REDES = CAMBIOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
+function recargar() { EST = COMP = SERV = CAJA = REDES = CAMBIOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
 
 /* ---------- menú de cuadros (celular) ---------- */
 function vMenu() {
   const n = {};
-  if (TAREAS) n.tareas = misTareas().length + porRevisar().length + solicitudes().length;
-  if (SERV) ["herraje", "medico"].forEach(m => { const sp = svPendientes(m); n[m === "herraje" ? "herrajes" : "medicos"] = sp.pagar.length + sp.capturar.length + sp.precios.length + (m === "herraje" ? sp.nuevos.length : 0); });
+  if (TAREAS) n.tareas = misTareas().length + porRevisar().filter(miaResp).length + solicitudes().filter(miaResp).length;
+  if (SERV) ["herraje", "medico"].forEach(m => { const sp = svPendientes(m); n[m === "herraje" ? "herrajes" : "salud"] = sp.pagar.length + sp.capturar.length + sp.precios.length + (m === "herraje" ? sp.nuevos.length : 0); });
   if (COMP) n.compras = cpOf() ? COMP.pedidos.filter(p => ["Hace falta", "Llegó"].includes(p["Estatus"])).length : (COMP.tocaContar && YO.usuario.rol === "campo" ? 1 : 0);
   if (CAJA) n.caja = ccPendientesMios().length + (ccPapel() === "dir" ? CAJA.movimientos.filter(x => x["Estatus"] === "Por entregar").length : 0);
   if (REDES && YO.permisos.acciones.includes("redes_aprobar")) n.redes = rPorAprobar().length;
@@ -517,14 +528,16 @@ const nivelYo = () => (YO.org && YO.org.revisaTodo) ? "dir" : ["admin", "direcci
 const lim = t => isoDe(t["Fecha límite"]);
 function bloque(titulo, html, cls = "") { return html ? `<section class="blk ${cls}"><h3>${titulo}</h3>${html}</section>` : ""; }
 function plegado(titulo, html) { return html ? `<details class="mas"><summary>${titulo}</summary>${html}</details>` : ""; }
-function hoyAcciones() {
-  const A = YO.permisos.acciones, O = YO.org || {}, b = [];
+function hoyAcciones() { // 5 oct 2026: en orden de lo que más se usa en cada puesto
+  const A = YO.permisos.acciones, O = YO.org || {}, b = [], campo = ["campo", "medico"].includes(YO.usuario.rol);
+  const conteo = tiene("compras") && YO.usuario.rol === "campo" && (YO.org || {}).area === "Caballos" && COMP && COMP.tocaContar; // lo cuenta Chito
+  if (conteo) b.push(`<button class="qa qa-ya" type="button" data-cp-conteo="1"><span class="ico">🌾</span><span>Contar alimento<small>Toca esta semana</small></span></button>`);
   if (A.includes("caja") && O.caja === "lleva") b.push(`<button class="qa" type="button" data-caja-nuevo="Gasto"><span class="ico">🧾</span>Gasto de caja chica</button>`, `<button class="qa" type="button" data-caja-nuevo="Efectivo de cliente"><span class="ico">💵</span>Recibí efectivo</button>`);
-  if (A.includes("servicio") && tiene("herrajes")) b.push(`<button class="qa" type="button" data-sv-jornada="herraje"><span class="ico">🔨</span>Registrar herraje</button>`);
-  else if (A.includes("servicio") && tiene("medicos")) b.push(`<button class="qa" type="button" data-sv-jornada="medico"><span class="ico">🩺</span>Servicios médicos</button>`);
+  if (A.includes("servicio") && YO.usuario.rol === "medico" && tiene("salud")) b.push(`<button class="qa" type="button" data-sv-jornada="medico"><span class="ico">💉</span><span>Servicio médico<small>con costo</small></span></button>`);
+  if (A.includes("reporte") && tiene("bitacora")) b.push(`<button class="qa" type="button" data-nuevo-rep=""><span class="ico">📝</span>${campo ? "Reportar algo" : "Reportar avance o problema"}</button>`);
+  if (A.includes("reporte") && tiene("salud")) b.push(`<button class="qa" type="button" data-nuevo-rep="Salud"><span class="ico">🩺</span><span>Nota de salud<small>lo que viste o se le dio</small></span></button>`);
   if (A.includes("insumo") && tiene("compras")) b.push(`<button class="qa" type="button" data-cp-falta=""><span class="ico">🛒</span>Hace falta</button>`, `<button class="qa" type="button" data-cp-llego=""><span class="ico">📦</span>Llegó algo</button>`);
-  if (A.includes("reporte") && tiene("bitacora")) b.push(`<button class="qa" type="button" data-nuevo-rep=""><span class="ico">📝</span>Reportar avance o problema</button>`);
-  if (A.includes("reporte") && tiene("salud")) b.push(`<button class="qa" type="button" data-nuevo-rep="Salud"><span class="ico">🩺</span>Registrar salud</button>`);
+  if (A.includes("servicio") && YO.usuario.rol !== "medico" && tiene("herrajes")) b.push(`<button class="qa" type="button" data-sv-jornada="herraje"><span class="ico">🔨</span>Registrar herraje</button>`);
   if (O.asigna && tiene("tareas")) b.push(`<button class="qa" type="button" data-nueva-tarea="1"><span class="ico">➕</span>Nueva tarea</button>`);
   if (O.pide && tiene("tareas")) b.push(`<button class="qa" type="button" data-pedir="1"><span class="ico">🙋</span>Pedir tarea</button>`);
   return b;
@@ -537,7 +550,7 @@ function abrirAcciones() {
 }
 function pintarContador() {
   const n = $("#bn-n"); if (!n || !TAREAS) return;
-  const k = misTareas().length + porRevisar().length + solicitudes().length + disponibles().length;
+  const k = misTareas().length + porRevisar().filter(miaResp).length + solicitudes().filter(miaResp).length + disponibles().length;
   n.textContent = k; n.classList.toggle("hide", !k);
 }
 function verComoSelect() {
@@ -550,18 +563,25 @@ function vHoy() {
   let h = `<p class="menu-hola">Hola, ${esc(nombre)}</p><p class="sub" style="margin:0">${esc(fDia(hoy))}${O.reportaA ? " · Tu encargado: " + esc(O.reportaA) : ""}</p>${verComoSelect()}`;
   const acts = hoyAcciones(); if (acts.length) h += `<div class="hoy-acts">${acts.join("")}</div>`;
 
-  /* 1. espera tu decisión */
+  /* 1. espera tu decisión (5 oct 2026: Mario dinero y rancho · Nico ventas y sistemas; lo del otro queda plegado, de respaldo) */
   if (TAREAS) {
+    const otros = O.otros || [], deQuien = dom => (O.decide || []).includes(dom) ? "" : ((otros.find(x => (x.decide || []).includes(dom)) || {}).nombre || "");
+    const mia = t => !t._resp || t._resp === YO.usuario.nombre, ajeno = {}, pon = (quien, n, html) => { if (!html) return ""; if (!quien) return html; (ajeno[quien] = ajeno[quien] || {n: 0, h: ""}); ajeno[quien].n += n; ajeno[quien].h += html; return ""; };
     const sol = solicitudes(), rev = porRevisar(), rp = rPuedeAprobar() && REDES ? rPorAprobar().length : 0;
     let d = "";
-    if (sol.length) d += `<p class="lbl oro">Lo que pide el equipo (${sol.length})</p>${sol.map(cardTarea).join("")}`;
-    if (rev.length) d += `<p class="lbl oro">Tareas terminadas por revisar (${rev.length})</p>${rev.slice(0, 6).map(cardTarea).join("")}${rev.length > 6 ? `<button class="btn" type="button" onclick="st.tFiltro='revisar';ir('tareas')">Ver las ${rev.length}</button>` : ""}`;
-    if (rp) d += `<p class="lbl oro">Redes</p><button class="qa" type="button" onclick="st.rTab='aprobar';ir('redes')"><span class="ico">📷</span>${rp} publicación${rp === 1 ? "" : "es"} por aprobar</button>`;
+    const solM = sol.filter(mia), revM = rev.filter(mia);
+    if (solM.length) d += `<p class="lbl oro">Lo que pide el equipo (${solM.length})</p>${solM.map(cardTarea).join("")}`;
+    if (revM.length) d += `<p class="lbl oro">Tareas terminadas por revisar (${revM.length})</p>${revM.slice(0, 6).map(cardTarea).join("")}${revM.length > 6 ? `<button class="btn" type="button" onclick="st.tFiltro='revisar';ir('tareas')">Ver las ${revM.length}</button>` : ""}`;
+    sol.filter(t => !mia(t)).forEach(t => pon(t._resp, 1, `<p class="lbl gris">Pide el equipo</p>${cardTarea(t)}`));
+    rev.filter(t => !mia(t)).forEach(t => pon(t._resp, 1, `<p class="lbl gris">Terminada por revisar</p>${cardTarea(t)}`));
+    if (rp) d += pon(deQuien("ventas"), rp, `<p class="lbl oro">Redes</p><button class="qa" type="button" onclick="st.rTab='aprobar';ir('redes')"><span class="ico">📷</span>${rp} publicación${rp === 1 ? "" : "es"} por aprobar</button>`);
     const sp = svPendientes();
-    if (sp.pagar.length) d += `<p class="lbl oro">Herrajes y servicios por pagar (${money(sp.pagar.reduce((a, j) => a + numv(j["Total"]), 0))})</p>${sp.pagar.map(cardJornada).join("")}`;
-    if (sp.nuevos.length) d += `<p class="lbl oro">Caballos nuevos por aprobar (${sp.nuevos.length})</p>${sp.nuevos.map(cardNuevo).join("")}`;
+    if (sp.pagar.length) d += pon(deQuien("dinero"), sp.pagar.length, `<p class="lbl oro">Herrajes y servicios por pagar (${money(sp.pagar.reduce((a, j) => a + numv(j["Total"]), 0))})</p>${sp.pagar.map(cardJornada).join("")}`);
+    if (sp.nuevos.length) d += pon(deQuien("caballos"), sp.nuevos.length, `<p class="lbl oro">Caballos nuevos por aprobar (${sp.nuevos.length})</p>${sp.nuevos.map(cardNuevo).join("")}`);
     const ent = CAJA && O.caja === "dir" ? CAJA.movimientos.filter(x => x["Estatus"] === "Por entregar") : [];
-    if (ent.length) d += `<p class="lbl oro">Efectivo que te tienen que entregar (${money(ent.reduce((a, x) => a + numv(x["Monto"]), 0))})</p>${ent.map(cardCaja).join("")}`;
+    if (ent.length) d += pon(deQuien("dinero"), ent.length, `<p class="lbl oro">Efectivo que te tienen que entregar (${money(ent.reduce((a, x) => a + numv(x["Monto"]), 0))})</p>${ent.map(cardCaja).join("")}`);
+    if (O.revisaTodo && !d && Object.keys(ajeno).length) d = `<div class="empty">Nada espera tu decisión. 👍</div>`;
+    d += Object.entries(ajeno).map(([n, x]) => plegado(`Le toca a ${esc(String(n).split(/[\s(]+/)[0])} (${x.n}) · por si hay que cubrirlo`, x.h)).join("");
     h += bloque("Espera tu decisión", d, "blk-dec");
   }
 
@@ -601,7 +621,8 @@ function vHoy() {
   if (tiene("agenda") && AGENDA) {
     const ev = eventosReales(), deHoy = ev.filter(e => e.fecha === hoy || (e.todoElDia && e.fecha <= hoy && e.fin >= hoy)), deMan = ev.filter(e => e.fecha === man);
     if (nv === "campo") {
-      r += deHoy.length ? deHoy.map(e => cardEvento(e)).join("") : `<div class="empty">Hoy no hay sesiones ni eventos.</div>`;
+      r += deHoy.length ? deHoy.sort((a, b) => (a.inicio > b.inicio ? 1 : -1)).map(e => `<details class="ev-mini"><summary><span><b>${esc(e.todoElDia ? "Todo el día" : (e.llegada || fHora(e.inicio)))}</b> · ${esc(e.titulo)}</span></summary>${cardEvento(e)}</details>`).join("")
+        : `<div class="empty">Hoy no hay sesiones ni eventos.</div>`;
       r += `<div class="linea"><b>Mañana:</b> ${deMan.length ? deMan.map(e => esc((e.todoElDia ? "todo el día" : (e.llegada || fHora(e.inicio))) + " · " + e.titulo)).join(" · ") : "nada agendado"}</div>`;
     } else {
       const semana = ev.filter(e => e.fecha > man && e.fecha <= sem), dinero = YO.permisos.dinero !== "nada";
@@ -783,6 +804,8 @@ document.addEventListener("click", async e => {
     if (!CAJA) { try { await cargar("caja"); } catch (err) { return alert(err.message); } }
     const falta = Math.max(0, CAJA.fondo - CAJA.saldo);
     const cuerpo = tipo === "Gasto" ? `<div class="dos"><div><label>¿Cuánto fue?</label><input id="cc-m" type="number" inputmode="decimal" min="1" step="0.01" placeholder="$"></div><div><label>Fecha</label><input id="cc-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div></div>
+        ${(CAJA.pedidos || []).length ? `<label>¿Es algo de la lista de compras?</label><select id="cc-p"><option value="">No, es otra cosa</option>${CAJA.pedidos.map(x => `<option value="${esc(x.id)}">${esc(x.articulo)}${x.cantidad ? " · " + esc(x.cantidad) + " " + esc(x.unidad || "") : ""}</option>`).join("")}</select>
+        <p class="card-m" style="margin-top:-6px">Si lo eliges, queda como "llegó" en Alimento y compras y Judith lo captura una sola vez.</p>` : ""}
         <label>¿Qué se compró?</label><input id="cc-c" maxlength="120" placeholder="Ej. Bolsas de basura y cloro">
         <label>Categoría</label><select id="cc-cat">${opt(CATS_GASTO, "Mantenimiento")}</select>
         ${campoFotos("Foto del ticket (obligatoria)")}
@@ -800,13 +823,16 @@ document.addEventListener("click", async e => {
         <p class="card-m">Olga confirma en el portal cuando le llegue; hasta entonces no suma a la caja.</p>`;
     const box = dialogo({"Gasto": "Gasto de caja chica", "Efectivo de cliente": "Recibí efectivo", "Reposición": "Reposición de caja chica"}[tipo], `<div class="frm">${cuerpo}<button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
     activarFotos(box);
+    const selP = box.querySelector("#cc-p"); if (selP) selP.addEventListener("change", () => { const x = CAJA.pedidos.find(y => y.id === selP.value); if (!x) return;
+      const c = box.querySelector("#cc-c"); if (!c.value.trim()) c.value = x.articulo + (x.cantidad ? " · " + x.cantidad + " " + (x.unidad || "") : "");
+      const cat = {Alimento: "Alimento", "Médico": "Medicamentos", Caballeriza: "Mantenimiento"}[x.categoria]; if (cat) box.querySelector("#cc-cat").value = cat; });
     box.querySelector("#d-ok").onclick = () => {
       const v = id => ((box.querySelector(id) || {}).value || "").trim(), monto = v("#cc-m");
       if (!(Number(monto) > 0)) return alert("Escribe el monto.");
       if (tipo !== "Reposición" && v("#cc-c").length < 3) return alert(tipo === "Gasto" ? "Escribe qué se compró." : "Escribe de qué es el pago.");
       if (tipo === "Gasto" && !box.querySelector("#d-fotos").files.length) return alert("Toma la foto del ticket.");
       const d = box.querySelector("input[name=cc-d]:checked");
-      enviar(box, {tipo: "caja", op: "registrar", mov: {tipo, monto, concepto: v("#cc-c"), categoria: v("#cc-cat"), cliente: v("#cc-cl"), fecha: v("#cc-f"), destino: d ? d.value : "caja", notas: v("#cc-n")}},
+      enviar(box, {tipo: "caja", op: "registrar", mov: {tipo, monto, concepto: v("#cc-c"), categoria: v("#cc-cat"), cliente: v("#cc-cl"), fecha: v("#cc-f"), destino: d ? d.value : "caja", notas: v("#cc-n"), pedido: v("#cc-p")}},
         tipo === "Gasto" ? "Gasto anotado. Judith lo captura." : tipo === "Reposición" ? "Reposición anotada. Olga la confirma cuando le llegue." : d && d.value === "mario" ? "Anotado: queda por entregar a Mario." : "Anotado: el efectivo entró a la caja.");
     };
   }
@@ -877,12 +903,12 @@ function hoyServicios() {
   if (!SERV || !["dir", "oficina"].includes(svPapel())) return "";
   const p = svPendientes(); let d = "";
   if (p.capturar.length) d += `<p class="lbl oro">Jornadas pagadas por capturar en GASTOS (${p.capturar.length})</p>${p.capturar.map(cardJornada).join("")}`;
-  if (p.precios.length) d += `<div class="linea"><b>${p.precios.length} cargo${p.precios.length === 1 ? "" : "s"} a clientes</b> esperan que confirmes el precio. <button class="btn" type="button" onclick="st.svTab='cargos';ir(tiene('herrajes') ? 'herrajes' : 'medicos')">Revisar</button></div>`;
+  if (p.precios.length) d += `<div class="linea"><b>${p.precios.length} cargo${p.precios.length === 1 ? "" : "s"} a clientes</b> esperan que confirmes el precio. <button class="btn" type="button" onclick="st.svTab='cargos';st.saTab='cargos';ir(tiene('herrajes') ? 'herrajes' : 'salud')">Revisar</button></div>`;
   if (svPapel() === "oficina" && SERV.jornadas.some(j => j["Estatus"] === "Por pagar")) d += `<div class="linea">${SERV.jornadas.filter(j => j["Estatus"] === "Por pagar").length} jornada(s) esperan que Mario las pague.</div>`;
   return d ? bloque("Herrajes y servicios médicos", d) : "";
 }
-function vServicios(modo) {
-  const S0 = SERV, S = {...S0, jornadas: S0.jornadas.filter(j => svDeModo(j, modo)), cargos: S0.cargos.filter(c => svCargoDeModo(c, modo))}, pp = S.papel, f = st.svTab || "jornadas", p = svPendientes(modo), dinero = YO.permisos.dinero === "todo";
+function vServicios(modo, o = {}) { // o.tab + o.embed: dentro de Salud de caballos (5 oct 2026)
+  const S0 = SERV, S = {...S0, jornadas: S0.jornadas.filter(j => svDeModo(j, modo)), cargos: S0.cargos.filter(c => svCargoDeModo(c, modo))}, pp = S.papel, f = o.tab || st.svTab || "jornadas", p = svPendientes(modo), dinero = YO.permisos.dinero === "todo";
   const tabs = [["jornadas", "Jornadas"], ["caballos", "Por caballo"], ...(dinero ? [["cargos", `Cargos a clientes${p.precios.length ? " (" + p.precios.length + ")" : ""}`]] : []), ["nuevos", `Caballos nuevos${S.nuevos.filter(n => n["Estatus"] === "Por aprobar").length ? " (" + S.nuevos.filter(n => n["Estatus"] === "Por aprobar").length + ")" : ""}`]];
   let cuerpo = "";
   if (f === "jornadas") {
@@ -899,12 +925,13 @@ function vServicios(modo) {
     const mes = st.svMes || hoyISO().slice(0, 7), L = S.cargos.filter(c => String(c["Fecha"]).slice(0, 7) === mes && c["Estatus"] !== "Cancelado"), g = {};
     L.forEach(c => { const k = c["Cliente"] + " · " + c["Folio"]; (g[k] = g[k] || []).push(c); });
     cuerpo = `<p class="sub">Herrajes y servicios a caballos de clientes. El precio sugerido es el costo más el margen de la pestaña MÁRGENES; confírmalo o cámbialo antes de mandar el estado de cuenta.</p>
-      <div class="bar"><input type="month" class="mes" id="sv-mes" value="${esc(mes)}"></div>
+      <div class="bar"><input type="month" class="mes" id="sv-mes" value="${esc(mes)}">${tiene("estados") ? `<button class="btn" type="button" onclick="st.estMes='${esc(mes)}';ir('estados')">🧾 Estados de cuenta</button>` : ""}</div>
       ${p.precios.length ? `<h3>Por confirmar precio (${p.precios.length})</h3>${p.precios.map(cardCargo).join("")}` : ""}
       <h3>Por cliente en el mes</h3>${Object.keys(g).length ? Object.entries(g).map(([k, l]) => `<details class="prov"><summary><span>${esc(k)}</span><span>${money(l.reduce((a, c) => a + numv(c["Precio"] || c["Precio sugerido"]), 0))}${l.some(c => c["Estatus"] !== "Confirmado") ? ` <span class="badge b-warn">falta confirmar</span>` : ""}</span></summary>${l.map(cardCargo).join("")}</details>`).join("") : `<div class="empty">Sin cargos este mes.</div>`}`;
   }
   if (f === "nuevos") cuerpo = S.nuevos.length ? S.nuevos.slice().reverse().map(cardNuevo).join("") : `<div class="empty">Nadie ha agregado caballos nuevos.</div>`;
   const her = modo === "herraje";
+  if (o.embed) return cuerpo;
   return `<h2>${her ? "Herrajes" : "Servicios médicos"}</h2><p class="sub">${her ? "Recortes y herradas de cada visita del herrero: a qué caballo, cuánto costó y cuándo le toca otra vez." : "Palpaciones, vacunas, chequeos, medicamentos y lo demás que hacen los médicos a cada caballo."}</p>
     ${YO.permisos.acciones.includes("servicio") ? `<div class="big-actions"><button class="btn btn-dark" data-sv-jornada="${modo}">${her ? "🔨 Registrar herraje" : "🩺 Registrar servicio médico"}</button></div>` : ""}
     <div class="bar">${tabs.map(([k, n]) => `<button class="chip" data-sv-tab="${k}" aria-pressed="${f === k}">${n}</button>`).join("")}</div>${cuerpo}`;
@@ -990,6 +1017,7 @@ async function abrirJornada(modo) {
   if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
   if (!SERV) { try { await cargar("servicios"); } catch (err) { return alert(err.message); } }
   modo = modo === "medico" || (modo !== "herraje" && !tiene("herrajes")) ? "medico" : "herraje";
+  if (modo === "medico" && !tiene("salud")) return toast("Tu puesto no registra servicios médicos.");
   const ult = svUltimaJornada(modo);
   SVJ = {modo, paso: 1, fecha: hoyISO(), proveedor: modo === "medico" && YO.usuario.rol === "medico" ? YO.usuario.nombre : (ult && ult["Proveedor"]) || "",
     precios: modo === "herraje" ? {Recorte: svPrecioPrevio("Recorte"), Herrada: svPrecioPrevio("Herrada")} : {def: ""}, def: modo === "medico" ? (SERV.medico || [])[0] || "" : "",
@@ -1075,7 +1103,7 @@ document.addEventListener("click", async e => {
     box.querySelector("#sv-pr").onclick = () => svImprimir(j);
   }
   const accion = async (body, ok) => { if (COMO) return toast("Estás en \"Ver como\": solo se puede ver."); b.disabled = true;
-    try { await post({accion: "hacer", tipo: "servicio", ...body}); toast(ok); SERV = null; REPORTES = null; render(); } catch (err) { alert(err.message); b.disabled = false; } };
+    try { await post({accion: "hacer", tipo: "servicio", ...body}); toast(ok); SERV = null; REPORTES = null; EST = null; render(); } catch (err) { alert(err.message); b.disabled = false; } };
   if (b.dataset.svPagar) { const forma = prompt("¿Cómo le pagaste? (efectivo, transferencia…)", "Efectivo"); if (forma === null) return; accion({op: "pagar", id: b.dataset.svPagar, forma}, "Marcada como pagada. Le avisa a Judith para capturarla."); }
   if (b.dataset.svCapturar && confirm("¿Pasar esta jornada a la pestaña GASTOS?")) accion({op: "capturar", id: b.dataset.svCapturar}, "Capturada en GASTOS");
   if (b.dataset.svCancelar) { const nota = prompt("¿Por qué se cancela? (opcional)"); if (nota === null) return; accion({op: "cancelar_jornada", id: b.dataset.svCancelar, nota}, "Jornada cancelada"); }
@@ -1099,11 +1127,132 @@ document.addEventListener("click", async e => {
 });
 document.addEventListener("change", e => { if (e.target.id === "sv-mes") { st.svMes = e.target.value; render(); } });
 
+/* ---------- Estados de cuenta (5 oct 2026): se arman solos con los folios de cada cliente ----------
+   saldo anterior + pensión del mes (días × tarifa de PENSIONES) + herrajes y servicios (CARGOS A CLIENTES) − pagos (PAGOS) = saldo al corte.
+   Judith, Mario o Nico agregan un cargo manual, corrigen o quitan uno, registran el pago (se reparte solo) y lo mandan por WhatsApp o PDF. */
+const MESES_ES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const fMes = ym => { const [a, m] = String(ym).split("-").map(Number); return MESES_ES[m - 1] + " " + a; };
+const fDM = iso => iso ? Number(iso.slice(8, 10)) + " " + MESES_ES[Number(iso.slice(5, 7)) - 1].slice(0, 3) : "";
+const mesSig = ym => { const [a, m] = ym.split("-").map(Number); return m === 12 ? (a + 1) + "-01" : a + "-" + String(m + 1).padStart(2, "0"); };
+const CONCEPTOS_MANUAL = ["Medicamento", "Vitaminas o suplemento", "Material de curación", "Traslado / flete", "Herraje especial", "Alimento especial", "Baño y arreglo", "Otro"];
+const estDe = cli => EST && EST.estados.find(e => e.cliente === cli);
+function estFilas(e) { // renglones del estado de cuenta (para la pantalla, WhatsApp y PDF)
+  const R = [{t: "Saldo anterior", d: "Al " + fDM(masDias(e.ini, -1)), m: e.anterior, k: "ant"}];
+  e.pension.forEach(p => R.push({t: "Pensión " + p.caballo, d: `${fDM(p.de)} al ${fDM(p.a)} · ${p.dias} día${p.dias === 1 ? "" : "s"} × ${p.tarifa ? money(p.tarifa) : "tarifa por definir"}`, m: p.monto, k: "pen"}));
+  e.servicios.slice().sort((a, b) => a.fecha < b.fecha ? -1 : 1).forEach(x => R.push({t: x.servicio, d: `${fDM(x.fecha)} · ${x.caballo}`, m: x.monto, k: "srv", id: x.id, pend: !x.confirmado, manual: x.manual}));
+  e.abonos.forEach(a => R.push({t: "Pago recibido", d: `${fDM(a.fecha)}${a.forma ? " · " + a.forma : ""}`, m: -a.monto, k: "pago"}));
+  return R;
+}
+function estTexto(e) {
+  const R = estFilas(e), L = [`*Rancho El Descanso · Estado de cuenta*`, `${e.cliente} · ${fMes(e.mes)}`, ""];
+  R.forEach(r => L.push(`${r.k === "pago" ? "✅" : r.k === "ant" ? "▫️" : "•"} ${r.t}${r.d ? " (" + r.d + ")" : ""}: ${r.m < 0 ? "−" : ""}${money(Math.abs(r.m))}`));
+  L.push("", e.total > 0 ? `*Total a pagar: ${money(e.total)}*` : e.total < 0 ? `*Saldo a tu favor: ${money(-e.total)}*` : "*Sin saldo pendiente. ¡Gracias!*");
+  if (e.total > 0) L.push(`Fecha límite: 3 de ${fMes(mesSig(e.mes))}.`);
+  L.push("", "Si algo no corresponde, respóndenos por aquí y lo revisamos.");
+  return L.join("\n");
+}
+function estImprimir(e) {
+  const w = window.open("", "_blank"); if (!w) return alert("Permite ventanas emergentes para imprimir.");
+  const R = estFilas(e);
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>Estado de cuenta · ${esc(e.cliente)} · ${esc(fMes(e.mes))}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>body{font-family:Jost,system-ui,sans-serif;margin:36px;color:#0A0A0A}.top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #CEB35C;padding-bottom:12px;margin-bottom:18px}
+    h1{font-family:Marcellus,Georgia,serif;font-weight:400;font-size:26px;margin:0}.top p{margin:2px 0;color:#5E5B55;font-size:13px}h2{font-family:Marcellus,Georgia,serif;font-weight:400;font-size:18px;margin:0 0 2px}
+    table{border-collapse:collapse;width:100%;margin-top:14px}td{border-bottom:1px solid #e6e3dc;padding:9px 6px;font-size:14px;vertical-align:top}td small{color:#5E5B55;display:block}td.n{text-align:right;white-space:nowrap}
+    tr.ant td{color:#5E5B55}tr.pago td.n{color:#1f7a3d}.tot{margin-top:16px;display:flex;justify-content:flex-end}.tot div{border:2px solid #0A0A0A;padding:12px 18px;text-align:right}.tot b{font-size:22px;display:block}
+    .pie{margin-top:28px;color:#5E5B55;font-size:12px;line-height:1.6}</style>
+    <div class="top"><div><h1>Rancho El Descanso</h1><p>Estado de cuenta</p></div><div style="text-align:right"><h2>${esc(e.cliente)}</h2><p>${esc(fMes(e.mes))} · del ${esc(fDM(e.ini))} al ${esc(fDM(e.fin))}</p><p>${e.caballos.map(c => esc(c.caballo + " (" + c.folio + ")")).join(" · ")}</p></div></div>
+    <table>${R.map(r => `<tr class="${r.k}"><td>${esc(r.t)}<small>${esc(r.d)}</small></td><td class="n">${r.m < 0 ? "−" : ""}${money(Math.abs(r.m))}</td></tr>`).join("")}</table>
+    <div class="tot"><div>${e.total >= 0 ? "Total a pagar" : "Saldo a favor"}<b>${money(Math.abs(e.total))}</b>${e.total > 0 ? `<small>Fecha límite: 3 de ${esc(fMes(mesSig(e.mes)))}</small>` : ""}</div></div>
+    <p class="pie">La pensión incluye caballeriza, salida diaria, cuidado, alimento y revisión médica de rutina. Medicamentos, herrajes y tratamientos especiales se cobran aparte.<br>Si algo no corresponde, escríbenos y lo revisamos.</p>
+    <script>document.fonts.ready.then(() => print())<\/script>`);
+  w.document.close();
+}
+function cardEstado(e) {
+  const pend = e.servicios.filter(x => !x.confirmado).length;
+  return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(e.cliente)}</p>
+    <p class="card-m">${e.caballos.map(c => esc(c.caballo || c.folio)).join(" · ")}</p>
+    <p class="card-m">Anterior ${money(e.anterior)} · Pensión ${money(e.totalPension)} · Servicios ${money(e.totalServicios)}${e.totalAbonos ? " · Pagos −" + money(e.totalAbonos) : ""}</p></div>
+    <div style="text-align:right"><div class="cc-monto">${money(e.total)}</div><span class="badge ${e.total > 0 ? "b-warn" : "b-ok"}">${e.total > 0 ? "Por cobrar" : e.total < 0 ? "A favor" : "Al corriente"}</span>
+      ${pend || e.avisos.length ? `<br><span class="badge b-bad">Revisar</span>` : ""}</div></div>
+    <div class="acts"><button class="btn btn-dark" type="button" data-es-ver="${esc(e.cliente)}">Ver y enviar</button><button class="btn btn-wa" type="button" data-es-wa="${esc(e.cliente)}">WhatsApp</button><button class="btn" type="button" data-es-pdf="${esc(e.cliente)}">PDF</button></div></article>`;
+}
+function vEstados() {
+  const E = EST.estados, mes = EST.mes, porCobrar = E.reduce((a, e) => a + Math.max(0, e.total), 0), revisar = E.filter(e => e.avisos.length).length;
+  return `<h2>Estados de cuenta</h2><p class="sub">Se arman solos con los folios de cada cliente: saldo anterior + pensión del mes (días × tarifa de PENSIONES) + herrajes y servicios médicos − pagos registrados. Revisa, agrega lo que falte y mándalo. Según el reglamento se entregan el último día del mes.</p>
+    <div class="bar"><input type="month" class="mes" id="es-mes" value="${esc(mes)}"><button class="btn" type="button" data-es-manual="">+ Cargo manual</button></div>
+    <div class="grid-kpi"><div class="kpi"><span>Clientes</span><b>${E.length}</b></div><div class="kpi"><span>Por cobrar al ${esc(fDM(E[0] ? E[0].fin : mes + "-28"))}</span><b>${money(porCobrar)}</b></div><div class="kpi${revisar ? " bajo" : ""}"><span>Por revisar</span><b>${revisar}</b></div></div>
+    ${E.length ? E.map(cardEstado).join("") : `<div class="empty">No hay clientes con pensión ni servicios en ${esc(fMes(mes))}.</div>`}`;
+}
+function estDetalle(cli) {
+  const e = estDe(cli); if (!e) return;
+  const R = estFilas(e);
+  dialogo("Estado de cuenta · " + e.cliente, `<p class="ctx">${esc(fMes(e.mes))} · ${e.caballos.map(c => esc((c.caballo || "") + " (" + c.folio + ")")).join(" · ")}</p>
+    ${e.avisos.length ? `<div class="err" style="text-align:left">${e.avisos.map(esc).join("<br>")}</div>` : ""}
+    <div class="es-tabla">${R.map(r => `<div class="es-r ${r.k}"><div><b>${esc(r.t)}</b>${r.pend ? ` <span class="badge b-warn">precio sugerido</span>` : ""}${r.manual ? ` <span class="badge b-info">manual</span>` : ""}<small>${esc(r.d)}</small>
+      ${r.k === "srv" ? `<span class="es-acc"><button class="btn" type="button" data-es-edit="${esc(r.id)}">${r.pend ? "Confirmar precio" : "Corregir"}</button><button class="btn" type="button" data-es-quitar="${esc(r.id)}">Quitar</button></span>` : ""}</div>
+      <span class="n">${r.m < 0 ? "−" : ""}${money(Math.abs(r.m))}</span></div>`).join("")}
+      <div class="es-r es-tot"><b>${e.total >= 0 ? "Total a pagar" : "Saldo a favor"}</b><span class="n">${money(Math.abs(e.total))}</span></div></div>
+    <div class="big-actions" style="justify-content:center;margin-top:12px"><button class="btn" type="button" data-es-manual="${esc(e.cliente)}">+ Agregar cargo</button><button class="btn" type="button" data-es-pago="${esc(e.cliente)}">Registrar pago</button></div>
+    <div class="big-actions" style="justify-content:center"><button class="btn btn-wa" type="button" data-es-wa="${esc(e.cliente)}">Enviar por WhatsApp</button><button class="btn" type="button" data-es-pdf="${esc(e.cliente)}">Imprimir o PDF</button></div>`);
+}
+function estListo(e) { const pend = e.servicios.filter(x => !x.confirmado).length; return !pend || confirm(`Hay ${pend} servicio(s) con precio sugerido sin confirmar. ¿Enviarlo así?`); }
+async function estRecargar(cli) { EST = null; await cargar("estados"); if (ACTUAL === "estados") $("#main").innerHTML = vEstados(); if (cli) estDetalle(cli); }
+document.addEventListener("change", e => { if (e.target.id === "es-mes") { st.estMes = e.target.value; EST = null; render(); } });
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  const d = b.dataset, ver = () => COMO ? (toast("Estás en \"Ver como\": solo se puede ver."), true) : false;
+  if (d.esVer) estDetalle(d.esVer);
+  if (d.esWa) { const e = estDe(d.esWa); if (e && estListo(e)) window.open(wa(estTexto(e)), "_blank", "noopener"); }
+  if (d.esPdf) { const e = estDe(d.esPdf); if (e && estListo(e)) estImprimir(e); }
+  const cambia = async (body, ok, cli) => { if (ver()) return; b.disabled = true;
+    try { await post({accion: "hacer", tipo: "servicio", ...body}); toast(ok); SERV = null; await estRecargar(cli); } catch (err) { alert(err.message); b.disabled = false; } };
+  if (d.esEdit || d.esQuitar) {
+    const e = EST.estados.find(x => x.servicios.some(s => s.id === (d.esEdit || d.esQuitar))), x = e && e.servicios.find(s => s.id === (d.esEdit || d.esQuitar)); if (!x) return;
+    if (d.esQuitar) { const n = prompt(`¿Quitar "${x.servicio}" de ${x.caballo}? Escribe por qué (opcional).`); if (n === null) return; return cambia({op: "cargo_cancelar", id: x.id, nota: n}, "Cargo quitado", e.cliente); }
+    const precio = prompt(`Precio al cliente · ${x.servicio} (${x.caballo})`, String(x.monto)); if (precio === null) return;
+    if (!(Number(precio) >= 0) || String(precio).trim() === "") return alert("Escribe un número.");
+    const concepto = x.manual ? prompt("Concepto", x.servicio) : null; if (x.manual && concepto === null) return;
+    return cambia({op: "cargo_precio", id: x.id, precio, servicio: concepto || ""}, x.confirmado ? "Corregido" : "Precio confirmado", e.cliente);
+  }
+  if (d.esManual !== undefined) { if (ver()) return;
+    const e = d.esManual ? estDe(d.esManual) : null, F = (EST.folios || []).filter(f => !e || e.folios.includes(f.folio));
+    const hoy = hoyISO(), fecha = hoy.slice(0, 7) === EST.mes ? hoy : (hoy.slice(0, 7) > EST.mes ? masDias(mesSig(EST.mes) + "-01", -1) : EST.mes + "-01");
+    const box = dialogo("Agregar cargo" + (e ? " · " + e.cliente : ""), `<div class="frm">
+      <label>Caballo</label><select id="es-f">${F.map(f => `<option value="${esc(f.folio)}">${esc((f.caballo || "") + " · " + (f.cliente || "") + " (" + f.folio + ")")}</option>`).join("")}</select>
+      <label>Concepto</label><input id="es-c" list="es-cs" maxlength="60" placeholder="Ej. Vitaminas"><datalist id="es-cs">${CONCEPTOS_MANUAL.map(c => `<option value="${esc(c)}">`).join("")}</datalist>
+      <div class="dos"><div><label>Monto al cliente</label><input id="es-m" type="number" inputmode="decimal" min="1" step="0.01" placeholder="$"></div><div><label>Fecha</label><input id="es-d" type="date" value="${fecha}"></div></div>
+      <label>Nota (opcional)</label><input id="es-n" maxlength="200">
+      <button class="btn btn-dark" id="d-ok" type="button">Agregar</button></div>`);
+    box.querySelector("#d-ok").onclick = async () => { const v = id => box.querySelector(id).value.trim();
+      if (v("#es-c").length < 3) return alert("Escribe el concepto."); if (!(Number(v("#es-m")) > 0)) return alert("Escribe el monto.");
+      const k = box.querySelector("#d-ok"); k.disabled = true; k.textContent = "Guardando…";
+      try { await post({accion: "hacer", tipo: "servicio", op: "cargo_manual", folio: v("#es-f"), concepto: v("#es-c"), precio: v("#es-m"), fecha: v("#es-d"), nota: v("#es-n")});
+        toast("Cargo agregado"); SERV = null; const cli = (F.find(f => f.folio === v("#es-f")) || {}).cliente; await estRecargar(e ? e.cliente : (estDe(cli) ? cli : "")); if (!e && !estDe(cli)) $("#dlg").close(); }
+      catch (err) { alert(err.message); k.disabled = false; k.textContent = "Agregar"; } };
+  }
+  if (d.esPago) { if (ver()) return; const e = estDe(d.esPago); if (!e) return;
+    const box = dialogo("Registrar pago · " + e.cliente, `<div class="frm"><p class="ctx">Debe ${money(Math.max(0, e.total))} al ${esc(fDM(e.fin))}. El pago se reparte solo: primero la pensión, luego los servicios; lo que sobre queda como anticipo.</p>
+      <div class="dos"><div><label>¿Cuánto pagó?</label><input id="es-m" type="number" inputmode="decimal" min="1" step="0.01" value="${e.total > 0 ? Math.round(e.total * 100) / 100 : ""}"></div><div><label>Fecha</label><input id="es-d" type="date" value="${hoyISO()}" max="${hoyISO()}"></div></div>
+      <div class="dos"><div><label>Forma de pago</label><select id="es-fp">${opt(["Transferencia", "Efectivo", "Tarjeta", "Depósito"], "Transferencia")}</select></div><div><label>Cuenta</label><input id="es-cu" maxlength="60" placeholder="A qué cuenta entró"></div></div>
+      <label>Comprobante (opcional)</label>${campoFotos("Foto o PDF del comprobante", true)}<label>Nota (opcional)</label><input id="es-n" maxlength="200">
+      <button class="btn btn-dark" id="d-ok" type="button">Registrar pago</button></div>`);
+    activarFotos(box);
+    box.querySelector("#d-ok").onclick = async () => { const v = id => box.querySelector(id).value.trim(); if (!(Number(v("#es-m")) > 0)) return alert("Escribe el monto.");
+      const k = box.querySelector("#d-ok"); k.disabled = true; k.textContent = "Guardando…";
+      try { const archivos = await archivosDe(box);
+        await post({accion: "hacer", tipo: "servicio", op: "estado_pago", cliente: e.cliente, monto: v("#es-m"), fecha: v("#es-d"), forma: v("#es-fp"), cuenta: v("#es-cu"), notas: v("#es-n"), archivos});
+        toast("Pago registrado en PAGOS"); CONTA = null; await estRecargar(e.cliente); }
+      catch (err) { alert(err.message); k.disabled = false; k.textContent = "Intentar de nuevo"; } };
+  }
+});
+
 /* ---------- Alimento y compras (5 oct 2026): el rancho captura "Hace falta", "Llegó" y el conteo de alimento;
    la oficina pide, recibe y pasa a GASTOS. El portal calcula cuántos días alcanza el alimento. ---------- */
 const CP_BADGE = {"Hace falta": "b-warn", "Pedido": "b-info", "Llegó": "b-ok", "Capturado": "b-ok", "Cancelado": "b-info"};
 const CP_URG = {"Hoy": 0, "Esta semana": 1, "Sin prisa": 2, "": 3};
 const cpOf = () => COMP && COMP.papel === "oficina";
+const cpPagaCaja = () => YO.permisos.acciones.includes("caja") && ["lleva", "dir"].includes((YO.org || {}).caja);
 function cpAlimentoHtml(compacto) {
   const A = (COMP.alimento || []).filter(a => a.conteo || !compacto);
   if (!A.length) return compacto ? "" : `<div class="empty">Todavía no hay conteos de alimento. Con el primer conteo empieza el cálculo.</div>`;
@@ -1117,23 +1266,23 @@ function cardPedido(p) {
   if (of && e === "Hace falta") a.push(`<button class="btn btn-dark" data-cp-pedir="${esc(p.ID)}">Ya lo pedí</button>`);
   if (of && ["Hace falta", "Pedido"].includes(e)) a.push(`<button class="btn" data-cp-llego-of="${esc(p.ID)}">Ya llegó</button>`);
   if (!of && e === "Pedido") a.push(`<button class="btn btn-dark" data-cp-llego="${esc(p.ID)}">Ya llegó</button>`);
-  if (of && e === "Llegó") a.push(`<button class="btn btn-dark" data-cp-capturar="${esc(p.ID)}">Capturar en GASTOS</button>`);
+  if (of && e === "Llegó" && !p["Caja chica"]) a.push(`<button class="btn btn-dark" data-cp-capturar="${esc(p.ID)}">Capturar en GASTOS</button>`);
+  if (of && e === "Llegó" && p["Caja chica"]) a.push(`<button class="btn" type="button" onclick="ir('caja')">Se captura en Caja chica</button>`);
   if (["Hace falta", "Pedido", "Llegó"].includes(e) && (of || (p["Registró"] === YO.usuario.nombre && e === "Hace falta"))) a.push(`<button class="btn" data-cp-cancelar="${esc(p.ID)}">Cancelar</button>`);
   const foto = btnFotos(p["Evidencias"], "Foto");
   return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(p["Artículo"])}${cant ? ` · ${esc(cant)}` : ""}</p>
     <p class="card-m">${esc(String(p["Fecha"]).slice(0, 10))} · ${esc(p["Registró"])}${p["Para cuándo"] && e === "Hace falta" ? ` · <b class="${p["Para cuándo"] === "Hoy" ? "t-vencida" : ""}">${esc(p["Para cuándo"])}</b>` : ""}${p["Proveedor"] ? " · " + esc(p["Proveedor"]) : ""}${p["Llega"] && e === "Pedido" ? " · llega " + esc(fCorta(p["Llega"])) : ""}</p>
     ${p["Notas"] ? `<p class="card-m">${esc(p["Notas"])}</p>` : ""}</div>
-    <div style="text-align:right">${of && numv(p["Costo"]) ? `<div class="cc-monto">${money(numv(p["Costo"]))}</div>` : ""}<span class="badge ${CP_BADGE[e] || "b-info"}">${esc(e)}</span></div></div>
+    <div style="text-align:right">${of && numv(p["Costo"]) ? `<div class="cc-monto">${money(numv(p["Costo"]))}</div>` : ""}<span class="badge ${CP_BADGE[e] || "b-info"}">${esc(e)}</span>${p["Caja chica"] ? `<br><span class="badge b-info">💵 Caja chica</span>` : ""}</div></div>
     ${a.length || foto ? `<div class="acts">${foto}${a.join("")}</div>` : ""}</article>`;
 }
 function hoyCompras() {
   if (!COMP) return "";
   const of = cpOf(), P = COMP.pedidos, al = (COMP.alimento || []).filter(a => a.alerta && !a.enLista);
   let d = "";
-  if (!of && COMP.tocaContar && YO.usuario.rol === "campo") d += `<div class="linea"><b>Toca contar el alimento</b> (una vez por semana). <button class="btn" type="button" data-cp-conteo="1">Contar ahora</button></div>`;
   if (al.length) d += `<p class="lbl rojo">Se está acabando</p>${al.map(a => `<div class="linea"><b>${esc(a.articulo)}</b>: alcanza ~${Math.max(0, a.dias)} días. <button class="btn" type="button" data-cp-falta="${esc(a.articulo)}">Pedir</button></div>`).join("")}`;
   if (of) {
-    const falta = P.filter(p => p["Estatus"] === "Hace falta").sort((a, b) => CP_URG[a["Para cuándo"] || ""] - CP_URG[b["Para cuándo"] || ""]), capt = P.filter(p => p["Estatus"] === "Llegó");
+    const falta = P.filter(p => p["Estatus"] === "Hace falta").sort((a, b) => CP_URG[a["Para cuándo"] || ""] - CP_URG[b["Para cuándo"] || ""]), capt = P.filter(p => p["Estatus"] === "Llegó" && !p["Caja chica"]);
     if (falta.length) d += `<p class="lbl oro">Hace falta comprar (${falta.length})</p>${falta.slice(0, 4).map(cardPedido).join("")}`;
     if (capt.length) d += `<div class="linea"><b>${capt.length}</b> compra${capt.length === 1 ? "" : "s"} ya llegaron y faltan de capturar en GASTOS.</div>`;
     if (falta.length > 4 || capt.length) d += `<button class="btn" type="button" onclick="ir('compras')">Ver la lista de compras</button>`;
@@ -1211,12 +1360,19 @@ document.addEventListener("click", async e => {
       ${cpElegir("¿Qué llegó?", p ? p["Artículo"] : "")}
       <label>¿Cuánto llegó? <span id="cp-u" class="card-m"></span></label><input id="cp-q" type="number" inputmode="decimal" min="0" value="${p ? esc(p["Cantidad"] || "") : ""}">
       <label>¿Quién lo trajo?</label><input id="cp-pv" maxlength="60" value="${p ? esc(p["Proveedor"] || "") : ""}" placeholder="Proveedor">
-      <label>Nota (opcional)</label><input id="cp-n" maxlength="300" placeholder="Ej. llegaron 2 bultos rotos">${campoFotos("Foto de la nota o remisión")}
+      <label>Nota (opcional)</label><input id="cp-n" maxlength="300" placeholder="Ej. llegaron 2 bultos rotos">
+      ${cpPagaCaja() ? `<label class="chk"><input type="checkbox" id="cp-cj"> <span><b>Lo pagué con la caja chica</b><br><small class="card-m">Se anota como gasto de tu caja con esta foto del ticket. Judith lo captura una sola vez.</small></span></label>
+        <div id="cp-cj-w" class="hide"><label>¿Cuánto pagaste?</label><input id="cp-cjm" type="number" inputmode="decimal" min="1" step="0.01" placeholder="$"></div>` : ""}
+      ${campoFotos("Foto de la nota, remisión o ticket")}
       <button class="btn btn-dark" id="d-ok" type="button">Registrar llegada</button></div>`);
     cpActivarArt(box); activarFotos(box);
+    const cj = box.querySelector("#cp-cj"); if (cj) cj.addEventListener("change", () => box.querySelector("#cp-cj-w").classList.toggle("hide", !cj.checked));
     box.querySelector("#d-ok").onclick = () => { const a = cpLeerArt(box); if (!a) return alert("Elige qué llegó (o escribe en Otro).");
-      enviar(box, {tipo: "compra", op: "llego", ...a, id: p ? p.ID : "", cantidad: box.querySelector("#cp-q").value, proveedor: box.querySelector("#cp-pv").value.trim(), notas: box.querySelector("#cp-n").value.trim()},
-        "Llegada registrada", () => { COMP = null; }); };
+      const conCaja = cj && cj.checked, mc = conCaja ? box.querySelector("#cp-cjm").value : "";
+      if (conCaja && !(Number(mc) > 0)) return alert("Escribe cuánto pagaste con la caja chica.");
+      if (conCaja && !box.querySelector("#d-fotos").files.length) return alert("Toma la foto del ticket.");
+      enviar(box, {tipo: "compra", op: "llego", ...a, id: p ? p.ID : "", cantidad: box.querySelector("#cp-q").value, proveedor: box.querySelector("#cp-pv").value.trim(), notas: box.querySelector("#cp-n").value.trim(), ...(conCaja ? {caja: {monto: mc}} : {})},
+        conCaja ? "Llegada registrada y anotada en tu caja chica" : "Llegada registrada", () => { COMP = null; CAJA = null; }); };
     return; }
   if (b.dataset.cpConteo) { if (ver()) return; if (!COMP) { try { await cargar("compras"); } catch (err) { return alert(err.message); } }
     const A = COMP.insumos.filter(i => i.categoria === "Alimento");
@@ -1261,6 +1417,7 @@ const ESTADO_BADGE = {"Pendiente": "b-warn", "En proceso": "b-info", "Hecha": "b
 /* ----- tareas para el Inicio ----- */
 const abiertaT = t => ["Pendiente", "En proceso"].includes(t["Estatus"]);
 function misTareas() { return TAREAS ? TAREAS.tareas.filter(t => t["Asignada a"] === YO.usuario.nombre && abiertaT(t)) : []; }
+const miaResp = t => !t._resp || t._resp === YO.usuario.nombre; // Mario o Nico: lo que le toca a cada quien (5 oct 2026)
 function porRevisar() { return TAREAS ? TAREAS.tareas.filter(t => t["Estatus"] === "Hecha" && t._revisar) : []; }
 function solicitudes() { return TAREAS && YO.org && YO.org.revisaTodo ? TAREAS.tareas.filter(t => t._solicitud && t["Estatus"] === "Pendiente") : []; }
 function disponibles() { return TAREAS ? TAREAS.tareas.filter(t => t._tomar) : []; }
@@ -1346,18 +1503,34 @@ function cardReporte(r) {
     ${r["Descripción"] ? `<p style="white-space:pre-wrap;margin:10px 0 0">${esc(r["Descripción"])}</p>` : ""}
     ${idsDe(r["Evidencias"]).length ? `<div class="acts">${btnFotos(r["Evidencias"])}</div>` : ""}</article>`;
 }
+/* Salud de caballos (5 oct 2026: incluye Servicios médicos). Historial = todo lo de salud (notas y servicios del médico);
+   Servicios del médico = visitas con costo (Mario paga, Judith captura); Cargos = lo que se cobra a clientes. */
 function vSalud() {
+  const f = st.saTab || "historial", A = YO.permisos.acciones, conServ = !!SERV, dinero = YO.permisos.dinero === "todo", p = conServ ? svPendientes("medico") : null;
+  const nPend = p ? p.pagar.length + p.capturar.length : 0;
+  const tabs = [["historial", "Historial"], ...(conServ ? [["jornadas", `Servicios del médico${nPend ? " (" + nPend + ")" : ""}`], ["caballos", "Por caballo"]] : []),
+    ...(conServ && dinero ? [["cargos", `Cargos a clientes${p.precios.length ? " (" + p.precios.length + ")" : ""}`]] : [])];
+  const acts = [A.includes("servicio") ? `<button class="btn btn-dark" data-sv-jornada="medico">💉 Servicio médico (con costo)</button>` : "",
+    A.includes("reporte") && REPORTES ? `<button class="btn${A.includes("servicio") ? "" : " btn-dark"}" data-nuevo-rep="Salud">🩺 Nota de salud</button>` : ""].filter(Boolean).join("");
+  let cuerpo = "";
+  if (f === "historial" || !tabs.some(t => t[0] === f)) cuerpo = saludHistorial();
+  else cuerpo = vServicios("medico", {tab: f, embed: true});
+  return `<h2>Salud de caballos</h2><p class="sub">Todo lo de salud en un solo lugar: lo que ve Chito, las vacunas, desparasitaciones, revisiones, tratamientos y reproducción, y los servicios del médico con su costo. Los herrajes van en su sección.</p>
+    ${acts ? `<div class="big-actions">${acts}</div>` : ""}
+    ${tabs.length > 1 ? `<div class="bar">${tabs.map(([k, n]) => `<button class="chip" data-sa-tab="${k}" aria-pressed="${(f === k) || (k === "historial" && !tabs.some(t => t[0] === f))}">${n}</button>`).join("")}</div>` : ""}${cuerpo}`;
+}
+function saludHistorial() {
+  if (!REPORTES) return `<div class="empty">No pude cargar el historial.</div>`;
   const C = REPORTES.caballos || [], sel = st.sCaballo, pr = proximosSalud();
   let L = reportesSalud().slice().reverse(); if (sel) L = L.filter(r => r["ID caballo"] === sel || r["Caballo"] === sel);
   const opts = `<option value="">Todos los caballos</option>` + C.map(c => `<option value="${esc(c.ID)}"${sel === c.ID ? " selected" : ""}>${esc(c.Nombre)} · ${esc(c.Raza || "")}</option>`).join("");
   const cargadas = C.filter(c => c["Cargada de"] || c["Fecha pare"]);
-  return `<h2>Salud de caballos</h2><p class="sub">Vacunas, desparasitaciones, herrajes, revisiones, tratamientos y reproducción. Lo registran los médicos y el encargado de caballos.</p>
-    ${YO.permisos.acciones.includes("reporte") ? `<div class="big-actions"><button class="btn btn-dark" data-nuevo-rep="Salud">+ Registrar salud</button></div>` : ""}
-    <h3>Lo que toca en los próximos 30 días</h3>${pr.length ? tablaProximos(pr) : `<div class="empty">Nada programado. Al registrar algo, pon la "próxima fecha" para que aparezca aquí.</div>`}
+  return `<h3>Lo que toca en los próximos 30 días</h3>${pr.length ? tablaProximos(pr) : `<div class="empty">Nada programado. Al registrar algo, pon la "próxima fecha" para que aparezca aquí.</div>`}
     ${cargadas.length ? `<h3>Yeguas cargadas</h3>${tabla(cargadas.map(c => ({Yegua: c.Nombre, Raza: c.Raza, "Cargada de": c["Cargada de"], "Fecha pare": c["Fecha pare"]})), ["Yegua", "Raza", "Cargada de", "Fecha pare"], "")}` : ""}
     <h3>Historial</h3><div class="bar"><select class="search" id="s-caballo">${opts}</select></div>
     ${L.length ? L.slice(0, 80).map(cardReporte).join("") : `<div class="empty">Sin registros todavía.</div>`}`;
 }
+document.addEventListener("click", e => { const b = e.target.closest("[data-sa-tab]"); if (b) { st.saTab = b.dataset.saTab; render(); } });
 
 /* ----- Bitácora ----- */
 function vBitacora() {
@@ -1904,7 +2077,7 @@ function activarFotos(box) {
 async function archivosDe(box) { const inp = box.querySelector("#d-fotos"); if (!inp || !inp.files.length) return []; const out = []; for (const f of [...inp.files].slice(0, 6)) out.push(await comprimir(f)); return out; }
 async function enviar(box, body, ok, despues) {
   const b = box.querySelector("#d-ok"); b.disabled = true; b.textContent = "Guardando…";
-  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = SERV = COMP = null; if (despues) despues(j); render(); }
+  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = SERV = COMP = EST = null; if (despues) despues(j); render(); }
   catch (e) { alert(e.message); b.disabled = false; b.textContent = "Intentar de nuevo"; }
 }
 const opt = (l, sel) => l.map(x => `<option${x === sel ? " selected" : ""}>${esc(x)}</option>`).join("");
