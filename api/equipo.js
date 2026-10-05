@@ -68,6 +68,8 @@
      por cliente: saldo anterior, pensión del mes (días × tarifa), servicios (CARGOS A CLIENTES), pagos y saldo al corte.
      POST hacer tipo:"servicio" op: estado_pago {cliente, monto, fecha, forma, cuenta} | cargo_manual {folio, concepto, precio, fecha} | cargo_precio (también corrige el concepto).
    5 oct 2026 (caja ↔ compras): "Llegó" con caja:{monto} (solo quien lleva la caja) y gasto de caja con mov.pedido → una sola captura en GASTOS.
+   5 oct 2026 (sesiones pagadas por fuera): POST hacer tipo:"fuera" op: agendar (acción "agendar": vendedoras y oficina) | confirmar | rechazar (dinero todo).
+     GET accion=fuera → las de cada quien (vendedoras) o todas (oficina). Las confirmadas cuentan en Pagos y Comisiones.
    5 oct 2026 (organigrama): org.decide = lo que aprueba cada director (Mario dinero y rancho · Nico ventas y sistemas); tareas._resp = quién la atiende. */
 const crypto = require("crypto");
 const AG = require("./_agenda");
@@ -84,13 +86,13 @@ const VERSION = "2026-08-26.dahlia";
 /* jefe = asigna, edita, revisa y cancela tareas (Nico, Mario y Judith) */
 const PERMISOS = {
   admin:        {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "cambios", "pagos", "estados", "caballos", "comisiones", "caja", "herrajes", "compras", "redes", "salud", "bitacora", "proveedores", "conta", "equipo"], dinero: "todo", contacto: true, ine: true, jefe: true,
-                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "registro", "liga_celular", "prospecto", "redes", "redes_aprobar", "caja", "servicio", "insumo"]},
+                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "registro", "liga_celular", "prospecto", "redes", "redes_aprobar", "caja", "servicio", "insumo", "agendar"]},
   /* "direccion" = Mónica: vendedora con eventos (4 oct 2026). Solo su dinero; confirma eventos, bloquea fechas y marca pagado solo lo suyo */
   direccion:    {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "bitacora"], dinero: "propio", contacto: true, ine: true, jefe: false,
-                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "prospecto"]},
-  ventas:       {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones"], dinero: "propio", contacto: true, ine: true, jefe: false, acciones: ["nota", "liga", "tarea", "prospecto"]},
+                 acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "prospecto", "agendar"]},
+  ventas:       {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones"], dinero: "propio", contacto: true, ine: true, jefe: false, acciones: ["nota", "liga", "tarea", "prospecto", "agendar"]},
   contabilidad: {secciones: ["hoy", "tareas", "agenda", "cambios", "pagos", "estados", "caballos", "comisiones", "caja", "herrajes", "salud", "compras", "proveedores", "conta", "bitacora"], dinero: "todo", contacto: true, ine: false, jefe: true,
-                 acciones: ["saldo_pagado", "nota", "tarea", "reporte", "registro", "caja"]},
+                 acciones: ["saldo_pagado", "nota", "tarea", "reporte", "registro", "caja", "agendar"]},
   /* campo: contacto del cliente y notas de la cita (sin montos) por si hay que llamarle el día de la sesión o evento */
   campo:        {secciones: ["hoy", "tareas", "salud", "herrajes", "compras", "bitacora", "agenda"], dinero: "nada", contacto: true, ine: true, jefe: false, acciones: ["nota", "tarea", "reporte", "servicio", "insumo"]},
   /* médicos: qué pasa en el rancho (eventos, bloqueos, citas), sin sesiones de fotos ni datos del cliente */
@@ -559,6 +561,39 @@ async function servicioPost(u, body, res) {
   return no("Acción no válida.", 400);
 }
 
+/* ---------- sesiones pagadas por fuera (5 oct 2026) ---------- */
+const VENDEDORES_ROL = ["admin", "direccion", "ventas"];
+async function fueraLista(u) {
+  const j = await agendaPost("panel_fuera", {op: "lista"}); if (!j.ok) throw new Error(j.error || "fuera");
+  return j.filas.map(limpia).filter(r => u.permisos.dinero === "todo" || r["Atendió"] === u.nombre || r["Registró"] === u.nombre);
+}
+const fueraComoPago = r => ({folio: r["ID"], fecha: (isoFecha(r["Fecha"]) || hoyMX()) + "T18:00:00.000Z", tipo: "sesion", ref: r["Concepto"] || "Sesión", monto: Number(String(r["Pagado"] || "").replace(/[^0-9.]/g, "")) || 0,
+  total: Number(String(r["Total"] || "").replace(/[^0-9.]/g, "")) || 0, resta: 0, cliente: r["Cliente"], correo: "", telefono: "", atendio: r["Atendió"] || "", atendio_clave: claveVendedor(r["Atendió"]) || (r["Atendió"] ? "otro" : "nadie"),
+  fechaServicio: r["Fecha servicio"] || "", caballo: "", saldo_de: "", via: "por fuera · " + String(r["Forma"] || "transferencia").toLowerCase()});
+async function fueraPost(u, body, res) {
+  const no = (m, c = 403) => res.status(c).json({error: m}), op = String(body.op || "");
+  const archivos = Array.isArray(body.archivos) ? body.archivos.slice(0, 3) : [];
+  if (archivos.reduce((a, x) => a + String(x && x.datos || "").length, 0) > 5.5e6) return no("El comprobante pesa demasiado.", 413);
+  if (op === "agendar") {
+    if (!u.permisos.acciones.includes("agendar")) return no("Tu puesto no agenda sesiones.");
+    const s = body.sesion || {}, eq = await equipo();
+    let atendio = u.nombre; // la vendedora agenda a su nombre; la oficina elige quién la vendió
+    if (u.permisos.dinero === "todo") { const a = String(body.atendio || "").trim(); atendio = !a ? "" : (eq.find(x => x.nombre === a && VENDEDORES_ROL.includes(x.rol) && !(ORG.puestoDe(x) || {}).general) || {}).nombre;
+      if (atendio === undefined) return no("Elige quién vendió la sesión.", 400); }
+    if (!archivos.length) return no("Sube la foto o PDF del comprobante.", 400);
+    const r = await agendaPost("panel_fuera", {op, quien: u.nombre, atendio, archivos, sesion: {fecha: s.fecha, horario: s.horario, llegada: s.llegada, paquete: s.paquete, titular: String(s.titular || "").slice(0, 80),
+      telefono: String(s.telefono || "").slice(0, 30), correo: String(s.correo || "").slice(0, 80), personas: s.personas, acompanantes: String(s.acompanantes || "").slice(0, 300),
+      total: s.total, pagado: s.pagado, forma: s.forma, notas: String(s.notas || "").slice(0, 300), festivoOk: !!s.festivoOk && u.permisos.dinero === "todo"}});
+    return res.status(r.ok ? 200 : 400).json(r);
+  }
+  if (op === "confirmar" || op === "rechazar") {
+    if (u.permisos.dinero !== "todo") return no("Solo Judith, Mario o Nico confirman que llegó el dinero.");
+    const r = await agendaPost("panel_fuera", {op, quien: u.nombre, id: String(body.id || ""), nota: String(body.nota || "").slice(0, 200)});
+    return res.status(r.ok ? 200 : 400).json(r);
+  }
+  return no("Acción no válida.", 400);
+}
+
 /* ---------- cotizaciones de las vendedoras (4 oct 2026): las suyas y las que nadie ha tomado ---------- */
 function prospectoVisible(q, u) {
   const asig = String(q["Asignada a"] || "").trim();
@@ -675,6 +710,7 @@ module.exports = async (req, res) => {
       if (body.tipo === "cambio") return await cambio(u, body, res);
       if (body.tipo === "caja") return await cajaPost(u, body, res);
       if (body.tipo === "servicio") return await servicioPost(u, body, res);
+      if (body.tipo === "fuera") return await fueraPost(u, body, res);
       if (body.tipo === "compra") return await compraPost(u, body, res);
       const FASE2 = {tarea_crear: "tarea", tarea_estatus: "tarea", tarea_editar: "tarea", tarea_pedir: "tarea", tarea_aprobar: "tarea", tarea_tomar: "tarea",
         reporte: "reporte", registro: "registro", liga_celular: "liga_celular", prospecto: "prospecto"};
@@ -810,6 +846,11 @@ module.exports = async (req, res) => {
       return res.status(200).json({mes: j.mes, estados: j.estados, folios: [...(m.pensiones || []).map(x => ({folio: x["Folio"], caballo: x["Caballo"], cliente: x["Cliente"], vigente: /vigente/i.test(x["Situación"] || "")})),
         ...(m.maquilas || []).map(x => ({folio: x["Folio"], caballo: x["Yegua"], cliente: x["Cliente"], vigente: false}))]});
     }
+    if (q.accion === "fuera") {
+      if (!p.acciones.includes("agendar") && p.dinero !== "todo") return res.status(403).json({error: "Sin acceso."});
+      const eq = await equipo();
+      return res.status(200).json({filas: await fueraLista(u), vendedores: p.dinero === "todo" ? eq.filter(x => VENDEDORES_ROL.includes(x.rol) && !(ORG.puestoDe(x) || {}).general).map(x => x.nombre) : []});
+    }
     if (q.accion === "compras") {
       if (!puede(u, "compras")) return res.status(403).json({error: "Sin acceso."});
       const j = await agendaPost("panel_compras", {op: "lista"}); if (!j.ok) throw new Error(j.error || "compras");
@@ -869,7 +910,8 @@ module.exports = async (req, res) => {
       if (!p.secciones.includes("pagos")) return res.status(403).json({error: "Sin acceso."});
       const [todos, maestra] = await Promise.all([pagosStripe(), maestraSegura()]);
       const mapa = await correcciones(maestra);
-      const pagos = todos.map(x => corregir(x, mapa)).filter(x => p.dinero === "todo" || x.atendio_clave === u.vendedor);
+      const fuera = (await fueraLista(u).catch(() => [])).filter(r => r["Estatus"] === "Confirmado").map(fueraComoPago); // pagadas por fuera y confirmadas por Judith
+      const pagos = [...todos.map(x => corregir(x, mapa)), ...fuera].sort((a, b) => b.fecha.localeCompare(a.fecha)).filter(x => p.dinero === "todo" || x.atendio_clave === u.vendedor);
       return res.status(200).json({pagos, comisiones: p.secciones.includes("comisiones") ? comisiones(pagos, maestra, u) : []});
     }
     return res.status(400).json({error: "acción no válida"});
