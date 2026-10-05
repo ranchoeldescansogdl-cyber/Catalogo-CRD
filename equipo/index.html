@@ -325,7 +325,7 @@ const CATS_GASTO = ["Alimento", "Veterinario", "Medicamentos", "Herraje", "Mante
 const TIPO_PAGO = {sesion: "Sesión", evento: "Evento", caballo: "Caballo", potro: "Potro 2027", saldo_sesion: "Resto de sesión"};
 
 let COMO = "", COMO_NOM = ""; // "Ver como…" (Mario y Nico): solo lectura
-let EST = null, COMP = null, SERV = null, CAJA = null, CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
+let FUERA = null, EST = null, COMP = null, SERV = null, CAJA = null, CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
 const st = {agendaFiltro: "todo", busca: "", tFiltro: "pendientes", bArea: "todo", sCaballo: "", mes: "", qFiltro: "abiertas", rTab: "inicio"};
 
 function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3200); }
@@ -376,7 +376,7 @@ async function iniciar() {
 /* Reglamento: botón discreto arriba (no es pestaña ni se pide al entrar); aceptarlo es opcional */
 async function verComo(id) {
   COMO = id; COMO_NOM = id && YO.gente ? ((YO.gente.find(x => x.id === id) || {}).nombre || "") : "";
-  EST = COMP = SERV = CAJA = CAMBIOS = REDES = REG = AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null;
+  FUERA = EST = COMP = SERV = CAJA = CAMBIOS = REDES = REG = AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null;
   location.hash = "hoy"; await iniciar(); window.scrollTo(0, 0);
 }
 async function aceptarReglamento(b) {
@@ -423,6 +423,7 @@ async function cargar(qué) {
   if (qué === "caja" && !CAJA) CAJA = await api("accion=caja");
   if (qué === "servicios" && !SERV) SERV = await api("accion=servicios");
   if (qué === "compras" && !COMP) COMP = await api("accion=compras");
+  if (qué === "fuera" && !FUERA) FUERA = await api("accion=fuera");
   if (qué === "estados" && (!EST || EST.mes !== (st.estMes || EST.mes))) EST = await api("accion=estados" + (st.estMes ? "&mes=" + st.estMes : ""));
 }
 const tiene = s => YO.permisos.secciones.includes(s);
@@ -438,6 +439,7 @@ async function render() {
       (tiene("herrajes") || tiene("salud")) && YO.permisos.dinero === "todo" ? cargar("servicios").catch(() => {}) : 0, tiene("compras") ? cargar("compras").catch(() => {}) : 0]);
     if ((s === "hoy" && tiene("cotizaciones")) || s === "cotizaciones") await cargar("cotizaciones").catch(e => { if (s === "cotizaciones") throw e; });
     if (["pagos", "comisiones"].includes(s)) await cargar("pagos");
+    if ((s === "pagos" || (s === "hoy" && YO.permisos.dinero === "todo")) && (YO.permisos.acciones.includes("agendar") || YO.permisos.dinero === "todo")) await cargar("fuera").catch(() => {});
     if (s === "caballos") await cargar("caballos");
     if (s === "tareas") await cargar("tareas");
     if (s === "salud" || s === "bitacora") await cargar("reportes");
@@ -458,7 +460,7 @@ async function render() {
       tareas: vTareas, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
-function recargar() { EST = COMP = SERV = CAJA = REDES = CAMBIOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
+function recargar() { FUERA = EST = COMP = SERV = CAJA = REDES = CAMBIOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
 
 /* ---------- menú de cuadros (celular) ---------- */
 function vMenu() {
@@ -538,6 +540,7 @@ function hoyAcciones() { // 5 oct 2026: en orden de lo que más se usa en cada p
   if (A.includes("reporte") && tiene("salud")) b.push(`<button class="qa" type="button" data-nuevo-rep="Salud"><span class="ico">🩺</span><span>Nota de salud<small>lo que viste o se le dio</small></span></button>`);
   if (A.includes("insumo") && tiene("compras")) b.push(`<button class="qa" type="button" data-cp-falta=""><span class="ico">🛒</span>Hace falta</button>`, `<button class="qa" type="button" data-cp-llego=""><span class="ico">📦</span>Llegó algo</button>`);
   if (A.includes("servicio") && YO.usuario.rol !== "medico" && tiene("herrajes")) b.push(`<button class="qa" type="button" data-sv-jornada="herraje"><span class="ico">🔨</span>Registrar herraje</button>`);
+  if (A.includes("agendar") && ["ventas", "direccion"].includes(YO.usuario.rol)) b.push(`<button class="qa" type="button" data-pf-agendar="1"><span class="ico">📅</span><span>Agendar sesión<small>pagada por transferencia</small></span></button>`);
   if (O.asigna && tiene("tareas")) b.push(`<button class="qa" type="button" data-nueva-tarea="1"><span class="ico">➕</span>Nueva tarea</button>`);
   if (O.pide && tiene("tareas")) b.push(`<button class="qa" type="button" data-pedir="1"><span class="ico">🙋</span>Pedir tarea</button>`);
   return b;
@@ -612,6 +615,7 @@ function vHoy() {
     if (ms.length) h += plegado(`Lo que pediste y espera respuesta (${ms.length})`, ms.map(cardTarea).join(""));
   }
 
+  h += hoyFuera();
   h += hoyCaja();
   h += hoyServicios();
   h += hoyCompras();
@@ -679,7 +683,7 @@ function vAgenda() {
   if (f !== "todo") ev = ev.filter(e => e.tipo === f);
   const chips = [["todo", "Todo"], ["sesion", "Sesiones"], ["evento", "Eventos"], ["bloqueo", "Bloqueos"], ["otro", "Otras citas"]].filter(([k]) => !(k === "sesion" && YO.permisos.agenda === "rancho"))
     .map(([k, n]) => `<button class="chip" data-fa="${k}" aria-pressed="${f === k}">${n}</button>`).join("");
-  const bloquear = YO.permisos.acciones.includes("bloquear") ? `<button class="btn btn-dark" data-bloquear="1">Bloquear un día</button>` : "";
+  const bloquear = (YO.permisos.acciones.includes("agendar") ? `<button class="btn btn-dark" data-pf-agendar="1">📅 Agendar sesión pagada por fuera</button>` : "") + (YO.permisos.acciones.includes("bloquear") ? `<button class="btn btn-dark" data-bloquear="1">Bloquear un día</button>` : "");
   return `<h2>Agenda</h2><p class="sub">Próximos 6 meses, del calendario "Rancho El Descanso · Agenda".</p><div class="bar">${chips}${bloquear}</div>${porDia(ev, "No hay nada en la agenda con este filtro.")}`;
 }
 function vClientes() {
@@ -703,12 +707,13 @@ function vPagos() {
   const rows = pagos.map(p => `<tr><td>${esc(fFecha(p.fecha))}</td><td>${esc(TIPO_PAGO[p.tipo] || p.tipo)}</td><td>${esc(p.caballo || p.ref)}${p.fechaServicio ? `<br><small class="card-m">para ${esc(fDia(p.fechaServicio))}</small>` : ""}</td>
     <td>${esc(p.cliente)}</td><td>${esc(p.atendio)}</td><td class="num">${money(p.monto)}</td><td>${esc(p.via)}</td></tr>`).join("");
   return `<h2>Pagos y saldos</h2>
-    <div class="grid-kpi"><div class="kpi"><span>Cobrado en la página este mes</span><b>${money(delMes.reduce((a, p) => a + p.monto, 0))}</b></div>
+    <div class="grid-kpi"><div class="kpi"><span>Cobrado este mes (página y por fuera)</span><b>${money(delMes.reduce((a, p) => a + p.monto, 0))}</b></div>
       <div class="kpi"><span>Restos por cobrar (próximos)</span><b>${money(porCobrar.reduce((a, e) => a + numv(e.resta), 0))}</b></div>
       <div class="kpi"><span>Restos que no pasaron</span><b>${pend.length}</b></div></div>
     ${pend.length ? `<h3>Restos que no pasaron</h3>${pend.map(e => cardEvento(e, {fecha: 1})).join("")}` : ""}
     ${porCobrar.length ? `<h3>Restos que se cobran solos</h3>${porCobrar.map(e => cardEvento(e, {fecha: 1})).join("")}` : ""}
-    <h3>Pagos recibidos en la página (6 meses)</h3>
+    ${pfSeccion()}
+    <h3>Pagos recibidos (6 meses)</h3>
     ${pagos.length ? `<div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Cliente</th><th>Atendió</th><th class="num">Monto</th><th>Vía</th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="empty">Sin pagos todavía.</div>`}`;
 }
 function tabla(lista, cols, vacio) {
@@ -1126,6 +1131,70 @@ document.addEventListener("click", async e => {
   }
 });
 document.addEventListener("change", e => { if (e.target.id === "sv-mes") { st.svMes = e.target.value; render(); } });
+
+/* ---------- Sesiones pagadas por fuera (5 oct 2026): la vendedora la agenda con el comprobante y Judith confirma que llegó ---------- */
+const PF_BADGE = {"Por confirmar": "b-warn", "Confirmado": "b-ok", "No llegó": "b-bad"};
+const PF_PAQ = {manana: "Entre semana · mañana", tarde: "Tarde o sábado", produccion: "Producción y marcas"};
+const PF_LLEG = {"10-14": ["10:00", "10:30", "11:00"], "14-18": ["14:00", "14:30", "15:00"]};
+function cardFuera(r) {
+  const of = YO.permisos.dinero === "todo", pend = r["Estatus"] === "Por confirmar";
+  return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(r["Cliente"])} · ${esc(r["Concepto"])}</p>
+    <p class="card-m">Sesión el ${esc(fDia(r["Fecha servicio"]))} · ${esc(r["Forma"])} · vendió ${esc(r["Atendió"] || "nadie")}${r["Registró"] !== r["Atendió"] ? " · agendó " + esc(r["Registró"]) : ""}</p>
+    ${r["Confirmó"] ? `<p class="card-m">Revisó ${esc(r["Confirmó"])}</p>` : ""}</div>
+    <div style="text-align:right"><div class="cc-monto">${money(numv(r["Pagado"]))}</div>${numv(r["Total"]) > numv(r["Pagado"]) ? `<small class="card-m">de ${money(numv(r["Total"]))}</small><br>` : ""}<span class="badge ${PF_BADGE[r["Estatus"]] || "b-info"}">${esc(r["Estatus"])}</span></div></div>
+    <div class="acts">${btnFotos(r["Comprobante"], "Comprobante")}${pend && of ? `<button class="btn btn-dark" data-pf-ok="${esc(r.ID)}">Sí llegó</button><button class="btn" data-pf-no="${esc(r.ID)}">No llegó</button>` : ""}</div></article>`;
+}
+function pfSeccion() {
+  if (!FUERA || !FUERA.filas.length) return "";
+  const L = FUERA.filas.slice().reverse(), pend = L.filter(r => r["Estatus"] === "Por confirmar"), resto = L.filter(r => r["Estatus"] !== "Por confirmar").slice(0, 20);
+  return `<h3>Sesiones pagadas por fuera</h3>${pend.length ? `<p class="lbl oro">Por confirmar (${pend.length})</p>${pend.map(cardFuera).join("")}` : ""}${resto.length ? plegado(`Ya revisadas (${resto.length})`, resto.map(cardFuera).join("")) : ""}`;
+}
+function hoyFuera() {
+  if (!FUERA || YO.permisos.dinero !== "todo" || (YO.org && YO.org.revisaTodo)) return "";
+  const pend = FUERA.filas.filter(r => r["Estatus"] === "Por confirmar");
+  return pend.length ? bloque(`Pagos por fuera por confirmar (${pend.length})`, `<p class="sub" style="margin:0 0 10px">Revisa en el banco que llegó cada transferencia.</p>${pend.map(cardFuera).join("")}`) : "";
+}
+async function abrirAgendarFuera() {
+  if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
+  if (!FUERA) { try { await cargar("fuera"); } catch (err) { return alert(err.message); } }
+  const of = YO.permisos.dinero === "todo";
+  const box = dialogo("Agendar sesión pagada por fuera", `<div class="frm"><p class="ctx">Solo para clientes que ya pagaron por transferencia o depósito a la cuenta del rancho. La sesión entra al calendario a tu nombre y Judith confirma que llegó el dinero.</p>
+    <div class="dos"><div><label>Fecha</label><input id="pf-f" type="date" min="${hoyISO()}"></div><div><label>Horario</label><select id="pf-h"><option value="10-14">Mañana (10 a 2)</option><option value="14-18">Tarde (2 a 6)</option></select></div></div>
+    <div class="dos"><div><label>Llegada</label><select id="pf-l"></select></div><div><label>Paquete</label><select id="pf-p">${Object.entries(PF_PAQ).map(([k, n]) => `<option value="${k}">${esc(n)}</option>`).join("")}</select></div></div>
+    <label>Titular</label><input id="pf-t" maxlength="80" placeholder="Nombre completo">
+    <div class="dos"><div><label>Teléfono</label><input id="pf-tel" type="tel" maxlength="30" placeholder="10 dígitos"></div><div><label>Personas (máx. 8)</label><input id="pf-n" type="number" min="1" max="8" value="2"></div></div>
+    <label>Acompañantes (opcional)</label><input id="pf-a" maxlength="300" placeholder="Nombres, separados por coma">
+    <label>Correo (opcional)</label><input id="pf-c" type="email" maxlength="80">
+    <div class="dos"><div><label>Total de la sesión</label><input id="pf-tot" type="number" inputmode="decimal" min="1" placeholder="$"></div><div><label>¿Cuánto pagó?</label><input id="pf-pag" type="number" inputmode="decimal" min="1" placeholder="$"></div></div>
+    <label>¿Cómo pagó?</label><select id="pf-fp"><option>Transferencia</option><option>Depósito</option></select>
+    ${of ? `<label>¿Quién la vendió?</label><select id="pf-v"><option value="">Nadie (llegó solo)</option>${(FUERA.vendedores || []).map(n => `<option${n === YO.usuario.nombre ? " selected" : ""}>${esc(n)}</option>`).join("")}</select>` : ""}
+    <label>Comprobante (obligatorio)</label>${campoFotos("Foto o PDF del comprobante", true)}
+    <label>Nota (opcional)</label><input id="pf-no" maxlength="300">
+    <p class="card-m">Efectivo no: el efectivo lo recibe Olga en Caja chica.</p>
+    <button class="btn btn-dark" id="d-ok" type="button">Agendar</button></div>`);
+  activarFotos(box);
+  const lleg = () => { box.querySelector("#pf-l").innerHTML = PF_LLEG[box.querySelector("#pf-h").value].map(x => `<option>${x}</option>`).join(""); };
+  const paq = () => { const f = box.querySelector("#pf-f").value, h = box.querySelector("#pf-h").value; if (!f) return; const dow = new Date(f + "T12:00:00Z").getUTCDay();
+    box.querySelector("#pf-p").value = h === "10-14" && dow >= 1 && dow <= 5 ? "manana" : "tarde"; };
+  lleg(); box.querySelector("#pf-h").addEventListener("change", () => { lleg(); paq(); }); box.querySelector("#pf-f").addEventListener("change", paq);
+  box.querySelector("#d-ok").onclick = () => { const v = id => ((box.querySelector(id) || {}).value || "").trim();
+    if (!v("#pf-f")) return alert("Elige la fecha."); if (new Date(v("#pf-f") + "T12:00:00Z").getUTCDay() === 0) return alert("Los domingos no hay sesiones.");
+    if (v("#pf-t").length < 3) return alert("Escribe el nombre del titular."); if (v("#pf-tel").replace(/\D/g, "").length < 10) return alert("Escribe el teléfono (10 dígitos).");
+    if (!(Number(v("#pf-pag")) > 0)) return alert("Escribe cuánto pagó."); if (Number(v("#pf-tot")) < Number(v("#pf-pag"))) return alert("El total no puede ser menor a lo que pagó.");
+    if (!box.querySelector("#d-fotos").files.length) return alert("Sube el comprobante.");
+    enviar(box, {tipo: "fuera", op: "agendar", atendio: of ? v("#pf-v") : "", sesion: {fecha: v("#pf-f"), horario: v("#pf-h"), llegada: v("#pf-l"), paquete: v("#pf-p"), titular: v("#pf-t"), telefono: v("#pf-tel"),
+      personas: v("#pf-n"), acompanantes: v("#pf-a"), correo: v("#pf-c"), total: v("#pf-tot") || v("#pf-pag"), pagado: v("#pf-pag"), forma: v("#pf-fp"), notas: v("#pf-no")}},
+      "Sesión agendada. Judith confirma el pago.", () => { AGENDA = null; FUERA = null; }); };
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.pfAgendar) return abrirAgendarFuera();
+  if (b.dataset.pfOk || b.dataset.pfNo) { if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
+    const ok = !!b.dataset.pfOk, nota = ok ? "" : prompt("¿Qué pasó? (ej. no aparece en el banco)"); if (!ok && nota === null) return;
+    if (ok && !confirm("¿Confirmas que ya llegó el dinero a la cuenta?")) return;
+    b.disabled = true; try { await post({accion: "hacer", tipo: "fuera", op: ok ? "confirmar" : "rechazar", id: b.dataset.pfOk || b.dataset.pfNo, nota}); toast(ok ? "Pago confirmado" : "Avisado a Nico y a quien la vendió"); FUERA = null; PAGOS = null; render(); }
+    catch (err) { alert(err.message); b.disabled = false; } }
+});
 
 /* ---------- Estados de cuenta (5 oct 2026): se arman solos con los folios de cada cliente ----------
    saldo anterior + pensión del mes (días × tarifa de PENSIONES) + herrajes y servicios (CARGOS A CLIENTES) − pagos (PAGOS) = saldo al corte.
@@ -2077,7 +2146,7 @@ function activarFotos(box) {
 async function archivosDe(box) { const inp = box.querySelector("#d-fotos"); if (!inp || !inp.files.length) return []; const out = []; for (const f of [...inp.files].slice(0, 6)) out.push(await comprimir(f)); return out; }
 async function enviar(box, body, ok, despues) {
   const b = box.querySelector("#d-ok"); b.disabled = true; b.textContent = "Guardando…";
-  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = SERV = COMP = EST = null; if (despues) despues(j); render(); }
+  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = SERV = COMP = EST = FUERA = null; if (despues) despues(j); render(); }
   catch (e) { alert(e.message); b.disabled = false; b.textContent = "Intentar de nuevo"; }
 }
 const opt = (l, sel) => l.map(x => `<option${x === sel ? " selected" : ""}>${esc(x)}</option>`).join("");
