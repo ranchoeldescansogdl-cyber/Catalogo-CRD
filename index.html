@@ -205,6 +205,7 @@ h3.sec{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:34px 
 .xp-btn-main:hover{background:#3d86ff}
 .xp-btn-line{border-color:rgba(106,166,238,.55);color:#fff}
 .xp-btn-line:hover{border-color:#fff}
+.xp-note{margin:16px 0 0;max-width:44ch;font-size:.95rem;line-height:1.55;color:rgba(226,230,233,.72)}
 .xp-links{margin:22px 0 0;font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(226,230,233,.5)}
 .xp-links a{color:var(--x-sky);text-decoration:none}
 .xp-links a:hover{color:#fff}
@@ -543,6 +544,12 @@ section[id],main[id]{scroll-margin-top:20px}
 .app-howto ol{margin:8px 0 0;padding-left:20px}
 .app-howto li{margin:6px 0;color:rgba(255,255,255,.85)}
 .app-howto svg{width:18px;height:18px;vertical-align:-3px;stroke:var(--gold)}
+.app-guide{margin:0 0 24px;padding:20px 22px;border:1px solid var(--gold);border-radius:14px;background:rgba(206,179,92,.08)}
+.app-guide[hidden]{display:none}
+.app-guide-t{margin:0;font-family:var(--display);color:var(--gold);font-size:1.2rem}
+.app-guide ol{margin:10px 0 0;padding-left:22px}
+.app-guide li{margin:10px 0;color:rgba(255,255,255,.88);line-height:1.55}
+.app-guide strong{color:var(--paper);font-weight:600}
 .app-done{color:var(--gold);margin:18px 0 0}
 @media (max-width:860px){.app-inner{grid-template-columns:1fr}}
 .app-push-link{background:none;border:0;padding:0;margin-left:4px;color:var(--gold);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font:inherit}
@@ -1190,8 +1197,9 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
       <p class="xp-tag">La experiencia que trasciende</p>
       <div class="xp-actions">
         <a class="xp-btn xp-btn-main" href="exfr/">Entrar a La Experiencia Friesian</a>
-        <a class="xp-btn xp-btn-line" data-wa-exfr href="#" target="_blank" rel="noopener">Solicitar invitación</a>
+        <a class="xp-btn xp-btn-line" href="#avisos">Recibir avisos</a>
       </div>
+      <p class="xp-note">Las novedades de La Experiencia Friesian llegan por la app del rancho. Descárgala y activa las notificaciones.</p>
       <p class="xp-links"><a href="exfr/#materiales">Save the date</a> · <a href="exfr/#materiales">Invitación</a> · <a href="exfr/#programa">Programa</a> · <a href="exfr/#patrocinio">Patrocinio</a> · <a href="exfr/#videos">Videos</a></p>
     </div>
     <a class="xp-poster" href="exfr/" aria-label="Ver La Experiencia Friesian 2027"><img src="exfr/save-the-date-2027.webp" alt="Save the date de La Experiencia Friesian 2027, séptima edición, 20 de noviembre de 2027" loading="lazy" width="1122" height="1402"></a>
@@ -1258,6 +1266,13 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
       <p class="eyebrow">App</p>
       <h2 class="sec-title" id="t-app">Descarga la app de Rancho El Descanso</h2>
       <p class="sec-lede">Lleva el rancho en tu celular: caballos en venta, eventos y sesiones a un toque, sin buscar la página.</p>
+      <div class="app-guide" id="avisos" hidden>
+        <p class="app-guide-t">Recibe los avisos en dos pasos</p>
+        <ol>
+          <li><strong>Instala la app.</strong> Toca «Instalar la app» y sigue los pasos de tu celular.</li>
+          <li><strong>Activa las notificaciones.</strong> Abre la app desde el ícono del rancho en tu pantalla, toca «Activar avisos» y elige «Permitir».<span data-no-ios> Si prefieres, actívalas desde aquí: <button class="app-push-link" type="button" data-avisos>Activar avisos</button></span><span class="app-push-msg" data-avisos-msg hidden></span></li>
+        </ol>
+      </div>
       <button class="btn btn-app" type="button" id="app-install">Instalar la app</button>
       <div class="app-howto" id="app-howto-ios" hidden>
         <strong>En iPhone o iPad</strong>
@@ -1274,13 +1289,13 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
           <li>Elige <strong>Instalar app</strong> o <strong>Agregar a pantalla de inicio</strong>.</li>
         </ol>
       </div>
-      <p class="app-done" id="app-done" hidden>Listo, ya tienes la app del rancho en tu pantalla de inicio.</p>
+      <p class="app-done" id="app-done" hidden>Listo, ya tienes la app del rancho en tu pantalla de inicio. Ábrela desde ahí y activa los avisos.</p>
     </div>
     <ul class="app-list">
       <li><strong>Caballos en venta al día</strong><span>Friesian y Gypsy Vanner disponibles, con precio y genealogía.</span></li>
       <li><strong>Eventos</strong><span>Cotiza tu boda, XV años o evento y aparta tu fecha.</span></li>
       <li><strong>Sesiones y Experiencia Friesian</strong><span>Agenda tu sesión de fotos con caballos.</span></li>
-      <li><strong>Avisos del rancho</strong><span>Te avisamos cuando llega un caballo nuevo, baja de precio o hay evento. <button class="app-push-link" type="button" data-avisos>Activar avisos</button></span><span class="app-push-msg" data-avisos-msg hidden></span></li>
+      <li><strong>Avisos del rancho</strong><span>Te avisamos cuando llega un caballo nuevo, baja de precio, hay evento o novedades de La Experiencia Friesian. <button class="app-push-link" type="button" data-avisos>Activar avisos</button></span><span class="app-push-msg" data-avisos-msg hidden></span></li>
     </ul>
   </div>
 </section>
@@ -1318,7 +1333,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
 <div class="push-card" id="push-card" hidden role="dialog" aria-labelledby="push-card-t">
   <img src="/app-icon-192.png" alt="">
   <strong id="push-card-t">¿Te avisamos?</strong>
-  <p>Caballos nuevos, bajas de precio y eventos del rancho.</p>
+  <p>Caballos nuevos, bajas de precio, eventos y La Experiencia Friesian.</p>
   <p class="app-push-msg" data-avisos-msg hidden style="grid-column:1/-1"></p>
   <div class="push-actions"><button type="button" data-push-no>Ahora no</button><button type="button" class="primary" data-avisos>Activar avisos</button></div>
 </div>
@@ -2261,7 +2276,6 @@ document.querySelectorAll("#f-mares button").forEach(b=>b.onclick=()=>{mareFilte
 renderStuds(); renderMares();
 document.querySelectorAll("[data-wa-event]").forEach(a=>a.href=waLink("Hola, me gustaría cotizar un evento en Rancho El Descanso. Tipo de evento: , fecha tentativa: , número de invitados: ."));
 document.querySelectorAll("[data-wa-shoot]").forEach(a=>a.href=waLink("Hola, me interesa agendar una sesión fotográfica en Rancho El Descanso."));
-document.querySelectorAll("[data-wa-exfr]").forEach(a=>a.href=waLink("Hola, me gustaría recibir invitación a La Experiencia Friesian 2027 (20 de noviembre) en Rancho El Descanso."));
 
 /* ================== EVENTOS, SESIONES Y APARTADOS ================== */
 const numv = v => { const n=parseFloat(String(v??"").replace(/[^0-9.\-]/g,"")); return isFinite(n)?n:0; };
@@ -2708,7 +2722,7 @@ function initPixel(){
   const id=CONFIG.META_PIXEL_ID; if(!id) return;
   !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
   fbq('init',id); fbq('track','PageView');
-  document.querySelectorAll("[data-wa],[data-wa-event],[data-wa-shoot],[data-wa-visit],[data-wa-exfr]").forEach(a=>a.addEventListener("click",()=>track("Contact",{content_name:"whatsapp"})));
+  document.querySelectorAll("[data-wa],[data-wa-event],[data-wa-shoot],[data-wa-visit]").forEach(a=>a.addEventListener("click",()=>track("Contact",{content_name:"whatsapp"})));
 }
 
 
@@ -2858,10 +2872,22 @@ Promise.all([load(),PAGO_LISTO]).then(([list])=>{
   }
   // Dentro de la app instalada: invitar a activar avisos una sola vez
   const card=document.getElementById("push-card");
+  if(card) card.querySelector("[data-push-no]").addEventListener("click",()=>{ card.hidden=true; guardar("crd-avisos-no","1"); });
   if(card && standalone && soporta && Notification.permission==="default" && leer("crd-avisos")!=="on" && leer("crd-avisos-no")!=="1"){
     setTimeout(()=>{ card.hidden=false; },4000);
-    card.querySelector("[data-push-no]").addEventListener("click",()=>{ card.hidden=true; guardar("crd-avisos-no","1"); });
   }
+  // Ya en la app, "Recibir avisos" (#app) abre la tarjeta para activar notificaciones
+  const guia=document.getElementById("avisos");
+  if(esIOS) $$("[data-no-ios]").forEach(e=>e.hidden=true);
+  const pedirAvisos=()=>{
+    if(location.hash!=="#avisos" && location.hash!=="#app") return;
+    if(standalone){ if(card){ card.hidden=false; if(!soporta) msg("Este celular no permite avisos."); } return; }
+    if(location.hash!=="#avisos" || !guia) return;
+    guia.hidden=false;
+    if(esIOS && ios) ios.hidden=false;
+    else setTimeout(()=>{ if(!aviso && other && btn && !btn.hidden) other.hidden=false; },1500);
+  };
+  addEventListener("hashchange",pedirAvisos); pedirAvisos();
 })();
 </script>
 <script>
