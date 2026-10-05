@@ -237,6 +237,9 @@ body.como main .acts,body.como main .big-actions,body.como .hoy-acts,body.como .
 .rad small{display:block;color:var(--muted);font-size:.85rem}
 .frm label.chk{display:flex;gap:8px;align-items:flex-start;color:var(--ink);font-size:.95rem;margin:0 0 12px}
 .frm label.chk[hidden]{display:none}
+.sv-row{border:1px solid var(--rule);border-radius:12px;padding:10px 12px;margin:0 0 8px;background:#fff}
+.sv-row .sv-sel{margin:0!important} .sv-det{margin:10px 0 0} .sv-det input{margin:0 0 8px}
+.sv-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px} .sv-chips .chip{font-size:.85rem;padding:5px 10px}
 .kpi.bajo{border-color:var(--bad);background:var(--bad-bg)} .kpi.bajo b{color:var(--bad)}
 .cc-monto{font-family:var(--display);font-size:1.2rem;white-space:nowrap} .cc-menos{color:var(--bad)} .cc-mas{color:var(--ok)}
 .aviso{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:.9rem;margin:0 0 12px}
@@ -293,8 +296,8 @@ const fHora = iso => new Date(iso).toLocaleTimeString("es-MX", {hour: "2-digit",
 const fFecha = iso => new Date(iso).toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "2-digit", timeZone: TZ});
 const ROLES = {admin: "Administración", direccion: "Ventas y eventos", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
 const SECCIONES = {hoy: "Inicio", tareas: "Tareas", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", caballos: "Caballos y ventas",
-  comisiones: "Comisiones", caja: "Caja chica", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
-const ICONOS = {hoy: "🏠", tareas: "✅", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", caballos: "🐴", comisiones: "💰", caja: "💵", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
+  comisiones: "Comisiones", caja: "Caja chica", servicios: "Herrajes y servicios", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
+const ICONOS = {hoy: "🏠", tareas: "✅", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", caballos: "🐴", comisiones: "💰", caja: "💵", servicios: "🔨", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
 const esCel = () => window.matchMedia("(max-width:899px)").matches;
 const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Administración", "Otro"];
 const TIPOS_SALUD = ["Revisión", "Vacuna", "Desparasitación", "Herraje / cascos", "Dental", "Tratamiento", "Lesión o cólico", "Monta / inseminación", "Palpación / ecografía", "Parto", "Destete", "Trámite KFPS / GVHS", "Otro"];
@@ -303,7 +306,7 @@ const CATS_GASTO = ["Alimento", "Veterinario", "Medicamentos", "Herraje", "Mante
 const TIPO_PAGO = {sesion: "Sesión", evento: "Evento", caballo: "Caballo", potro: "Potro 2027", saldo_sesion: "Resto de sesión"};
 
 let COMO = "", COMO_NOM = ""; // "Ver como…" (Mario y Nico): solo lectura
-let CAJA = null, CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
+let SERV = null, CAJA = null, CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
 const st = {agendaFiltro: "todo", busca: "", tFiltro: "pendientes", bArea: "todo", sCaballo: "", mes: "", qFiltro: "abiertas", rTab: "inicio"};
 
 function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3200); }
@@ -354,7 +357,7 @@ async function iniciar() {
 /* Reglamento: botón discreto arriba (no es pestaña ni se pide al entrar); aceptarlo es opcional */
 async function verComo(id) {
   COMO = id; COMO_NOM = id && YO.gente ? ((YO.gente.find(x => x.id === id) || {}).nombre || "") : "";
-  CAJA = CAMBIOS = REDES = REG = AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null;
+  SERV = CAJA = CAMBIOS = REDES = REG = AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null;
   location.hash = "hoy"; await iniciar(); window.scrollTo(0, 0);
 }
 async function aceptarReglamento(b) {
@@ -398,17 +401,19 @@ async function cargar(qué) {
   if (qué === "redes" && !REDES) REDES = await api("accion=redes");
   if (qué === "cambios" && !CAMBIOS) CAMBIOS = await api("accion=cambios");
   if (qué === "caja" && !CAJA) CAJA = await api("accion=caja");
+  if (qué === "servicios" && !SERV) SERV = await api("accion=servicios");
 }
 const tiene = s => YO.permisos.secciones.includes(s);
 async function render() {
   const m = $("#main"); m.innerHTML = `<p class="load">Cargando…</p>`;
   try {
     const s = ACTUAL;
-    if (s === "menu") { if (tiene("tareas")) await cargar("tareas").catch(() => {}); if (tiene("caja")) await cargar("caja").catch(() => {}); if (tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
+    if (s === "menu") { if (tiene("tareas")) await cargar("tareas").catch(() => {}); if (tiene("servicios") && YO.permisos.dinero === "todo") await cargar("servicios").catch(() => {}); if (tiene("caja")) await cargar("caja").catch(() => {}); if (tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
       pintarContador(); if (ACTUAL === "menu") m.innerHTML = vMenu(); return; }
     if (["agenda", "clientes", "eventos"].includes(s)) await cargar("agenda");
     if (s === "hoy") await Promise.all([tiene("agenda") ? cargar("agenda").catch(() => {}) : 0, tiene("tareas") ? cargar("tareas").catch(() => {}) : 0,
-      tiene("salud") || tiene("bitacora") ? cargar("reportes").catch(() => {}) : 0, tiene("caja") ? cargar("caja").catch(() => {}) : 0]);
+      tiene("salud") || tiene("bitacora") ? cargar("reportes").catch(() => {}) : 0, tiene("caja") ? cargar("caja").catch(() => {}) : 0,
+      tiene("servicios") && YO.permisos.dinero === "todo" ? cargar("servicios").catch(() => {}) : 0]);
     if ((s === "hoy" && tiene("cotizaciones")) || s === "cotizaciones") await cargar("cotizaciones").catch(e => { if (s === "cotizaciones") throw e; });
     if (["pagos", "comisiones"].includes(s)) await cargar("pagos");
     if (s === "caballos") await cargar("caballos");
@@ -419,20 +424,22 @@ async function render() {
     if (s === "reglamento") await cargar("reglamento");
     if (s === "redes") await cargar("redes");
     if (s === "caja") await cargar("caja");
+    if (s === "servicios") await cargar("servicios");
     if (s === "cambios") { await cargar("agenda"); await cargar("cotizaciones").catch(() => {}); await cargar("cambios"); }
     if (s === "hoy" && tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
     if (s !== ACTUAL) return;
     pintarContador();
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
-      tareas: vTareas, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja})[s]();
+      tareas: vTareas, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, servicios: vServicios})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
-function recargar() { CAJA = REDES = CAMBIOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
+function recargar() { SERV = CAJA = REDES = CAMBIOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
 
 /* ---------- menú de cuadros (celular) ---------- */
 function vMenu() {
   const n = {};
   if (TAREAS) n.tareas = misTareas().length + porRevisar().length + solicitudes().length;
+  if (SERV) { const sp = svPendientes(); n.servicios = sp.pagar.length + sp.capturar.length + sp.precios.length + sp.nuevos.length; }
   if (CAJA) n.caja = ccPendientesMios().length + (ccPapel() === "dir" ? CAJA.movimientos.filter(x => x["Estatus"] === "Por entregar").length : 0);
   if (REDES && YO.permisos.acciones.includes("redes_aprobar")) n.redes = rPorAprobar().length;
   const nombre = String(YO.usuario.nombre || "").split(" ")[0];
@@ -498,6 +505,7 @@ function plegado(titulo, html) { return html ? `<details class="mas"><summary>${
 function hoyAcciones() {
   const A = YO.permisos.acciones, O = YO.org || {}, b = [];
   if (A.includes("caja") && O.caja === "lleva") b.push(`<button class="qa" type="button" data-caja-nuevo="Gasto"><span class="ico">🧾</span>Gasto de caja chica</button>`, `<button class="qa" type="button" data-caja-nuevo="Efectivo de cliente"><span class="ico">💵</span>Recibí efectivo</button>`);
+  if (A.includes("servicio") && tiene("servicios")) b.push(`<button class="qa" type="button" data-sv-jornada="1"><span class="ico">🔨</span>${YO.usuario.rol === "medico" ? "Registrar servicios" : "Jornada de herraje"}</button>`);
   if (A.includes("reporte") && tiene("bitacora")) b.push(`<button class="qa" type="button" data-nuevo-rep=""><span class="ico">📝</span>Reportar avance o problema</button>`);
   if (A.includes("reporte") && tiene("salud")) b.push(`<button class="qa" type="button" data-nuevo-rep="Salud"><span class="ico">🩺</span>Registrar salud</button>`);
   if (O.asigna && tiene("tareas")) b.push(`<button class="qa" type="button" data-nueva-tarea="1"><span class="ico">➕</span>Nueva tarea</button>`);
@@ -532,6 +540,9 @@ function vHoy() {
     if (sol.length) d += `<p class="lbl oro">Lo que pide el equipo (${sol.length})</p>${sol.map(cardTarea).join("")}`;
     if (rev.length) d += `<p class="lbl oro">Tareas terminadas por revisar (${rev.length})</p>${rev.slice(0, 6).map(cardTarea).join("")}${rev.length > 6 ? `<button class="btn" type="button" onclick="st.tFiltro='revisar';ir('tareas')">Ver las ${rev.length}</button>` : ""}`;
     if (rp) d += `<p class="lbl oro">Redes</p><button class="qa" type="button" onclick="st.rTab='aprobar';ir('redes')"><span class="ico">📷</span>${rp} publicación${rp === 1 ? "" : "es"} por aprobar</button>`;
+    const sp = svPendientes();
+    if (sp.pagar.length) d += `<p class="lbl oro">Herrajes y servicios por pagar (${money(sp.pagar.reduce((a, j) => a + numv(j["Total"]), 0))})</p>${sp.pagar.map(cardJornada).join("")}`;
+    if (sp.nuevos.length) d += `<p class="lbl oro">Caballos nuevos por aprobar (${sp.nuevos.length})</p>${sp.nuevos.map(cardNuevo).join("")}`;
     const ent = CAJA && O.caja === "dir" ? CAJA.movimientos.filter(x => x["Estatus"] === "Por entregar") : [];
     if (ent.length) d += `<p class="lbl oro">Efectivo que te tienen que entregar (${money(ent.reduce((a, x) => a + numv(x["Monto"]), 0))})</p>${ent.map(cardCaja).join("")}`;
     h += bloque("Espera tu decisión", d, "blk-dec");
@@ -565,6 +576,7 @@ function vHoy() {
   }
 
   h += hoyCaja();
+  h += hoyServicios();
 
   /* 3. hoy en el rancho */
   let r = "";
@@ -793,6 +805,215 @@ document.addEventListener("click", async e => {
     catch (err) { alert(err.message); b.disabled = false; }
   }
 });
+
+/* ---------- Herrajes y servicios (4 oct 2026): Chito registra la jornada del herrero; los médicos sus servicios.
+   Caballos de clientes → cargo con precio sugerido que confirma Judith. Mario paga la jornada y Judith la pasa a GASTOS. ---------- */
+const SV_BADGE = {"Por pagar": "b-warn", "Pagada": "b-info", "Capturada": "b-ok", "Sin costo": "b-info", "Cancelada": "b-info", "Por revisar precio": "b-warn", "Confirmado": "b-ok", "Cancelado": "b-info", "Por aprobar": "b-warn"};
+const svPapel = () => (SERV && SERV.papel) || "";
+const diasDesde = iso => iso ? Math.round((new Date(hoyISO() + "T12:00:00Z") - new Date(iso + "T12:00:00Z")) / 864e5) : null;
+function svUltimo(id) {
+  const u = SERV && SERV.ultimo[id]; if (!u) return "";
+  const k = Object.entries(u).sort((a, b) => a[1] < b[1] ? 1 : -1)[0]; const d = diasDesde(k[1]);
+  return `${k[0]} hace ${d === 0 ? "hoy" : d === 1 ? "1 día" : d + " días"}`;
+}
+function svPendientes() {
+  if (!SERV) return {pagar: [], capturar: [], precios: [], nuevos: []};
+  const pp = svPapel();
+  return {pagar: pp === "dir" ? SERV.jornadas.filter(j => j["Estatus"] === "Por pagar") : [],
+    capturar: ["dir", "oficina"].includes(pp) ? SERV.jornadas.filter(j => j["Estatus"] === "Pagada") : [],
+    precios: ["dir", "oficina"].includes(pp) ? SERV.cargos.filter(c => c["Estatus"] === "Por revisar precio") : [],
+    nuevos: pp === "dir" ? SERV.nuevos.filter(n => n["Estatus"] === "Por aprobar") : []};
+}
+function cardJornada(j) {
+  const pp = svPapel(), e = j["Estatus"], a = [];
+  a.push(`<button class="btn" data-sv-ver="${esc(j.ID)}">Ver lista</button>`, btnFotos(j["Evidencias"], "Evidencia"));
+  if (e === "Por pagar" && pp === "dir") a.push(`<button class="btn btn-dark" data-sv-pagar="${esc(j.ID)}">Ya la pagué</button>`);
+  if (e === "Pagada" && ["dir", "oficina"].includes(pp)) a.push(`<button class="btn btn-dark" data-sv-capturar="${esc(j.ID)}">Capturar en GASTOS</button>`);
+  if (["Por pagar", "Sin costo", "Pagada"].includes(e) && (pp !== "registra" || (j["Registró"] === YO.usuario.nombre && e !== "Pagada"))) a.push(`<button class="btn" data-sv-cancelar="${esc(j.ID)}">Cancelar</button>`);
+  return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">🔨 ${esc(j["Tipo"])} · ${esc(j["Caballos"])} caballo${j["Caballos"] == 1 ? "" : "s"}</p>
+    <p class="card-m">${esc(fDia(isoDe(j["Fecha"]) || hoyISO()))}${j["Proveedor"] ? " · " + esc(j["Proveedor"]) : ""} · registró ${esc(j["Registró"])}</p>
+    ${j["Pagó"] ? `<p class="card-m">Pagó ${esc(j["Pagó"])}</p>` : ""}${j["Capturó"] ? `<p class="card-m">Capturó ${esc(j["Capturó"])}</p>` : ""}</div>
+    <div style="text-align:right"><div class="cc-monto">${money(numv(j["Total"]))}</div><span class="badge ${SV_BADGE[e] || "b-info"}">${esc(e)}</span></div></div>
+    ${j["Notas"] ? `<p class="card-m" style="white-space:pre-wrap">${esc(j["Notas"])}</p>` : ""}<div class="acts">${a.filter(Boolean).join("")}</div></article>`;
+}
+function cardCargo(c) {
+  const pend = c["Estatus"] === "Por revisar precio", pp = svPapel(), puede = ["dir", "oficina"].includes(pp);
+  return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(c["Caballo"])} · ${esc(c["Servicio"])}</p>
+    <p class="card-m">${esc(c["Cliente"])} · ${esc(c["Folio"])} · ${esc(String(c["Fecha"]).slice(0, 10))}</p></div>
+    <div style="text-align:right"><div class="cc-monto">${money(numv(c["Precio"] || c["Precio sugerido"]))}</div><span class="badge ${SV_BADGE[c["Estatus"]] || "b-info"}">${esc(c["Estatus"])}</span></div></div>
+    <p class="card-m">Costo ${money(numv(c["Costo"]))} · sugerido ${money(numv(c["Precio sugerido"]))}${c["Revisó"] ? " · revisó " + esc(c["Revisó"]) : ""}${c["Notas"] ? " · " + esc(c["Notas"]) : ""}</p>
+    ${pend && puede ? `<div class="acts" style="align-items:center"><input class="search" style="max-width:140px" type="number" inputmode="decimal" id="cg-${esc(c.ID)}" value="${esc(numv(c["Precio sugerido"]))}">
+      <button class="btn btn-dark" data-sv-precio="${esc(c.ID)}">Confirmar precio</button><button class="btn" data-sv-cargo-x="${esc(c.ID)}">No se cobra</button></div>` : ""}</article>`;
+}
+function cardNuevo(n) {
+  const pend = n["Estatus"] === "Por aprobar";
+  return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">🐴 ${esc(n["Nombre"])}</p>
+    <p class="card-m">${[n["Raza"], n["Sexo"], n["Capa"]].filter(Boolean).map(esc).join(" · ")} · dueño: ${esc(n["Dueño"] || "Rancho")} · lo agregó ${esc(n["Registró"])} · ${esc(String(n["Fecha"]).slice(0, 10))}</p></div>
+    <span class="badge ${SV_BADGE[n["Estatus"]] || "b-info"}">${esc(n["Estatus"])}</span></div>${n["Notas"] ? `<p class="card-m">${esc(n["Notas"])}</p>` : ""}
+    <div class="acts">${btnFotos(n["Foto"], "Foto")}${pend && svPapel() === "dir" ? `<button class="btn btn-dark" data-sv-resolver="${esc(n.ID)}">Aprobar o ligar</button>` : ""}</div></article>`;
+}
+function hoyServicios() {
+  if (!SERV || !["dir", "oficina"].includes(svPapel())) return "";
+  const p = svPendientes(); let d = "";
+  if (p.capturar.length) d += `<p class="lbl oro">Jornadas pagadas por capturar en GASTOS (${p.capturar.length})</p>${p.capturar.map(cardJornada).join("")}`;
+  if (p.precios.length) d += `<div class="linea"><b>${p.precios.length} cargo${p.precios.length === 1 ? "" : "s"} a clientes</b> esperan que confirmes el precio. <button class="btn" type="button" onclick="st.svTab='cargos';ir('servicios')">Revisar</button></div>`;
+  if (svPapel() === "oficina" && SERV.jornadas.some(j => j["Estatus"] === "Por pagar")) d += `<div class="linea">${SERV.jornadas.filter(j => j["Estatus"] === "Por pagar").length} jornada(s) esperan que Mario las pague.</div>`;
+  return d ? bloque("Herrajes y servicios", d) : "";
+}
+function vServicios() {
+  const S = SERV, pp = S.papel, f = st.svTab || "jornadas", p = svPendientes(), dinero = YO.permisos.dinero === "todo";
+  const tabs = [["jornadas", "Jornadas"], ["caballos", "Por caballo"], ...(dinero ? [["cargos", `Cargos a clientes${p.precios.length ? " (" + p.precios.length + ")" : ""}`]] : []), ["nuevos", `Caballos nuevos${S.nuevos.filter(n => n["Estatus"] === "Por aprobar").length ? " (" + S.nuevos.filter(n => n["Estatus"] === "Por aprobar").length + ")" : ""}`]];
+  let cuerpo = "";
+  if (f === "jornadas") {
+    const pend = [...p.pagar, ...p.capturar], resto = S.jornadas.slice().reverse().filter(j => !pend.includes(j));
+    cuerpo = `${pend.length ? `<h3>Pendientes (${pend.length})</h3>${pend.map(cardJornada).join("")}` : ""}${p.nuevos.length ? `<h3>Caballos nuevos por aprobar (${p.nuevos.length})</h3>${p.nuevos.map(cardNuevo).join("")}` : ""}
+      <h3>Jornadas</h3>${resto.length ? resto.slice(0, 60).map(cardJornada).join("") : `<div class="empty">Todavía no hay jornadas registradas.</div>`}`;
+  }
+  if (f === "caballos") {
+    const tipos = ["Recorte", "Herrada completa", "Herrada (solo manos)", "Palpación / ecografía"];
+    cuerpo = `<p class="sub">Hace cuántos días se le hizo cada servicio a cada caballo que está en el rancho.</p><div class="tbl-wrap"><table><thead><tr><th>Caballo</th><th>Grupo</th>${tipos.map(t => `<th>${esc(t)}</th>`).join("")}</tr></thead><tbody>${
+      S.caballos.map(c => { const u = S.ultimo[c.id] || {}; return `<tr><td><b>${esc(c.nombre)}</b>${c.dueno !== "Rancho" ? `<br><small class="card-m">${esc(c.dueno)}</small>` : ""}</td><td>${esc(c.grupo)}</td>${tipos.map(t => { const d = diasDesde(u[t]); return `<td>${d === null ? "—" : d + " d"}</td>`; }).join("")}</tr>`; }).join("")}</tbody></table></div>`;
+  }
+  if (f === "cargos") {
+    const mes = st.svMes || hoyISO().slice(0, 7), L = S.cargos.filter(c => String(c["Fecha"]).slice(0, 7) === mes && c["Estatus"] !== "Cancelado"), g = {};
+    L.forEach(c => { const k = c["Cliente"] + " · " + c["Folio"]; (g[k] = g[k] || []).push(c); });
+    cuerpo = `<p class="sub">Herrajes y servicios a caballos de clientes. El precio sugerido es el costo más el margen de la pestaña MÁRGENES; confírmalo o cámbialo antes de mandar el estado de cuenta.</p>
+      <div class="bar"><input type="month" class="mes" id="sv-mes" value="${esc(mes)}"></div>
+      ${p.precios.length ? `<h3>Por confirmar precio (${p.precios.length})</h3>${p.precios.map(cardCargo).join("")}` : ""}
+      <h3>Por cliente en el mes</h3>${Object.keys(g).length ? Object.entries(g).map(([k, l]) => `<details class="prov"><summary><span>${esc(k)}</span><span>${money(l.reduce((a, c) => a + numv(c["Precio"] || c["Precio sugerido"]), 0))}${l.some(c => c["Estatus"] !== "Confirmado") ? ` <span class="badge b-warn">falta confirmar</span>` : ""}</span></summary>${l.map(cardCargo).join("")}</details>`).join("") : `<div class="empty">Sin cargos este mes.</div>`}`;
+  }
+  if (f === "nuevos") cuerpo = S.nuevos.length ? S.nuevos.slice().reverse().map(cardNuevo).join("") : `<div class="empty">Nadie ha agregado caballos nuevos.</div>`;
+  return `<h2>Herrajes y servicios</h2><p class="sub">Cada visita del herrero o del médico: qué se le hizo a cada caballo, cuánto costó y cuándo le toca otra vez.</p>
+    ${YO.permisos.acciones.includes("servicio") ? `<div class="big-actions"><button class="btn btn-dark" data-sv-jornada="1">🔨 Nueva jornada</button></div>` : ""}
+    <div class="bar">${tabs.map(([k, n]) => `<button class="chip" data-sv-tab="${k}" aria-pressed="${f === k}">${n}</button>`).join("")}</div>${cuerpo}`;
+}
+/* ----- formulario de jornada: lista de caballos con casillas ----- */
+function svFila(c, i) {
+  const ult = svUltimo(c.id);
+  return `<div class="sv-row" data-i="${i}"><label class="chk sv-sel"><input type="checkbox" data-sv-on="${i}"> <span><b>${esc(c.nombre)}</b>${c.dueno !== "Rancho" ? ` <span class="badge b-info">${esc(c.dueno)}</span>` : ""}${c.nuevo ? ` <span class="badge b-warn">nuevo</span>` : ""}<br><small class="card-m">${esc([c.raza, c.sexo].filter(Boolean).join(" · "))}${ult ? (c.raza || c.sexo ? " · " : "") + "último: " + esc(ult) : ""}</small></span></label>
+    <div class="sv-det hide"><div class="sv-chips">${[...SERV.herraje, ...SERV.medico].map(s => `<button type="button" class="chip" data-sv-s="${esc(s)}" aria-pressed="false">${esc(s)}</button>`).join("")}</div>
+      <div class="dos"><div><label>Costo</label><input type="number" inputmode="decimal" min="0" step="1" data-sv-costo placeholder="$"></div><div><label>Próxima (opcional)</label><input type="date" data-sv-prox min="${hoyISO()}"></div></div>
+      <input data-sv-nota maxlength="300" placeholder="Nota (opcional)"></div></div>`;
+}
+function svCaballosHtml(lista) {
+  const g = {}; lista.forEach((c, i) => (g[c.grupo] = g[c.grupo] || []).push([c, i]));
+  return Object.entries(g).map(([k, l]) => `<p class="lbl gris">${esc(k)} (${l.length})</p>${l.map(([c, i]) => svFila(c, i)).join("")}`).join("");
+}
+let SV_LISTA = [];
+async function abrirJornada() {
+  if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
+  if (!SERV) { try { await cargar("servicios"); } catch (err) { return alert(err.message); } }
+  SV_LISTA = SERV.caballos.slice();
+  const medico = YO.usuario.rol === "medico", prov = medico ? YO.usuario.nombre : "";
+  const box = dialogo(medico ? "Registrar servicios" : "Jornada de herraje", `<div class="frm">
+    <div class="dos"><div><label>Fecha</label><input id="sv-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div><div><label>¿Quién lo hizo?</label><input id="sv-p" list="sv-ps" value="${esc(prov)}" placeholder="Ej. el herrero"><datalist id="sv-ps">${(SERV.proveedores || []).map(x => `<option value="${esc(x)}">`).join("")}</datalist></div></div>
+    <div class="ctx"><b>Para varios a la vez:</b> marca los caballos, elige el servicio y el costo aquí, y aprieta "Aplicar a los marcados".
+      <div class="sv-chips" id="sv-gs">${[...SERV.herraje, ...SERV.medico].map(s => `<button type="button" class="chip" data-sv-gs="${esc(s)}" aria-pressed="false">${esc(s)}</button>`).join("")}</div>
+      <div class="dos"><div><input id="sv-gc" type="number" inputmode="decimal" min="0" placeholder="Costo por caballo $"></div><div><input id="sv-gp" type="date" min="${hoyISO()}" title="Próxima fecha"></div></div>
+      <button type="button" class="btn" id="sv-apl">Aplicar a los marcados</button></div>
+    <input class="search" id="sv-q" placeholder="Buscar caballo" style="margin:0 0 8px">
+    <div id="sv-lista">${svCaballosHtml(SV_LISTA)}</div>
+    <details class="more" id="sv-nuevo-w"><summary>+ Caballo que no está en la lista</summary>
+      <div class="dos"><div><label>Nombre</label><input id="nv-n" maxlength="60"></div><div><label>Raza</label><select id="nv-r"><option>Friesian</option><option>Gypsy Vanner</option><option>Otra</option></select></div></div>
+      <div class="dos"><div><label>Sexo</label><select id="nv-s"><option>Hembra</option><option>Macho</option></select></div><div><label>Capa</label><input id="nv-c" maxlength="40" placeholder="Ej. negra, pinta"></div></div>
+      <label>¿De quién es?</label><input id="nv-d" maxlength="60" placeholder="Rancho, o nombre del cliente" value="Rancho">
+      <label>Nota (opcional)</label><input id="nv-x" maxlength="300">
+      <label class="foto-btn">📷 Foto del caballo (opcional)<input type="file" id="nv-f" accept="image/*"></label>
+      <button type="button" class="btn btn-dark" id="nv-ok">Agregar a la lista</button><p class="card-m">Le llega a Nico para darlo de alta; mientras, ya le puedes registrar servicios.</p></details>
+    <label>Fotos o documentos de la jornada (opcional)</label>${campoFotos("Tomar o subir", true)}
+    <label>Notas generales (opcional)</label><textarea id="sv-n" rows="2" maxlength="500"></textarea>
+    <p class="ok-big" id="sv-tot">Total: $0 · 0 caballos</p>
+    <button class="btn btn-dark" id="d-ok" type="button">Guardar jornada</button></div>`);
+  activarFotos(box);
+  const filas = () => [...box.querySelectorAll(".sv-row")];
+  const total = () => { let t = 0, n = 0; filas().forEach(r => { if (r.querySelector("[data-sv-on]").checked) { n++; t += Number(r.querySelector("[data-sv-costo]").value) || 0; } });
+    box.querySelector("#sv-tot").textContent = `Total: ${money(t)} · ${n} caballo${n === 1 ? "" : "s"}`; };
+  const enlazar = () => {
+    filas().forEach(r => { if (r.dataset.ok) return; r.dataset.ok = 1;
+      r.querySelector("[data-sv-on]").addEventListener("change", e => { r.querySelector(".sv-det").classList.toggle("hide", !e.target.checked); total(); });
+      r.querySelectorAll("[data-sv-s]").forEach(b => b.addEventListener("click", () => b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true")));
+      r.querySelector("[data-sv-costo]").addEventListener("input", total); });
+  };
+  enlazar();
+  box.querySelectorAll("[data-sv-gs]").forEach(b => b.addEventListener("click", () => b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true")));
+  box.querySelector("#sv-q").addEventListener("input", e => { const q = e.target.value.trim().toLowerCase(); filas().forEach(r => { const c = SV_LISTA[r.dataset.i]; r.style.display = !q || (c.nombre + " " + c.dueno).toLowerCase().includes(q) ? "" : "none"; }); });
+  box.querySelector("#sv-apl").addEventListener("click", () => {
+    const sel = [...box.querySelectorAll("[data-sv-gs][aria-pressed=true]")].map(b => b.dataset.svGs), c = box.querySelector("#sv-gc").value, px = box.querySelector("#sv-gp").value;
+    const marc = filas().filter(r => r.querySelector("[data-sv-on]").checked); if (!marc.length) return alert("Primero marca los caballos.");
+    marc.forEach(r => { if (sel.length) r.querySelectorAll("[data-sv-s]").forEach(b => b.setAttribute("aria-pressed", sel.includes(b.dataset.svS)));
+      if (c !== "") r.querySelector("[data-sv-costo]").value = c; if (px) r.querySelector("[data-sv-prox]").value = px; });
+    total(); toast(`Aplicado a ${marc.length} caballo${marc.length === 1 ? "" : "s"}`);
+  });
+  box.querySelector("#nv-ok").addEventListener("click", async e => {
+    const v = id => box.querySelector(id).value.trim(), nombre = v("#nv-n"); if (nombre.length < 2) return alert("Escribe el nombre del caballo.");
+    const bt = e.target; bt.disabled = true; bt.textContent = "Agregando…";
+    try { const f = box.querySelector("#nv-f").files[0], archivos = f ? [await comprimir(f)] : [];
+      const j = await post({accion: "hacer", tipo: "servicio", op: "caballo_nuevo", caballo: {nombre, raza: v("#nv-r"), sexo: v("#nv-s"), capa: v("#nv-c"), dueno: v("#nv-d") || "Rancho", notas: v("#nv-x")}, archivos});
+      const c = {id: j.id, nombre: j.nombre || nombre.toUpperCase(), raza: v("#nv-r"), sexo: v("#nv-s"), grupo: "Nuevos (por aprobar)", dueno: v("#nv-d") || "Rancho", folio: "", nuevo: true};
+      SV_LISTA.push(c); box.querySelector("#sv-lista").insertAdjacentHTML("beforeend", `<p class="lbl gris">Recién agregado</p>` + svFila(c, SV_LISTA.length - 1)); enlazar();
+      const r = filas().pop(); r.querySelector("[data-sv-on]").checked = true; r.querySelector(".sv-det").classList.remove("hide"); r.scrollIntoView({block: "center"});
+      box.querySelector("#sv-nuevo-w").open = false; ["#nv-n", "#nv-c", "#nv-x"].forEach(id => box.querySelector(id).value = ""); toast("Agregado. Ya le puedes registrar servicios.");
+    } catch (err) { alert(err.message); } bt.disabled = false; bt.textContent = "Agregar a la lista";
+  });
+  box.querySelector("#d-ok").onclick = () => {
+    const items = filas().filter(r => r.querySelector("[data-sv-on]").checked).map(r => { const c = SV_LISTA[r.dataset.i];
+      return {idCaballo: c.id, caballo: c.nombre, dueno: c.dueno, folio: c.folio, servicios: [...r.querySelectorAll("[data-sv-s][aria-pressed=true]")].map(b => b.dataset.svS),
+        costo: r.querySelector("[data-sv-costo]").value, proxima: r.querySelector("[data-sv-prox]").value, nota: r.querySelector("[data-sv-nota]").value.trim()}; });
+    if (!items.length) return alert("Marca los caballos que se atendieron.");
+    const sin = items.filter(x => !x.servicios.length); if (sin.length) return alert("Falta elegir el servicio de: " + sin.map(x => x.caballo).join(", "));
+    const vacios = items.filter(x => x.costo === ""); if (vacios.length && !confirm(`${vacios.length} caballo(s) sin costo. ¿Guardar así (sin costo)?`)) return;
+    const jor = {fecha: box.querySelector("#sv-f").value, proveedor: box.querySelector("#sv-p").value.trim(), notas: box.querySelector("#sv-n").value.trim(), items};
+    enviar(box, {tipo: "servicio", op: "jornada", jornada: jor}, "Jornada guardada. Ya les llegó a Mario y Judith.", j => {
+      if (confirm("¿Compartir la lista por WhatsApp?")) window.open(wa(svTexto({Fecha: jor.fecha, Proveedor: jor.proveedor, Total: j.total, items: items.map(x => ({caballo: x.caballo, servicio: x.servicios.join(" + "), costo: x.costo, dueno: x.dueno}))})), "_blank", "noopener"); });
+  };
+}
+function svTexto(j) {
+  const L = (j.items || []).map(x => `• ${x.caballo}${x.dueno && x.dueno !== "Rancho" ? " (" + x.dueno + ")" : ""}: ${x.servicio}${numv(x.costo) ? " · " + money(numv(x.costo)) : ""}`);
+  return `Rancho El Descanso · ${j.Tipo || "Jornada"} del ${fDia(isoDe(j.Fecha) || hoyISO())}${j.Proveedor ? " · " + j.Proveedor : ""}\n${L.join("\n")}\nTotal: ${money(numv(j.Total))} · ${L.length} caballos`;
+}
+function svImprimir(j) {
+  const w = window.open("", "_blank"); if (!w) return alert("Permite ventanas emergentes para imprimir.");
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>Jornada ${esc(j.ID || "")}</title><style>body{font-family:system-ui,sans-serif;margin:28px;color:#111}h1{font-size:20px;margin:0 0 4px}p{margin:0 0 14px;color:#555}table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid #ddd;padding:7px 6px;text-align:left;font-size:13px}td.n,th.n{text-align:right}tfoot td{font-weight:700}</style>
+    <h1>Rancho El Descanso · ${esc(j.Tipo || "Jornada")}</h1><p>${esc(fDia(isoDe(j.Fecha) || hoyISO()))}${j.Proveedor ? " · " + esc(j.Proveedor) : ""} · registró ${esc(j["Registró"] || YO.usuario.nombre)}</p>
+    <table><thead><tr><th>Caballo</th><th>Dueño</th><th>Servicio</th><th>Nota</th><th>Próxima</th><th class="n">Costo</th></tr></thead><tbody>${(j.items || []).map(x => `<tr><td>${esc(x.caballo)}</td><td>${esc(x.dueno || "Rancho")}</td><td>${esc(x.servicio)}</td><td>${esc(String(x.nota || "").replace(/^[^·]*·?\s*/, ""))}</td><td>${esc(x.proxima || "")}</td><td class="n">${numv(x.costo) ? money(numv(x.costo)) : "—"}</td></tr>`).join("")}</tbody>
+    <tfoot><tr><td colspan="5">Total · ${(j.items || []).length} caballos</td><td class="n">${money(numv(j.Total))}</td></tr></tfoot></table><script>print()<\/script>`);
+  w.document.close();
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.svTab) { st.svTab = b.dataset.svTab; render(); }
+  if (b.dataset.svJornada) abrirJornada();
+  if (b.dataset.svVer) {
+    const j = SERV && SERV.jornadas.find(x => x.ID === b.dataset.svVer); if (!j) return;
+    const box = dialogo("Jornada · " + fDia(isoDe(j.Fecha) || hoyISO()), `<p class="card-m" style="text-align:left">${esc(j.Tipo)}${j.Proveedor ? " · " + esc(j.Proveedor) : ""} · ${esc(j.Estatus)}</p>${tabla(j.items.map(x => ({Caballo: x.caballo + (x.dueno && x.dueno !== "Rancho" ? " (" + x.dueno + ")" : ""), Servicio: x.servicio, Costo: numv(x.costo) ? money(numv(x.costo)) : "—", Próxima: x.proxima || ""})), ["Caballo", "Servicio", "Costo", "Próxima"], "Sin caballos.")}
+      <p class="ok-big">Total ${money(numv(j.Total))}</p><div class="big-actions" style="justify-content:center"><button class="btn btn-wa" type="button" id="sv-wa">Compartir por WhatsApp</button><button class="btn" type="button" id="sv-pr">Imprimir o PDF</button></div>`);
+    box.querySelector("#sv-wa").onclick = () => window.open(wa(svTexto(j)), "_blank", "noopener");
+    box.querySelector("#sv-pr").onclick = () => svImprimir(j);
+  }
+  const accion = async (body, ok) => { if (COMO) return toast("Estás en \"Ver como\": solo se puede ver."); b.disabled = true;
+    try { await post({accion: "hacer", tipo: "servicio", ...body}); toast(ok); SERV = null; REPORTES = null; render(); } catch (err) { alert(err.message); b.disabled = false; } };
+  if (b.dataset.svPagar) { const forma = prompt("¿Cómo le pagaste? (efectivo, transferencia…)", "Efectivo"); if (forma === null) return; accion({op: "pagar", id: b.dataset.svPagar, forma}, "Marcada como pagada. Le avisa a Judith para capturarla."); }
+  if (b.dataset.svCapturar && confirm("¿Pasar esta jornada a la pestaña GASTOS?")) accion({op: "capturar", id: b.dataset.svCapturar}, "Capturada en GASTOS");
+  if (b.dataset.svCancelar) { const nota = prompt("¿Por qué se cancela? (opcional)"); if (nota === null) return; accion({op: "cancelar_jornada", id: b.dataset.svCancelar, nota}, "Jornada cancelada"); }
+  if (b.dataset.svPrecio) { const inp = document.getElementById("cg-" + b.dataset.svPrecio); accion({op: "cargo_precio", id: b.dataset.svPrecio, precio: inp ? inp.value : ""}, "Precio confirmado"); }
+  if (b.dataset.svCargoX) { const nota = prompt("¿Por qué no se le cobra? (opcional)"); if (nota === null) return; accion({op: "cargo_cancelar", id: b.dataset.svCargoX, nota}, "Cargo quitado"); }
+  if (b.dataset.svResolver) {
+    const n = SERV.nuevos.find(x => x.ID === b.dataset.svResolver); if (!n) return;
+    const crd = (CABALLOS && CABALLOS.caballos) || [], folios = SERV.folios || [];
+    const box = dialogo("Caballo nuevo · " + n["Nombre"], `<div class="frm"><p class="ctx">${[n["Raza"], n["Sexo"], n["Capa"]].filter(Boolean).map(esc).join(" · ")} · dueño: ${esc(n["Dueño"] || "Rancho")} · lo agregó ${esc(n["Registró"])}${n["Notas"] ? "<br>" + esc(n["Notas"]) : ""}</p>
+      <div class="rads"><label class="rad"><input type="radio" name="nv-a" value="alta" checked> <span><b>Darlo de alta en CABALLOS CRD</b><small>Se crea su fila con el siguiente ID en su grupo (raza y sexo); tú completas registro, padres, etc.</small></span></label>
+        <label class="rad"><input type="radio" name="nv-a" value="ligar"> <span><b>Es un caballo que ya existe</b><small>Su historial pasa a ese caballo. Si es de un cliente, se generan sus cargos.</small></span></label>
+        <label class="rad"><input type="radio" name="nv-a" value="rechazar"> <span><b>Rechazar</b><small>No es un caballo del rancho ni de clientes.</small></span></label></div>
+      <div id="nv-lig" class="hide"><label>¿Cuál es?</label><input id="nv-dest" list="nv-dl" placeholder="Escribe el ID (CRD-…, P-…, M-…)"><datalist id="nv-dl">${crd.map(c => `<option value="${esc(c.ID)}">${esc(c.Nombre)}</option>`).join("")}${folios.map(f => `<option value="${esc(f.folio)}">${esc((f.nombre || "") + " · " + (f.cliente || ""))}</option>`).join("")}</datalist></div>
+      <button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+    if (!CABALLOS) cargar("caballos").then(() => { const dl = box.querySelector("#nv-dl"); if (dl) dl.insertAdjacentHTML("afterbegin", CABALLOS.caballos.map(c => `<option value="${esc(c.ID)}">${esc(c.Nombre)}</option>`).join("")); }).catch(() => {});
+    box.querySelectorAll("input[name=nv-a]").forEach(r => r.addEventListener("change", () => box.querySelector("#nv-lig").classList.toggle("hide", box.querySelector("input[name=nv-a]:checked").value !== "ligar")));
+    box.querySelector("#d-ok").onclick = () => { const a = box.querySelector("input[name=nv-a]:checked").value, destino = box.querySelector("#nv-dest").value.trim().toUpperCase();
+      if (a === "ligar" && !/^(CRD-[A-Z]+-\d+|[PM]-\d+)$/.test(destino)) return alert("Escribe el ID del caballo (CRD-…, P-… o M-…).");
+      enviar(box, {tipo: "servicio", op: "caballo_resolver", id: n.ID, paso: a, destino}, a === "alta" ? "Dado de alta en CABALLOS CRD. Complétalo en la Maestra." : a === "ligar" ? "Ligado. Su historial ya está en ese caballo." : "Rechazado", () => { SERV = null; REPORTES = null; }); };
+  }
+});
+document.addEventListener("change", e => { if (e.target.id === "sv-mes") { st.svMes = e.target.value; render(); } });
 
 /* ---------- fase 2 (2 oct 2026): tareas, salud, bitácora, proveedores, contabilidad, equipo ---------- */
 const hoyD = () => hoyISO();
@@ -1452,7 +1673,7 @@ function activarFotos(box) {
 async function archivosDe(box) { const inp = box.querySelector("#d-fotos"); if (!inp || !inp.files.length) return []; const out = []; for (const f of [...inp.files].slice(0, 6)) out.push(await comprimir(f)); return out; }
 async function enviar(box, body, ok, despues) {
   const b = box.querySelector("#d-ok"); b.disabled = true; b.textContent = "Guardando…";
-  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = null; if (despues) despues(j); render(); }
+  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = SERV = null; if (despues) despues(j); render(); }
   catch (e) { alert(e.message); b.disabled = false; b.textContent = "Intentar de nuevo"; }
 }
 const opt = (l, sel) => l.map(x => `<option${x === sel ? " selected" : ""}>${esc(x)}</option>`).join("");
