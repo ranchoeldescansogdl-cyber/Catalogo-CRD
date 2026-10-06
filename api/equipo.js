@@ -487,7 +487,7 @@ async function compraPost(u, body, res) {
 
 /* ---------- herrajes y servicios (4 oct 2026) ---------- */
 const puedeServ = u => puede(u, "herrajes") || puede(u, "salud");
-const SERV_HERRAJE = ["Recorte", "Herrada"]; // + "Otro herraje: <qué>" (5 oct 2026: solo recorte, herrada u otro)
+const SERV_HERRAJE = ["Recorte", "Medio herraje", "Herraje completo"]; // + "Otro herraje: <qué>" (6 oct 2026: se agregó Medio herraje; "Herrada" = Herraje completo)
 const SERV_MEDICO = ["Palpación / ecografía", "Vacuna", "Desparasitación", "Dental", "Revisión", "Tratamiento", "Monta / inseminación", "Otro servicio médico"];
 const papelServ = u => ORG.revisaTodo(u) ? "dir" : u.permisos.dinero === "todo" ? "oficina" : u.permisos.acciones.includes("servicio") ? "registra" : "";
 const limpia = r => { const x = {...r}; delete x._fila; return x; };
@@ -509,7 +509,7 @@ function serviciosVista(j, m, u) {
   /* último servicio de cada caballo, por tipo */
   const ultimo = {};
   serv.forEach(r => { const k = r["ID caballo"] || r["Caballo"], f = isoFecha(r["Fecha"]); if (!k || !f) return;
-    String(r["Servicio"] || "").split(" + ").filter(Boolean).map(s => /^Herrada/.test(s) ? "Herrada" : s.replace(/:.*$/, "")).forEach(s => { ultimo[k] = ultimo[k] || {}; if (!ultimo[k][s] || ultimo[k][s] < f) ultimo[k][s] = f; }); });
+    String(r["Servicio"] || "").split(" + ").filter(Boolean).map(s => /^Herrada/.test(s) ? "Herraje completo" : s.replace(/:.*$/, "")).forEach(s => { ultimo[k] = ultimo[k] || {}; if (!ultimo[k][s] || ultimo[k][s] < f) ultimo[k][s] = f; }); });
   const jornadas = j.jornadas.map(x => ({...limpia(x), items: (porJornada[x["ID"]] || []).map(r => ({caballo: r["Caballo"], id: r["ID caballo"], dueno: r["Dueño"], folio: r["Folio cliente"],
     servicio: r["Servicio"], costo: r["Costo"], nota: String(r["Descripción"] || ""), proxima: r["Próxima fecha"]}))}));
   return {papel, jornadas, nuevos: j.nuevos.map(limpia), caballos: caballosRancho(m, j.nuevos), ultimo, herraje: SERV_HERRAJE, medico: SERV_MEDICO,
@@ -525,12 +525,12 @@ async function servicioPost(u, body, res) {
   const manda = (extra) => agendaPost("panel_servicios", {quien: u.nombre, ...extra}).then(r => res.status(r.ok ? 200 : 400).json(r));
   if (op === "jornada") {
     if (!u.permisos.acciones.includes("servicio")) return no("Tu puesto no registra servicios.");
-    const j = body.jornada || {}, validos = [...SERV_HERRAJE, ...SERV_MEDICO], otro = /^Otro (herraje|servicio médico): \S.{0,58}$/;
+    const j = body.jornada || {}, validos = [...SERV_HERRAJE, "Herrada", ...SERV_MEDICO], otro = /^Otro (herraje|servicio médico): \S.{0,58}$/;
     const items = (Array.isArray(j.items) ? j.items : []).slice(0, 150).map(x => ({idCaballo: String(x.idCaballo || "").slice(0, 30), caballo: String(x.caballo || "").slice(0, 60),
       dueno: String(x.dueno || "Rancho").slice(0, 60), folio: /^[PM]-\d+$/.test(String(x.folio || "")) ? x.folio : "", servicios: (x.servicios || []).map(s => String(s || "").trim()).filter(s => validos.includes(s) || otro.test(s)).slice(0, 6),
       costo: Math.max(0, Number(String(x.costo || "").replace(/[^0-9.]/g, "")) || 0), nota: String(x.nota || "").slice(0, 300), proxima: x.proxima})).filter(x => x.caballo && x.servicios.length);
     if (!items.length) return no("Marca al menos un caballo con su servicio.", 400);
-    const herr = s => /^(Recorte|Herrada|Otro herraje)/.test(s);
+    const herr = s => /^(Recorte|Herrada|Medio herraje|Herraje completo|Otro herraje)/.test(s);
     if (items.some(x => x.servicios.some(herr)) && !puede(u, "herrajes")) return no("Tu puesto no registra herrajes.");
     if (items.some(x => x.servicios.some(s => !herr(s))) && !puede(u, "salud")) return no("Tu puesto no registra servicios médicos.");
     return manda({op, jornada: {fecha: j.fecha, proveedor: String(j.proveedor || "").slice(0, 60), notas: String(j.notas || "").slice(0, 500), items}, archivos});
