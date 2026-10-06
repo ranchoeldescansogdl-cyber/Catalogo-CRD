@@ -125,7 +125,6 @@ dialog::backdrop{background:rgba(0,0,0,.75)}
 .frm label{display:block;font-size:.88rem;color:var(--muted);margin:0 0 4px}
 .frm input,.frm select,.frm textarea{width:100%;border:1px solid var(--rule);border-radius:10px;padding:11px 12px;margin:0 0 12px;background:#fff;font-size:1rem}
 .frm .dos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.frm .tres{display:grid;grid-template-columns:repeat(3,1fr);gap:8px} .frm .tres label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .frm .btn-dark{width:100%;justify-content:center;padding:13px;font-size:1rem}
 .fotos-prev{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px}
 .fotos-prev img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--rule)}
@@ -236,7 +235,6 @@ body.como main .acts,body.como main .big-actions,body.como .hoy-acts,body.como .
 .r-ap{padding:10px 20px;font-size:1rem}
 .r-kpi .kpi span+span{margin-top:4px}
 @media (max-width:600px){ .who span{display:none} .time{min-width:52px;font-size:1.15rem} .frm .dos{grid-template-columns:1fr} }
-@media (max-width:420px){ .frm .tres{grid-template-columns:1fr} .frm .tres label{white-space:normal} }
 /* cancelar y reagendar (3 oct 2026) */
 .ctx{background:var(--mist);border-radius:10px;padding:10px 12px;margin:0 0 14px;font-size:.95rem}
 .rads{display:grid;gap:8px;margin:0 0 14px}
@@ -867,7 +865,7 @@ function svUltimo(id) {
   const k = Object.entries(u).sort((a, b) => a[1] < b[1] ? 1 : -1)[0]; const d = diasDesde(k[1]);
   return `${k[0]} hace ${d === 0 ? "hoy" : d === 1 ? "1 día" : d + " días"}`;
 }
-const svEsHerr = s => /^(Recorte|Herrada|Medio herraje|Herraje completo|Otro herraje)/.test(String(s || ""));
+const svEsHerr = s => /^(Recorte|Herrada|Otro herraje)/.test(String(s || ""));
 const svDeModo = (j, modo) => !modo || (modo === "herraje" ? /Herraje/.test(j["Tipo"]) : /Médico/.test(j["Tipo"]));
 const svCargoDeModo = (c, modo) => !modo || (modo === "herraje") === svEsHerr(c["Servicio"]);
 function svPendientes(modo) {
@@ -924,7 +922,7 @@ function vServicios(modo, o = {}) { // o.tab + o.embed: dentro de Salud de cabal
       <h3>${modo === "herraje" ? "Visitas del herrero" : "Servicios registrados"}</h3>${resto.length ? resto.slice(0, 60).map(cardJornada).join("") : `<div class="empty">Todavía no hay nada registrado.</div>`}`;
   }
   if (f === "caballos") {
-    const tipos = modo === "herraje" ? HERR_TIPOS : ["Palpación / ecografía", "Vacuna", "Desparasitación", "Revisión"];
+    const tipos = modo === "herraje" ? ["Recorte", "Herrada"] : ["Palpación / ecografía", "Vacuna", "Desparasitación", "Revisión"];
     cuerpo = `<p class="sub">Hace cuántos días se le hizo cada servicio a cada caballo que está en el rancho.</p><div class="tbl-wrap"><table><thead><tr><th>Caballo</th><th>Grupo</th>${tipos.map(t => `<th>${esc(t)}</th>`).join("")}</tr></thead><tbody>${
       S.caballos.map(c => { const u = S.ultimo[c.id] || {}; return `<tr><td><b>${esc(c.nombre)}</b>${c.dueno !== "Rancho" ? `<br><small class="card-m">${esc(c.dueno)}</small>` : ""}</td><td>${esc(c.grupo)}</td>${tipos.map(t => { const d = diasDesde(u[t]); return `<td>${d === null ? "—" : d + " d"}</td>`; }).join("")}</tr>`; }).join("")}</tbody></table></div>`;
   }
@@ -939,14 +937,12 @@ function vServicios(modo, o = {}) { // o.tab + o.embed: dentro de Salud de cabal
   if (f === "nuevos") cuerpo = S.nuevos.length ? S.nuevos.slice().reverse().map(cardNuevo).join("") : `<div class="empty">Nadie ha agregado caballos nuevos.</div>`;
   const her = modo === "herraje";
   if (o.embed) return cuerpo;
-  return `<h2>${her ? "Herrajes" : "Servicios médicos"}</h2><p class="sub">${her ? "Recortes, medios herrajes y herrajes completos de cada visita del herrero: a qué caballo, cuánto costó y cuándo le toca otra vez." : "Palpaciones, vacunas, chequeos, medicamentos y lo demás que hacen los médicos a cada caballo."}</p>
+  return `<h2>${her ? "Herrajes" : "Servicios médicos"}</h2><p class="sub">${her ? "Recortes y herradas de cada visita del herrero: a qué caballo, cuánto costó y cuándo le toca otra vez." : "Palpaciones, vacunas, chequeos, medicamentos y lo demás que hacen los médicos a cada caballo."}</p>
     ${YO.permisos.acciones.includes("servicio") ? `<div class="big-actions"><button class="btn btn-dark" data-sv-jornada="${modo}">${her ? "🔨 Registrar herraje" : "🩺 Registrar servicio médico"}</button></div>` : ""}
     <div class="bar">${tabs.map(([k, n]) => `<button class="chip" data-sv-tab="${k}" aria-pressed="${f === k}">${n}</button>`).join("")}</div>${cuerpo}`;
 }
 /* ----- registrar herraje (Chito) o servicios médicos (médicos) en 3 pasos: visita · caballos · revisar ----- */
-const SV_LEG = s => /^Herrada/.test(s) ? "Herraje completo" : /^Otro herraje/.test(s) ? "Otro" : s; // nombres viejos → nuevos (6 oct 2026: "Herrada" = Herraje completo)
-const HERR_TIPOS = ["Recorte", "Medio herraje", "Herraje completo"]; // 6 oct 2026: se agregó Medio herraje
-const HERR_PRECIOS = {"Recorte": 500, "Medio herraje": 700, "Herraje completo": 1200}; // precio de cada visita; se puede cambiar en el paso 1
+const SV_LEG = s => /^Herrada/.test(s) ? "Herrada" : /^Otro herraje/.test(s) ? "Otro" : s; // nombres viejos → nuevos
 let SVJ = null; // estado del formulario
 function svUltimaJornada(modo) {
   const L = (SERV.jornadas || []).filter(j => j["Estatus"] !== "Cancelada" && (modo === "herraje" ? /Herraje/.test(j["Tipo"]) : /Médico/.test(j["Tipo"])) && (j.items || []).length);
@@ -956,13 +952,13 @@ function svPrecioPrevio(servicio) {
   for (const j of (SERV.jornadas || []).slice().reverse()) for (const x of j.items || []) if (SV_LEG(String(x.servicio)) === servicio && numv(x.costo)) return numv(x.costo);
   return "";
 }
-function svOpciones() { return SVJ.modo === "herraje" ? [...HERR_TIPOS, "Otro"] : [...SERV.medico.filter(s => !/^Otro/.test(s)), "Otro"]; }
+function svOpciones() { return SVJ.modo === "herraje" ? ["Recorte", "Herrada", "Otro"] : [...SERV.medico.filter(s => !/^Otro/.test(s)), "Otro"]; }
 function svPaso1() {
   const ult = svUltimaJornada(SVJ.modo), her = SVJ.modo === "herraje";
   return `<p class="sv-paso">Paso 1 de 3 · La visita</p>
     <div class="dos"><div><label>Día de la visita</label><input id="sv-f" type="date" value="${esc(SVJ.fecha)}" max="${hoyISO()}"></div>
       <div><label>${her ? "Herrero" : "Médico"}</label><input id="sv-p" list="sv-ps" value="${esc(SVJ.proveedor)}" placeholder="${her ? "Nombre del herrero" : "Nombre"}"><datalist id="sv-ps">${(SERV.proveedores || []).map(x => `<option value="${esc(x)}">`).join("")}</datalist></div></div>
-    ${her ? `<p class="card-m" style="margin:4px 0 8px">Precios de esta visita: se llenan solos en cada caballo.</p><div class="tres">${HERR_TIPOS.map((k, n) => `<div><label>${esc(k)} $</label><input id="sv-pr-${n}" type="number" inputmode="decimal" min="0" value="${esc(SVJ.precios[k])}"></div>`).join("")}</div>`
+    ${her ? `<p class="card-m" style="margin:4px 0 8px">Precios de esta visita: se llenan solos en cada caballo.</p><div class="dos"><div><label>Recorte $</label><input id="sv-pr-Recorte" type="number" inputmode="decimal" min="0" value="${esc(SVJ.precios.Recorte)}"></div><div><label>Herrada $</label><input id="sv-pr-Herrada" type="number" inputmode="decimal" min="0" value="${esc(SVJ.precios.Herrada)}"></div></div>`
       : `<label>¿Qué se hizo? (lo más común; se puede cambiar por caballo)</label><div class="sv-chips">${svOpciones().filter(s => s !== "Otro").map(s => `<button type="button" class="chip" data-sv-def="${esc(s)}" aria-pressed="${SVJ.def === s}">${esc(s)}</button>`).join("")}</div>
         <label>Costo por caballo</label><input id="sv-pr-def" type="number" inputmode="decimal" min="0" placeholder="$" value="${esc(SVJ.precios.def)}">`}
     ${ult ? `<button type="button" class="btn sv-repetir" data-sv-repetir="1">↻ Repetir la última visita <small>(${esc(fCorta(isoDe(ult["Fecha"])))} · ${ult.items.length} caballos)</small></button>` : ""}
@@ -978,7 +974,7 @@ function svFila(c, i) {
 function svPaso2() {
   const g = {}; SVJ.lista.forEach((c, i) => (g[c.grupo] = g[c.grupo] || []).push(i));
   const q = SVJ.q.toLowerCase();
-  return `<p class="sv-paso">Paso 2 de 3 · ${SVJ.modo === "herraje" ? "Toca Recorte, Medio herraje, Herraje completo u Otro en cada caballo" : "Marca los caballos atendidos"}</p>
+  return `<p class="sv-paso">Paso 2 de 3 · ${SVJ.modo === "herraje" ? "Toca Recorte, Herrada u Otro en cada caballo" : "Marca los caballos atendidos"}</p>
     <input class="search" id="sv-q" placeholder="Buscar caballo" value="${esc(SVJ.q)}" style="margin:0 0 8px">
     ${Object.entries(g).map(([k, idx]) => { const vis = idx.filter(i => !q || (SVJ.lista[i].nombre + " " + SVJ.lista[i].dueno).toLowerCase().includes(q)); if (!vis.length) return "";
       const n = idx.filter(i => SVJ.sel[i]).length;
@@ -1018,7 +1014,7 @@ function svPintar() {
 function svLeer() { // guarda lo escrito en el paso actual antes de cambiar de paso
   const box = $("#dlg-b"), v = id => (box.querySelector(id) || {}).value;
   if (SVJ.paso === 1) { SVJ.fecha = v("#sv-f") || SVJ.fecha; SVJ.proveedor = (v("#sv-p") || "").trim();
-    if (SVJ.modo === "herraje") HERR_TIPOS.forEach((k, n) => SVJ.precios[k] = v("#sv-pr-" + n) || ""); else SVJ.precios.def = v("#sv-pr-def") || ""; }
+    if (SVJ.modo === "herraje") ["Recorte", "Herrada"].forEach(k => SVJ.precios[k] = v("#sv-pr-" + k) || ""); else SVJ.precios.def = v("#sv-pr-def") || ""; }
   if (SVJ.paso === 3) { SVJ.notas = v("#sv-n") || ""; }
 }
 function svPrecioDe(servicio) { return SVJ.modo === "herraje" ? (SVJ.precios[servicio] || "") : (SVJ.precios.def || ""); }
@@ -1029,7 +1025,7 @@ async function abrirJornada(modo) {
   if (modo === "medico" && !tiene("salud")) return toast("Tu puesto no registra servicios médicos.");
   const ult = svUltimaJornada(modo);
   SVJ = {modo, paso: 1, fecha: hoyISO(), proveedor: modo === "medico" && YO.usuario.rol === "medico" ? YO.usuario.nombre : (ult && ult["Proveedor"]) || "",
-    precios: modo === "herraje" ? {...HERR_PRECIOS} : {def: ""}, def: modo === "medico" ? (SERV.medico || [])[0] || "" : "",
+    precios: modo === "herraje" ? {Recorte: svPrecioPrevio("Recorte"), Herrada: svPrecioPrevio("Herrada")} : {def: ""}, def: modo === "medico" ? (SERV.medico || [])[0] || "" : "",
     lista: SERV.caballos.slice(), sel: {}, q: "", abiertos: {}, aviso: modo === "herraje" ? "6" : "0", notas: ""};
   dialogo(modo === "herraje" ? "Registrar herraje" : "Servicios médicos", "");
   svPintar();
@@ -1707,7 +1703,7 @@ const Q_BADGE = {"Borrador": "b-warn", "Contactado": "b-info", "Visita agendada"
 const abierta = q => !["Apartó", "Perdido"].includes(q["Estatus"]);
 function hoyCotiz() {
   if (!COTIZ) return "";
-  const nuevas = COTIZ.prospectos.filter(q => q["Estatus"] === "Borrador"), hoyQ = COTIZ.prospectos.filter(q => abierta(q) && q["Próximo contacto"] && q["Próximo contacto"] <= hoyD());
+  const nuevas = COTIZ.prospectos.filter(q => q["Estatus"] === "Borrador"), hoyQ = COTIZ.prospectos.filter(q => abierta(q) && (q._seg || (q["Próximo contacto"] && q["Próximo contacto"] <= hoyD())));
   if (!nuevas.length && !hoyQ.length) return "";
   return `<h3>Cotizaciones por atender</h3><div class="grid-kpi"><div class="kpi"><span>Nuevas sin contactar</span><b>${nuevas.length}</b></div><div class="kpi"><span>Toca contactar hoy</span><b>${hoyQ.length}</b></div></div>
     ${[...hoyQ, ...nuevas.filter(q => !hoyQ.includes(q))].slice(0, 4).map(cardCotiz).join("")}${nuevas.length + hoyQ.length > 4 ? `<button class="btn" onclick="ir('cotizaciones')">Ver todas</button>` : ""}`;
@@ -1715,7 +1711,8 @@ function hoyCotiz() {
 function cardCotiz(q) {
   const tel = String(q["Teléfono"] || "").replace(/\D/g, ""), wtel = tel.length === 10 ? "52" + tel : tel;
   const nom = String(q["Nombre"] || "").split(" ")[0];
-  const msg = `Hola ${nom}, te escribimos de Rancho El Descanso. Vimos que cotizaste tu ${String(q["Tipo de evento"] || "evento").toLowerCase()} en nuestra página${q["Fecha del evento"] ? " para el " + fDia(q["Fecha del evento"]) : ""}. ¿Te mandamos la propuesta formal o te gustaría venir a conocer el rancho?`;
+  const seg = q._seg; // seguimiento que toca hoy (días 2, 7 y 15), con su texto listo
+  const msg = seg ? seg.texto : `Hola ${nom}, te escribimos de Rancho El Descanso. Vimos que cotizaste tu ${String(q["Tipo de evento"] || "evento").toLowerCase()} en nuestra página${q["Fecha del evento"] ? " para el " + fDia(q["Fecha del evento"]) : ""}. ¿Te mandamos la propuesta formal o te gustaría venir a conocer el rancho?`;
   const venc = abierta(q) && q["Próximo contacto"] && q["Próximo contacto"] < hoyD();
   return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(q["Nombre"])} · ${esc(q["Tipo de evento"])}</p>
       <p class="card-m">Cotizó el ${esc(String(q["Creada"]).slice(0, 10))}${q["Atendió"] ? " · liga de " + esc(q["Atendió"]) : ""}${q["Asignada a"] ? " · lo atiende <b>" + esc(q["Asignada a"]) + "</b>" : ""}</p></div>
@@ -1725,8 +1722,10 @@ function cardCotiz(q) {
       <dt>WhatsApp</dt><dd><a href="tel:${esc(tel)}">${esc(q["Teléfono"])}</a></dd>${q["Correo"] ? `<dt>Correo</dt><dd>${esc(q["Correo"])}</dd>` : ""}
       ${q["Último paso"] ? `<dt>En la página</dt><dd>${esc(q["Último paso"])}</dd>` : ""}
       ${q["Próximo contacto"] ? `<dt>Próximo contacto</dt><dd class="${venc ? "t-vencida" : ""}">${esc(fDia(q["Próximo contacto"]))}</dd>` : ""}
+      ${seg ? `<dt>Toca hoy</dt><dd><b>Seguimiento ${seg.n}/3.</b> Mándalo con el botón verde (ya va escrito) y luego dale "Ya lo mandé". Si ya te contestó, dale "Ya contestó".</dd>` : ""}
       ${q["Seguimiento"] ? `<dt>Seguimiento</dt><dd style="white-space:pre-wrap">${esc(q["Seguimiento"])}</dd>` : ""}</dl>
-    <div class="acts">${tel ? `<a class="btn btn-wa" href="https://wa.me/${esc(wtel)}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}
+    <div class="acts">${tel ? `<a class="btn btn-wa" href="https://wa.me/${esc(wtel)}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">${seg ? "Mandar seguimiento " + seg.n + "/3" : "WhatsApp"}</a>` : ""}
+      ${seg && YO.permisos.acciones.includes("prospecto") ? `<button class="btn btn-dark" data-segok="${esc(q.ID)}" data-segn="${seg.n}">Ya lo mandé</button><button class="btn" data-segstop="${esc(q.ID)}">Ya contestó</button>` : ""}
       ${YO.permisos.acciones.includes("prospecto") ? `<button class="btn btn-dark" data-qseg="${esc(q.ID)}">Dar seguimiento</button>` : ""}
       ${YO.permisos.jefe && abierta(q) ? `<button class="btn" data-cambio-q="${esc(q.ID)}">Cancelar o cambiar fecha</button>` : ""}</div></article>`;
 }
@@ -1742,6 +1741,13 @@ function vCotizaciones() {
 document.addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.qf) { st.qFiltro = b.dataset.qf; render(); }
+  if (b.dataset.segok || b.dataset.segstop) { // seguimiento de cotización (5 oct 2026)
+    const id = b.dataset.segok || b.dataset.segstop, q = COTIZ.prospectos.find(x => x.ID === id); if (!q) return;
+    const n = Number(b.dataset.segn || 0), box = dialogo(b.dataset.segok ? "Seguimiento " + n + "/3 · " + q["Nombre"] : "Ya contestó · " + q["Nombre"],
+      `<div class="frm"><p>${b.dataset.segok ? "¿Ya le mandaste el seguimiento " + n + "/3 por WhatsApp? Queda anotado con tu nombre y el siguiente sale solo cuando le toque." : "Ya no le van a salir seguimientos a esta cotización. Sigue atendiéndola con Dar seguimiento."}</p>
+      <button class="btn btn-dark" id="d-ok">${b.dataset.segok ? "Sí, ya lo mandé" : "Sí, ya contestó"}</button></div>`);
+    box.querySelector("#d-ok").onclick = () => enviar(box, {tipo: "prospecto", id: q.ID, cambios: {seguimiento: b.dataset.segok ? n : "detener"}}, b.dataset.segok ? "Seguimiento anotado" : "Listo, ya no le salen seguimientos");
+  }
   if (b.dataset.qseg) {
     const q = COTIZ.prospectos.find(x => x.ID === b.dataset.qseg); if (!q) return;
     const box = dialogo("Seguimiento · " + q["Nombre"], `<div class="frm">
