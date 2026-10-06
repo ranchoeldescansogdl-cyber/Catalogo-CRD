@@ -846,6 +846,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
 @media (prefers-reduced-motion:reduce){.nav-row a,.topline .site-nav a{animation:none}}
 </style>
 <link rel="stylesheet" href="/lux.css">
+<script src="/ph.js"></script>
 </head>
 <body>
 
@@ -2717,7 +2718,7 @@ function initLegal(){
 initLegal();
 
 /* Meta Pixel (solo si hay ID) */
-function track(ev,params){ try{ if(window.fbq) fbq("track",ev,params||{}); }catch(e){} }
+function track(ev,params){ try{ if(window.fbq) fbq("track",ev,params||{}); }catch(e){} try{ if(window.phTrack) phTrack(ev,params); }catch(e){} }
 function initPixel(){
   const id=CONFIG.META_PIXEL_ID; if(!id) return;
   !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
