@@ -33,6 +33,30 @@
 .r-ins{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:10px 12px;margin:0 0 6px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}.r-ins p{margin:0}.r-ins .card-m{grid-column:1}.r-ins button{grid-column:2;grid-row:1/span 2}
 .r-graf{width:100%;max-width:240px;height:48px;display:block;margin:6px 0 2px}.r-vp{max-width:240px;border-radius:12px;display:block;margin:10px 0 0}
 @media (max-width:600px){.rc-d{min-height:64px;padding:3px}.rc-p{height:26px}.rc-p i{font-size:.6rem}}
+/* 11 oct 2026: calendario de redes dinámico (panel por día, editar ahí mismo, arrastrar para mover) */
+.rc-d:hover{border-color:var(--gold)}.rc-d.rc-drop{background:#fffaf0;border:2px dashed var(--gold-deep)}.rc-d.rc-pasado{background:#faf9f6}
+.rc-p[draggable=true]{cursor:grab}.rc-p.rc-arr{opacity:.4}.rc-p b{position:absolute;right:3px;top:1px;font-size:.62rem;color:#fff;text-shadow:0 0 3px #000;font-weight:600}
+.rc-tip{font-size:.8rem;color:var(--muted);margin:6px 0 0}
+#rcp{max-width:560px;width:100%;margin:0 0 0 auto;height:100dvh;max-height:100dvh;border-radius:16px 0 0 16px;display:none;flex-direction:column;background:var(--mist)}
+#rcp[open]{display:flex}
+.rcp-h{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--black);color:#fff}.rcp-h b{flex:1;font-family:var(--display);font-size:1.15rem;text-align:center}
+.rcp-h .btn{background:transparent;color:#fff;border-color:rgba(255,255,255,.35)}
+.rcp-b{flex:1;overflow:auto;padding:14px;text-align:left}
+.rcv{background:#fff;border:1px solid var(--rule);border-radius:14px;margin:0 0 14px;overflow:hidden;scroll-margin-top:10px}.rcv.rcv-foco{outline:2px solid var(--gold);outline-offset:-2px}
+.rcv-h{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--rule)}.rcv-h .t{flex:1;min-width:0}.rcv-h .t b{display:block}.rcv-h .t span{font-size:.85rem;color:var(--muted)}
+.rcv-hora{font-family:var(--display);font-size:1.25rem;min-width:52px}
+.rcv-media{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px 12px 0}.rcv-media>*{flex:0 0 auto;scroll-snap-align:start}
+.rcv-media img{height:190px;width:auto;max-width:280px;object-fit:cover;border-radius:10px;display:block;background:var(--info-bg)}
+.rcv-media button{padding:0;border:0;background:none;cursor:zoom-in;position:relative}.rcv-media .r-play{position:absolute;left:6px;bottom:6px}
+.rcv-txt{white-space:pre-wrap;padding:10px 12px 0;margin:0;font-size:.95rem}.rcv-txt .h{color:var(--gold-deep)}
+.rcv-meta{padding:6px 12px 0;font-size:.82rem;color:var(--muted)}
+.rcv .acts{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px 12px}.rcv .acts .btn{font-size:.9rem;padding:6px 12px}
+.rcv-frm{padding:0 12px 12px;display:none}.rcv-frm.on{display:block}.rcv-frm label{display:block;font-size:.85rem;font-weight:600;margin:8px 0 4px}
+.rcv-frm textarea,.rcv-frm input{width:100%;border:1px solid var(--rule);border-radius:10px;padding:9px 10px}.rcv-frm .dos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rcv-frm .nota{font-size:.82rem;color:var(--muted);margin:6px 0}.rcv-frm .fila{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.rcv details{padding:0 12px 8px}.rcv details summary{cursor:pointer;font-size:.85rem;color:var(--gold-deep)}.rcv details pre{white-space:pre-wrap;font:inherit;font-size:.85rem;margin:6px 0 0}
+.rcp-vacio{text-align:center;color:var(--muted);padding:30px 10px}
+@media (max-width:700px){#rcp{max-width:100%;height:92dvh;max-height:92dvh;margin:auto 0 0;border-radius:16px 16px 0 0}.rcv-media img{height:160px}}
 /* Portal del equipo (1 oct 2026). Datos: /api/equipo (cada rol recibe solo lo suyo). */
 :root{
   --black:#000; --ink:#0A0A0A; --paper:#fff; --mist:#F4F3F0; --muted:#5E5B55; --rule:rgba(0,0,0,.12);
@@ -2210,11 +2234,12 @@ document.addEventListener("click", async e => {
       <label>¿Qué quieres que diga?</label><textarea id="rp-n" rows="4" maxlength="1000" placeholder="Ej. Avisar que ya nacieron los primeros potros 2027 y que se pueden apartar"></textarea>
       <div class="dos"><div><label>Caballo (opcional)</label><input id="rp-c" list="rp-cabs"><datalist id="rp-cabs">${rOpcionesCaballo()}</datalist></div><div><label>¿Para cuándo? (opcional)</label><input id="rp-f" type="date" min="${hoyISO()}"></div></div>
       <button class="btn btn-dark" id="d-ok" type="button">Mandar pedido</button></div>`);
+    if (b.dataset.rfecha) box.querySelector("#rp-f").value = b.dataset.rfecha;
     box.querySelector("#d-ok").onclick = async () => {
       const nota = box.querySelector("#rp-n").value.trim(); if (nota.length < 5) return alert("Escribe qué quieres que se publique.");
       const bt = box.querySelector("#d-ok"); bt.disabled = true; bt.textContent = "Enviando…";
       try { await post({accion: "hacer", tipo: "redes", op: "pedido", tema: box.querySelector("#rp-t").value, nota, caballo: box.querySelector("#rp-c").value.trim(), fecha: box.querySelector("#rp-f").value, cuenta: rCuenta()});
-        $("#dlg").close(); toast("Pedido enviado. El agente lo prepara en su siguiente pasada."); REDES = null; render(); }
+        $("#dlg").close(); toast("Pedido enviado. El agente lo prepara en su siguiente pasada."); if ($("#rcp") && $("#rcp").open) rRefrescar(); else { REDES = null; render(); } }
       catch (err) { alert(err.message); bt.disabled = false; bt.textContent = "Mandar pedido"; }
     };
   }
@@ -2804,26 +2829,139 @@ function rThumbPub(p) {
   if (/^https:\/\/static\.metricool\.com\//.test(vp)) return vp;
   const m = rMediaDe(p)[0]; return m ? rThumb(m["ID Drive"]) : "";
 }
+const rFechaDe = p => String(p["Fecha y hora"] || "");
+const rMovible = p => REDES.aprueba && ["Por aprobar", "Aprobado", "Agendado", "Error"].includes(p["Estatus"]) && rFechaDe(p).slice(0, 10) >= hoyISO();
+function rPubsCal() { return REDES.publicaciones.filter(p => rDe(p) && p["Estatus"] !== "Descartado" && /^\d{4}-\d{2}-\d{2}/.test(rFechaDe(p))); }
 function rCalendario() {
-  const P = REDES.publicaciones.filter(p => rDe(p) && p["Estatus"] !== "Descartado" && /^\d{4}-\d{2}-\d{2}/.test(String(p["Fecha y hora"])));
+  const P = rPubsCal();
   const hoy = hoyISO(), mes = st.rMes || hoy.slice(0, 7), [y, mm] = mes.split("-").map(Number);
   const primero = mes + "-01", dias = new Date(Date.UTC(y, mm, 0)).getUTCDate(), off = diaSemana(primero) - 1;
   const nav = d => { const t = new Date(Date.UTC(y, mm - 1 + d, 1)); return t.toISOString().slice(0, 7); };
   const nombreMes = new Date(Date.UTC(y, mm - 1, 15)).toLocaleDateString("es-MX", {month: "long", year: "numeric", timeZone: "UTC"});
-  const sel = st.rDia && st.rDia.startsWith(mes) ? st.rDia : (mes === hoy.slice(0, 7) ? hoy : primero);
   let celdas = ""; for (let i = 0; i < off; i++) celdas += `<div class="rc-d rc-vacio"></div>`;
   for (let d = 1; d <= dias; d++) {
-    const iso = mes + "-" + String(d).padStart(2, "0"), L = P.filter(p => String(p["Fecha y hora"]).slice(0, 10) === iso).sort((a, b) => String(a["Fecha y hora"]).localeCompare(String(b["Fecha y hora"])));
-    celdas += `<button type="button" class="rc-d${iso === hoy ? " rc-hoy" : ""}${iso === sel ? " rc-sel" : ""}" data-r-dia="${iso}"><span class="rc-n">${d}</span>${L.slice(0, 2).map(p => { const t = rThumbPub(p);
-      return `<span class="rc-p rc-${esc(String(p["Estatus"]).replace(/\s+/g, "-").toLowerCase())}">${t ? `<img src="${esc(t)}" alt="" loading="lazy" onerror="this.remove()">` : ""}<i>${esc(String(p["Fecha y hora"]).slice(11, 16))}</i></span>`; }).join("")}${L.length > 2 ? `<span class="rc-mas">+${L.length - 2}</span>` : ""}</button>`;
+    const iso = mes + "-" + String(d).padStart(2, "0"), L = P.filter(p => rFechaDe(p).slice(0, 10) === iso).sort((a, b) => rFechaDe(a).localeCompare(rFechaDe(b)));
+    const ap = L.filter(p => p["Estatus"] === "Por aprobar").length;
+    celdas += `<div role="button" tabindex="0" class="rc-d${iso === hoy ? " rc-hoy" : ""}${iso < hoy ? " rc-pasado" : ""}" data-rc-dia="${iso}" aria-label="${esc(fDia(iso))}: ${L.length} publicaci${L.length === 1 ? "ón" : "ones"}"><span class="rc-n">${d}${ap ? ` · <b style="color:#d08a00">${ap}✋</b>` : ""}</span>${L.slice(0, 3).map(p => { const t = rThumbPub(p);
+      return `<span class="rc-p rc-${esc(String(p["Estatus"]).replace(/\s+/g, "-").toLowerCase())}" data-rc-pub="${esc(p.ID)}"${rMovible(p) ? ` draggable="true" title="Arrastra a otro día para moverla"` : ""}>${t ? `<img src="${esc(t)}" alt="" loading="lazy" draggable="false" onerror="this.remove()">` : ""}<i>${esc(rFechaDe(p).slice(11, 16))}</i>${/historia/i.test(p["Formato"] || "") ? "<b>H</b>" : ""}</span>`; }).join("")}${L.length > 3 ? `<span class="rc-mas">+${L.length - 3}</span>` : ""}</div>`;
   }
-  const Ld = P.filter(p => String(p["Fecha y hora"]).slice(0, 10) === sel), sinF = REDES.publicaciones.filter(p => rDe(p) && !["Descartado", "Publicado"].includes(p["Estatus"]) && !/^\d{4}-\d{2}-\d{2}/.test(String(p["Fecha y hora"])));
-  return `<div class="rc-bar"><button class="btn" type="button" data-r-mes="${nav(-1)}">‹</button><b>${esc(nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1))}</b><button class="btn" type="button" data-r-mes="${nav(1)}">›</button>${mes !== hoy.slice(0, 7) ? `<button class="chip" type="button" data-r-mes="${hoy.slice(0, 7)}">Hoy</button>` : ""}</div>
+  const sinF = REDES.publicaciones.filter(p => rDe(p) && !["Descartado", "Publicado"].includes(p["Estatus"]) && !/^\d{4}-\d{2}-\d{2}/.test(rFechaDe(p)));
+  return `<div class="rc-bar"><button class="btn" type="button" data-r-mes="${nav(-1)}" aria-label="Mes anterior">‹</button><b>${esc(nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1))}</b><button class="btn" type="button" data-r-mes="${nav(1)}" aria-label="Mes siguiente">›</button>${mes !== hoy.slice(0, 7) ? `<button class="chip" type="button" data-r-mes="${hoy.slice(0, 7)}">Hoy</button>` : ""}</div>
     <div class="rc-sem">${["L", "M", "M", "J", "V", "S", "D"].map(x => `<span>${x}</span>`).join("")}</div><div class="rc-grid">${celdas}</div>
-    <p class="card-m rc-ley"><span class="rc-k rc-por-aprobar"></span>Por aprobar <span class="rc-k rc-agendado"></span>Agendada <span class="rc-k rc-publicado"></span>Publicada <span class="rc-k rc-borrador"></span>En preparación</p>
-    <h3>${esc(fDia(sel))}</h3>${Ld.length ? Ld.map(p => rCardPub(p, p["Estatus"] === "Por aprobar" && REDES.aprueba ? "aprobar" : "")).join("") : `<div class="empty">Nada programado ese día.</div>`}
+    <p class="card-m rc-ley"><span class="rc-k rc-por-aprobar"></span>Por aprobar <span class="rc-k rc-agendado"></span>Agendada <span class="rc-k rc-publicado"></span>Publicada <span class="rc-k rc-borrador"></span>En preparación · H = historia</p>
+    <p class="rc-tip">Toca un día para ver sus publicaciones y aprobarlas, corregir el texto, cambiar la fecha o descartarlas ahí mismo.${REDES.aprueba ? " En computadora también puedes arrastrar una publicación a otro día." : ""}</p>
     ${sinF.length ? plegado(`Sin fecha (${sinF.length})`, sinF.map(p => rCardPub(p)).join("")) : ""}`;
 }
+/* panel del día (11 oct 2026) */
+function rPanelInit() {
+  if ($("#rcp")) return;
+  document.body.insertAdjacentHTML("beforeend", `<dialog id="rcp" aria-labelledby="rcp-t"><div class="rcp-h"><button class="btn" type="button" data-rcp-nav="-1" aria-label="Día anterior">‹</button><b id="rcp-t"></b><button class="btn" type="button" data-rcp-nav="1" aria-label="Día siguiente">›</button><button class="btn" type="button" data-rcp-x="1">Cerrar</button></div><div class="rcp-b" id="rcp-b"></div></dialog>`);
+  $("#rcp").addEventListener("close", () => { st.rPanel = ""; });
+  $("#rcp").addEventListener("click", e => { if (e.target.id === "rcp") $("#rcp").close(); });
+}
+function rAbrirDia(iso, foco) {
+  rPanelInit(); st.rPanel = iso; st.rDia = iso;
+  $("#rcp-t").textContent = fDia(iso) + (iso === hoyISO() ? " · hoy" : "");
+  $("#rcp-b").innerHTML = rDiaHTML(iso);
+  if (!$("#rcp").open) $("#rcp").showModal();
+  const el = foco && $("#rcp-b").querySelector(`[data-rcv="${CSS.escape(foco)}"]`);
+  if (el) { el.classList.add("rcv-foco"); el.scrollIntoView({block: "start"}); } else $("#rcp-b").scrollTop = 0;
+}
+function rDiaHTML(iso) {
+  const L = rPubsCal().filter(p => rFechaDe(p).slice(0, 10) === iso).sort((a, b) => rFechaDe(a).localeCompare(rFechaDe(b)));
+  const pedir = iso >= hoyISO() ? `<div class="big-actions" style="justify-content:center"><button class="btn" type="button" data-rpedir="1" data-rfecha="${iso}">✍️ Pedir una publicación para este día</button></div>` : "";
+  return (L.length ? L.map(rVistaPub).join("") : `<div class="rcp-vacio">Nada programado este día.</div>`) + pedir;
+}
+function rVistaPub(p) {
+  const id = esc(p.ID), es = p["Estatus"], ap = REDES.aprueba, futuro = rFechaDe(p).slice(0, 10) >= hoyISO();
+  const vp = String(p["Vista previa"] || ""), vpDrive = (vp.match(/\/d\/([A-Za-z0-9_-]{20,})/) || vp.match(/[?&]id=([A-Za-z0-9_-]{20,})/) || [])[1];
+  const media = rMediaDe(p), fotos = [];
+  if (/^https:\/\/static\.metricool\.com\//.test(vp)) fotos.push(`<a href="${esc(vp)}" target="_blank" rel="noopener"><img src="${esc(vp)}" alt="Vista previa" loading="lazy" onerror="this.closest('a').remove()"></a>`);
+  if (vpDrive) fotos.push(`<button type="button" data-rver="${esc(vpDrive)}" data-rvid="${/video|reel/i.test(p["Formato"] || "") ? 1 : ""}"><img src="${rThumb(vpDrive)}" alt="" loading="lazy" onerror="this.remove()"></button>`);
+  media.slice(0, 10).forEach(m => { if (m["ID Drive"] === vpDrive) return; const v = m.Tipo === "Video";
+    fotos.push(`<button type="button" data-rver="${esc(m["ID Drive"])}" data-rvid="${v ? 1 : ""}"><img src="${rThumb(m["ID Drive"])}" alt="" loading="lazy" onerror="this.remove()">${v ? `<span class="r-play">▶ Video</span>` : ""}</button>`); });
+  const acts = [];
+  if (ap && es === "Por aprobar") acts.push(`<button class="btn btn-dark" type="button" data-rcx="aprobar" data-id="${id}">✓ Aprobar</button>`);
+  if (ap && ["Por aprobar", "Aprobado", "Agendado"].includes(es) && futuro) acts.push(`<button class="btn" type="button" data-rcx="editar" data-id="${id}">✏️ Editar texto</button>`);
+  if (ap && ["Por aprobar", "Aprobado", "Agendado", "Error"].includes(es) && futuro) acts.push(`<button class="btn" type="button" data-rcx="fecha" data-id="${id}">🕒 Cambiar fecha u hora</button>`);
+  if (ap && ["Por aprobar", "Aprobado", "Agendado", "Error", "Borrador"].includes(es) && futuro) acts.push(`<button class="btn" type="button" data-rcx="cambio" data-id="${id}">💬 Pedir otro cambio</button>`);
+  if (ap && es !== "Publicado") acts.push(`<button class="btn" type="button" data-rcx="descartar" data-id="${id}">Descartar</button>`);
+  if (p["Liga publicada"]) acts.push(`<a class="btn" href="${esc(p["Liga publicada"])}" target="_blank" rel="noopener">Ver publicación ↗</a>`);
+  const agendada = ["Aprobado", "Agendado"].includes(es);
+  return `<article class="rcv" data-rcv="${id}">
+    <div class="rcv-h"><span class="rcv-hora">${esc(rFechaDe(p).slice(11, 16) || "—")}</span><div class="t"><b>${esc(p["Categoría"] || "Publicación")}${p["Caballo / evento"] ? " · " + esc(p["Caballo / evento"]) : ""}</b><span>${esc(p["Formato"] || "")}${p["Redes"] ? " · " + esc(rRedesTxt(p["Redes"])) : ""}</span></div><span class="badge ${R_BADGE[es] || "b-info"}">${esc(R_TXT[es] || es)}</span></div>
+    ${fotos.length ? `<div class="rcv-media">${fotos.join("")}</div>` : ""}
+    ${p["Texto"] || p["Hashtags"] ? `<p class="rcv-txt">${esc(p["Texto"])}${p["Hashtags"] ? `\n\n<span class="h">${esc(p["Hashtags"])}</span>` : ""}</p>` : ""}
+    ${p["Alcance"] || p["Interacciones"] ? `<p class="rcv-meta">Alcance ${esc(p["Alcance"] || "—")} · Interacciones ${esc(p["Interacciones"] || "—")}</p>` : ""}
+    ${p["Aprobó"] ? `<p class="rcv-meta">Aprobó ${esc(p["Aprobó"])}${p["Aprobada"] ? " · " + esc(p["Aprobada"]) : ""}</p>` : ""}
+    ${p["Indicaciones"] ? `<details><summary>Indicaciones y comentarios</summary><pre>${esc(p["Indicaciones"])}</pre></details>` : ""}
+    ${ap && p["Notas del agente"] ? `<details><summary>Notas del agente</summary><pre>${esc(p["Notas del agente"])}</pre></details>` : ""}
+    ${acts.length ? `<div class="acts">${acts.join("")}</div>` : ""}
+    <div class="rcv-frm" data-rcf="editar" data-id="${id}"><label for="rce-t-${id}">Texto</label><textarea id="rce-t-${id}" rows="8" maxlength="2200">${esc(p["Texto"])}</textarea>
+      <label for="rce-h-${id}">Hashtags</label><input id="rce-h-${id}" maxlength="600" value="${esc(p["Hashtags"])}">
+      ${agendada ? `<p class="nota">Ya está agendada: el agente pone este texto en Metricool y te la regresa para que la apruebes otra vez.</p>` : ""}
+      <div class="fila"><button class="btn btn-dark" type="button" data-rcx="${agendada ? "editar_ok" : "aprobar"}" data-id="${id}">${agendada ? "Mandar texto corregido" : "✓ Aprobar con estos cambios"}</button><button class="btn" type="button" data-rcx="cerrar" data-id="${id}">Cancelar</button></div></div>
+    <div class="rcv-frm" data-rcf="fecha" data-id="${id}"><div class="dos"><div><label for="rcf-d-${id}">Nuevo día</label><input id="rcf-d-${id}" type="date" min="${hoyISO()}" value="${esc(rFechaDe(p).slice(0, 10))}"></div><div><label for="rcf-h-${id}">Hora</label><input id="rcf-h-${id}" type="time" value="${esc(rFechaDe(p).slice(11, 16) || "19:00")}"></div></div>
+      <p class="nota">${agendada ? "El agente la mueve en Metricool en su siguiente pasada y te la regresa para aprobarla con la nueva fecha." : "El agente la mueve en su siguiente pasada."}</p>
+      <div class="fila"><button class="btn btn-dark" type="button" data-rcx="fecha_ok" data-id="${id}">Mover</button><button class="btn" type="button" data-rcx="cerrar" data-id="${id}">Cancelar</button></div></div>
+    <div class="rcv-frm" data-rcf="cambio" data-id="${id}"><label for="rcc-${id}">¿Qué hay que cambiar?</label><textarea id="rcc-${id}" rows="3" maxlength="800" placeholder="Ej. Usa el video donde corre y menciona el plan de pagos"></textarea>
+      <div class="fila"><button class="btn btn-dark" type="button" data-rcx="cambio_ok" data-id="${id}">Mandar al agente</button><button class="btn" type="button" data-rcx="cerrar" data-id="${id}">Cancelar</button></div></div>
+  </article>`;
+}
+async function rRefrescar() { // recarga REDES sin perder la posición ni cerrar el panel
+  REDES = null; await cargar("redes");
+  if (ACTUAL === "redes") { const y = window.scrollY; $("#main").innerHTML = vRedes(); window.scrollTo(0, y); }
+  if ($("#rcp") && $("#rcp").open && st.rPanel) { const sc = $("#rcp-b").scrollTop; $("#rcp-b").innerHTML = rDiaHTML(st.rPanel); $("#rcp-b").scrollTop = sc; }
+}
+async function rAccion(b, datos, ok) {
+  const t = b.textContent; b.disabled = true; b.textContent = "Enviando…";
+  try { await post({accion: "hacer", tipo: "redes", ...datos}); toast(ok); await rRefrescar(); }
+  catch (err) { alert(err.message); b.disabled = false; b.textContent = t; }
+}
+function rMover(p, dia, hora, b) {
+  const nota = `CAMBIAR FECHA Y HORA a ${dia} ${hora} (desde el calendario). No cambies nada más de la publicación: mismo texto, material y redes.`;
+  return rAccion(b, {op: "cambios", id: p.ID, nota}, `Listo. El agente la mueve al ${fDia(dia)} a las ${hora} en su siguiente pasada.`);
+}
+document.addEventListener("click", async e => {
+  const cel = e.target.closest("[data-rc-dia]");
+  if (cel && !e.target.closest("button")) { const pub = e.target.closest("[data-rc-pub]"); rAbrirDia(cel.dataset.rcDia, pub && pub.dataset.rcPub); return; }
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.rcpX) return $("#rcp").close();
+  if (b.dataset.rcpNav && st.rPanel) { const d = masDias(st.rPanel, Number(b.dataset.rcpNav)); if (d.slice(0, 7) !== (st.rMes || hoyISO().slice(0, 7))) { st.rMes = d.slice(0, 7); if (ACTUAL === "redes") $("#main").innerHTML = vRedes(); } return rAbrirDia(d); }
+  const acc = b.dataset.rcx; if (!acc) return;
+  const id = b.dataset.id, p = REDES && REDES.publicaciones.find(x => x.ID === id), card = b.closest(".rcv"); if (!p || !card) return;
+  const frm = k => card.querySelector(`[data-rcf="${k}"]`), abrir = k => { card.querySelectorAll(".rcv-frm").forEach(f => f.classList.toggle("on", f.dataset.rcf === k && !f.classList.contains("on"))); const f = frm(k); if (f && f.classList.contains("on")) { const x = f.querySelector("textarea,input"); if (x) x.focus(); } };
+  if (["editar", "fecha", "cambio"].includes(acc)) return abrir(acc);
+  if (acc === "cerrar") return card.querySelectorAll(".rcv-frm").forEach(f => f.classList.remove("on"));
+  const v = sel => (card.querySelector(sel) || {}).value;
+  if (acc === "aprobar") { const ed = frm("editar").classList.contains("on");
+    return rAccion(b, {op: "aprobar", id, texto: ed ? v(`#rce-t-${CSS.escape(id)}`) : p["Texto"], hashtags: ed ? v(`#rce-h-${CSS.escape(id)}`) : p["Hashtags"]}, "Aprobada. El agente la agenda en su siguiente pasada."); }
+  if (acc === "editar_ok") { const t = String(v(`#rce-t-${CSS.escape(id)}`) || "").trim(), h = String(v(`#rce-h-${CSS.escape(id)}`) || "").trim();
+    if (t === String(p["Texto"]).trim() && h === String(p["Hashtags"]).trim()) return alert("No cambiaste nada del texto.");
+    return rAccion(b, {op: "cambios", id, nota: `USA EXACTAMENTE ESTE TEXTO (corregido desde el calendario; no le cambies nada):\n${t}\nHASHTAGS: ${h}`}, "Listo. El agente pone el texto nuevo y te la regresa para aprobarla."); }
+  if (acc === "fecha_ok") { const d = v(`#rcf-d-${CSS.escape(id)}`), h = v(`#rcf-h-${CSS.escape(id)}`);
+    if (!d || !h) return alert("Elige el día y la hora."); if (d < hoyISO()) return alert("Elige un día de hoy en adelante.");
+    if (`${d} ${h}` === rFechaDe(p).slice(0, 16)) return alert("Es la misma fecha y hora.");
+    return rMover(p, d, h, b); }
+  if (acc === "cambio_ok") { const n = String(v(`#rcc-${CSS.escape(id)}`) || "").trim(); if (n.length < 3) return alert("Escribe qué hay que cambiar.");
+    return rAccion(b, {op: "cambios", id, nota: n}, "Listo. El agente la corrige y te la regresa."); }
+  if (acc === "descartar") { if (!confirm("¿Descartar esta publicación? Ya no se publicará.")) return; return rAccion(b, {op: "descartar", id}, "Publicación descartada"); }
+});
+document.addEventListener("keydown", e => { const cel = e.target.closest && e.target.closest("[data-rc-dia]"); if (cel && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); rAbrirDia(cel.dataset.rcDia); } });
+/* arrastrar una publicación a otro día (computadora) */
+let R_ARR = "";
+document.addEventListener("dragstart", e => { const c = e.target.closest && e.target.closest(".rc-p[draggable=true]"); if (!c) return; R_ARR = c.dataset.rcPub; c.classList.add("rc-arr"); try { e.dataTransfer.setData("text/plain", R_ARR); e.dataTransfer.effectAllowed = "move"; } catch (err) {} });
+document.addEventListener("dragend", () => { R_ARR = ""; document.querySelectorAll(".rc-arr,.rc-drop").forEach(x => x.classList.remove("rc-arr", "rc-drop")); });
+document.addEventListener("dragover", e => { const d = R_ARR && e.target.closest && e.target.closest("[data-rc-dia]"); if (!d) return; if (d.dataset.rcDia < hoyISO()) return; e.preventDefault(); document.querySelectorAll(".rc-drop").forEach(x => x !== d && x.classList.remove("rc-drop")); d.classList.add("rc-drop"); });
+document.addEventListener("drop", e => {
+  const d = R_ARR && e.target.closest && e.target.closest("[data-rc-dia]"); if (!d) return; e.preventDefault();
+  const p = REDES && REDES.publicaciones.find(x => x.ID === R_ARR); d.classList.remove("rc-drop"); R_ARR = "";
+  if (!p || d.dataset.rcDia === rFechaDe(p).slice(0, 10)) return;
+  const hora = prompt(`Mover "${p["Categoría"] || "publicación"}" al ${fDia(d.dataset.rcDia)}. ¿A qué hora?`, rFechaDe(p).slice(11, 16) || "19:00"); if (hora === null) return;
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(hora.trim())) return alert("Escribe la hora como 18:30.");
+  rAbrirDia(rFechaDe(p).slice(0, 10), p.ID);
+  rMover(p, d.dataset.rcDia, hora.trim(), $("#rcp-b").querySelector(`[data-rcv="${CSS.escape(p.ID)}"] .acts .btn`) || document.createElement("button"));
+});
 function rInstrucciones() {
   if (!REDES.aprueba) return "";
   const L = (REDES.instrucciones || []).filter(rDe);
