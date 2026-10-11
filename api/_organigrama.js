@@ -21,6 +21,10 @@ const ORG = [
   {clave: "joaquin", busca: ["joaquin"], puesto: "Médico de planta", area: "Salud", reportaA: "mario", asigna: ["chito"], areas: ["Salud", "Reproducción"]},
   {clave: "roberto", busca: ["rcmenaz@hotmail.com", "roberto"], puesto: "Reproducción y registros", area: "Reproducción", reportaA: "mario", asigna: ["chito"], areas: ["Salud", "Reproducción"]},
   {clave: "chito",   busca: ["chito"], puesto: "Caballos y caballerizas", area: "Caballos", reportaA: "mario"},
+  /* 10 oct 2026: encargados que reportan su turno cada 3 h (8, 11, 14 y 17 h, lunes a sábado) con foto o video. turno: true */
+  {clave: "alan",    busca: ["alan"], puesto: "Encargado de corrales 1, 2, 3 y 4", area: "Corrales 1, 2, 3 y 4", reportaA: "mario", turno: true, quitar: ["herrajes", "agenda", "salud"]},
+  {clave: "jesus",   busca: ["jesus"], puesto: "Encargado de sementales", area: "Sementales", reportaA: "mario", turno: true, quitar: ["herrajes", "agenda", "salud"]},
+  {clave: "gabriel", busca: ["gabriel"], puesto: "Encargado de caballerizas principales", area: "Caballerizas principales", reportaA: "mario", turno: true, quitar: ["herrajes", "agenda", "salud"]},
   {clave: "olga",    busca: ["olgaespinoza419@gmail.com", "olga"], puesto: "Jardinería, mantenimiento y caja chica", area: "Jardinería", reportaA: "mario", caja: true, quitar: ["salud", "herrajes"]}
 ];
 const CUENTAS_GENERALES = ["ranchoeldescansogdl@gmail.com"]; // no es una persona: fuera del organigrama, no asigna ni pide
@@ -50,6 +54,7 @@ const areasDe = p => (puestoDe(p) || {}).areas || [];
 const llevaCaja = p => { const o = puestoDe(p); return !!o && !!o.caja; };
 const seccionesQuitadas = p => (puestoDe(p) || {}).quitar || [];
 
+const esTurno = p => { const o = puestoDe(p); return !!o && !!o.turno; };
 const decideDe = p => (puestoDe(p) || {}).decide || [];
 /* quién de los dos directores atiende lo de esta persona (o la tarea): el que la asignó, o según quién la hace o la pidió */
 function responsableTarea(t, equipo) {
@@ -83,5 +88,5 @@ function puedeRevisar(p, t, equipo) {
   return !!dest && puedeAsignarA(p, dest);
 }
 
-module.exports = {ORG, puestoDe, claveDe, revisaTodo, decideDe, responsableTarea, asignaAlguien, puedePedir, puedeAsignarA, areasDe, llevaCaja, seccionesQuitadas, DISP, SOLI,
+module.exports = {ORG, esTurno, puestoDe, claveDe, revisaTodo, decideDe, responsableTarea, asignaAlguien, puedePedir, puedeAsignarA, areasDe, llevaCaja, seccionesQuitadas, DISP, SOLI,
   esDisponible, esSolicitud, candidatos, FOTO, APROBO, pideFoto, puedeTomar, puedeRevisar, primerNombre, norm};

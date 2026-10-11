@@ -7,12 +7,32 @@
 <meta name="theme-color" content="#000000">
 <meta name="referrer" content="same-origin">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Equipo CRD">
 <title>Equipo · Rancho El Descanso</title>
 <link rel="icon" href="/app-icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* 10 oct 2026: reportes de turno, movimientos, caballos y calendario de redes */
+.t-chips{display:flex;flex-wrap:wrap;gap:6px}.t-chip{display:inline-block;border-radius:999px;padding:3px 10px;font-size:.85rem;font-weight:600;border:1px solid var(--rule);background:#fff}
+.t-ok{background:var(--ok-bg);color:var(--ok);border-color:transparent}.t-falta{background:var(--bad-bg);color:var(--bad);border-color:transparent}.t-pend{background:var(--warn-bg);color:var(--warn);border-color:transparent}.t-futuro{color:var(--muted)}
+.t-tabla td{vertical-align:middle}.card.t-prob{border-color:var(--bad);box-shadow:inset 3px 0 0 var(--bad)}
+.qa-turno{width:100%;margin-top:12px}
+.ca-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;width:100%;text-align:left;background:#fff;border:1px solid var(--rule);border-radius:12px;padding:10px 14px;margin:0 0 6px;cursor:pointer}
+.ca-row span:not(.badge){grid-column:1;color:var(--muted);font-size:.88rem}.ca-row .badge{grid-column:2;grid-row:1/span 2;align-self:center}
+.rc-bar{display:flex;align-items:center;gap:10px;margin:6px 0 10px}.rc-bar b{font-family:var(--display);font-size:1.2rem;min-width:170px;text-align:center}
+.rc-sem,.rc-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.rc-sem span{text-align:center;font-size:.78rem;color:var(--muted);font-weight:600}
+.rc-d{min-height:86px;background:#fff;border:1px solid var(--rule);border-radius:10px;padding:4px;display:flex;flex-direction:column;gap:3px;align-items:stretch;cursor:pointer;text-align:left;overflow:hidden}
+.rc-vacio{background:transparent;border:0;cursor:default}.rc-hoy{border-color:var(--gold)}.rc-sel{outline:2px solid var(--gold-deep);outline-offset:-1px}
+.rc-n{font-size:.78rem;font-weight:600;color:var(--muted)}.rc-p{position:relative;display:block;border-radius:6px;overflow:hidden;background:var(--info-bg);height:34px;border-left:4px solid #bbb}
+.rc-p img{width:100%;height:100%;object-fit:cover;display:block}.rc-p i{position:absolute;left:3px;bottom:1px;font-style:normal;font-size:.68rem;font-weight:700;color:#fff;text-shadow:0 0 3px #000}
+.rc-mas{font-size:.72rem;color:var(--muted)}.rc-por-aprobar,.rc-pedir-cambios{border-left-color:#d08a00}.rc-agendado,.rc-aprobado{border-left-color:var(--gold-deep)}.rc-publicado{border-left-color:var(--ok)}.rc-borrador,.rc-pedido,.rc-error{border-left-color:#999}
+.rc-ley{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}.rc-k{display:inline-block;width:12px;height:12px;border-radius:3px;border-left:6px solid;margin-right:4px;vertical-align:-1px}
+.rc-k.rc-por-aprobar{border-color:#d08a00}.rc-k.rc-agendado{border-color:var(--gold-deep)}.rc-k.rc-publicado{border-color:var(--ok)}.rc-k.rc-borrador{border-color:#999}
+.r-ins{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:10px 12px;margin:0 0 6px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}.r-ins p{margin:0}.r-ins .card-m{grid-column:1}.r-ins button{grid-column:2;grid-row:1/span 2}
+.r-graf{width:100%;max-width:240px;height:48px;display:block;margin:6px 0 2px}.r-vp{max-width:240px;border-radius:12px;display:block;margin:10px 0 0}
+@media (max-width:600px){.rc-d{min-height:64px;padding:3px}.rc-p{height:26px}.rc-p i{font-size:.6rem}}
 /* Portal del equipo (1 oct 2026). Datos: /api/equipo (cada rol recibe solo lo suyo). */
 :root{
   --black:#000; --ink:#0A0A0A; --paper:#fff; --mist:#F4F3F0; --muted:#5E5B55; --rule:rgba(0,0,0,.12);
@@ -316,9 +336,9 @@ const fDia = iso => { const t = new Date(iso + "T12:00:00Z").toLocaleDateString(
 const fHora = iso => new Date(iso).toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ});
 const fFecha = iso => new Date(iso).toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "2-digit", timeZone: TZ});
 const ROLES = {admin: "Administración", direccion: "Ventas y eventos", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
-const SECCIONES = {hoy: "Inicio", tareas: "Tareas", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", estados: "Estados de cuenta", caballos: "Caballos y ventas",
+const SECCIONES = {hoy: "Inicio", tareas: "Tareas", turnos: "Reportes de turno", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", estados: "Estados de cuenta", caballos: "Caballos y ventas",
   comisiones: "Comisiones", caja: "Caja chica", herrajes: "Herrajes", compras: "Alimento y compras", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
-const ICONOS = {hoy: "🏠", tareas: "✅", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", estados: "🧾", caballos: "🐴", comisiones: "💰", caja: "💵", herrajes: "🔨", compras: "📦", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
+const ICONOS = {hoy: "🏠", tareas: "✅", turnos: "🕒", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", estados: "🧾", caballos: "🐴", comisiones: "💰", caja: "💵", herrajes: "🔨", compras: "📦", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
 const esCel = () => window.matchMedia("(max-width:899px)").matches;
 const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Administración", "Otro"];
 const TIPOS_SALUD = ["Revisión", "Vacuna", "Desparasitación", "Herraje / cascos", "Dental", "Tratamiento", "Lesión o cólico", "Monta / inseminación", "Palpación / ecografía", "Parto", "Destete", "Trámite KFPS / GVHS", "Otro"];
@@ -371,6 +391,8 @@ $("#b-salir").addEventListener("click", async () => { try { await post({accion: 
 async function iniciar() {
   try { YO = await api("accion=yo"); } catch (e) { return; }
   { const c = new URLSearchParams(location.search).get("c"); history.replaceState(null, "", "/equipo/" + (c ? "?c=" + encodeURIComponent(c) : "") + location.hash); }
+  if (!document.querySelector("link[rel=manifest]")) { const c = new URLSearchParams(location.search).get("c"), l = document.createElement("link"); l.rel = "manifest"; // 10 oct 2026: para instalar el portal y recibir avisos
+    l.href = "/api/equipo?accion=manifest" + (c && /^[A-Za-z0-9._-]{20,900}$/.test(c) ? "&c=" + encodeURIComponent(c) : ""); document.head.appendChild(l); }
   $("#login").classList.add("hide"); $("#app").classList.remove("hide");
   if (!COMO) { $("#u-nombre").textContent = YO.usuario.nombre; $("#u-rol").textContent = (YO.org && YO.org.puesto) || ((ROLES[YO.usuario.rol] || YO.usuario.rol) + (YO.usuario.area ? " · " + YO.usuario.area : "")); }
   document.body.classList.toggle("como", !!COMO);
@@ -381,7 +403,7 @@ async function iniciar() {
 /* Reglamento: botón discreto arriba (no es pestaña ni se pide al entrar); aceptarlo es opcional */
 async function verComo(id) {
   COMO = id; COMO_NOM = id && YO.gente ? ((YO.gente.find(x => x.id === id) || {}).nombre || "") : "";
-  FUERA = EST = COMP = SERV = CAJA = CAMBIOS = REDES = REG = AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = null;
+  FUERA = EST = COMP = SERV = CAJA = CAMBIOS = REDES = REG = AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = TURNOS = MOVS = null;
   location.hash = "hoy"; await iniciar(); window.scrollTo(0, 0);
 }
 async function aceptarReglamento(b) {
@@ -429,6 +451,8 @@ async function cargar(qué) {
   if (qué === "servicios" && !SERV) SERV = await api("accion=servicios");
   if (qué === "compras" && !COMP) COMP = await api("accion=compras");
   if (qué === "fuera" && !FUERA) FUERA = await api("accion=fuera");
+  if (qué === "turnos" && !TURNOS) TURNOS = await api("accion=turnos");
+  if (qué === "movimientos" && !MOVS) MOVS = await api("accion=movimientos");
   if (qué === "estados" && (!EST || EST.mes !== (st.estMes || EST.mes))) EST = await api("accion=estados" + (st.estMes ? "&mes=" + st.estMes : ""));
 }
 const tiene = s => YO.permisos.secciones.includes(s);
@@ -437,13 +461,15 @@ async function render() {
   try {
     const s = ACTUAL;
     if (s === "menu") { if (tiene("tareas")) await cargar("tareas").catch(() => {}); if ((tiene("herrajes") || tiene("salud")) && YO.permisos.dinero === "todo") await cargar("servicios").catch(() => {}); if (tiene("compras")) await cargar("compras").catch(() => {}); if (tiene("caja")) await cargar("caja").catch(() => {}); if (tiene("redes") && YO.permisos.acciones.includes("redes_aprobar")) await cargar("redes").catch(() => {});
+      if (tiene("turnos")) await cargar("turnos").catch(() => {}); if (tiene("salud")) await cargar("movimientos").catch(() => {});
       pintarContador(); if (ACTUAL === "menu") m.innerHTML = vMenu(); return; }
     if (["agenda", "clientes", "eventos"].includes(s)) await cargar("agenda");
     if (s === "hoy") { // 6 oct 2026: Inicio carga todo en paralelo y se pinta a más tardar a los 8 s con lo que ya llegó; lo demás aparece solo
       const q = (c, k) => c ? cargar(k).catch(() => {}) : 0, d = YO.permisos.dinero === "todo";
       const todo = Promise.all([q(tiene("agenda"), "agenda"), q(tiene("tareas"), "tareas"), q(tiene("salud") || tiene("bitacora"), "reportes"), q(tiene("caja"), "caja"),
         q((tiene("herrajes") || tiene("salud")) && d, "servicios"), q(tiene("compras"), "compras"), q(tiene("cotizaciones"), "cotizaciones"),
-        q(d && (YO.permisos.acciones.includes("agendar") || d), "fuera"), q(tiene("redes") && YO.permisos.acciones.includes("redes_aprobar"), "redes")]);
+        q(d && (YO.permisos.acciones.includes("agendar") || d), "fuera"), q(tiene("redes") && YO.permisos.acciones.includes("redes_aprobar"), "redes"),
+        q(tiene("turnos"), "turnos"), q(tiene("salud") || (d && tiene("caballos")), "movimientos")]);
       const listo = await Promise.race([todo.then(() => true), new Promise(r => setTimeout(() => r(false), 8000))]);
       if (ACTUAL !== "hoy") return;
       pintarContador(); m.innerHTML = vHoy() + (listo ? "" : `<p class="load" id="hoy-mas">Cargando lo demás…</p>`);
@@ -462,7 +488,8 @@ async function render() {
     if (s === "redes") await cargar("redes");
     if (s === "caja") await cargar("caja");
     if (s === "herrajes") await cargar("servicios");
-    if (s === "salud") await cargar("servicios").catch(() => {});
+    if (s === "salud") { await cargar("servicios").catch(() => {}); await cargar("movimientos").catch(() => {}); }
+    if (s === "turnos") await cargar("turnos");
     if (s === "compras") await cargar("compras");
     if (s === "estados") await cargar("estados");
     if (s === "cambios") { await cargar("agenda"); await cargar("cotizaciones").catch(() => {}); await cargar("cambios"); }
@@ -470,10 +497,10 @@ async function render() {
     if (s !== ACTUAL) return;
     pintarContador();
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
-      tareas: vTareas, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados})[s]();
+      tareas: vTareas, turnos: vTurnos, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
-function recargar() { FUERA = EST = COMP = SERV = CAJA = REDES = CAMBIOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
+function recargar() { FUERA = EST = COMP = SERV = CAJA = REDES = CAMBIOS = TURNOS = MOVS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
 
 /* ---------- menú de cuadros (celular) ---------- */
 function vMenu() {
@@ -483,6 +510,8 @@ function vMenu() {
   if (COMP) n.compras = cpOf() ? COMP.pedidos.filter(p => ["Hace falta", "Llegó"].includes(p["Estatus"])).length : (COMP.tocaContar && YO.usuario.rol === "campo" ? 1 : 0);
   if (CAJA) n.caja = ccPendientesMios().length + (ccPapel() === "dir" ? CAJA.movimientos.filter(x => x["Estatus"] === "Por entregar").length : 0);
   if (REDES && YO.permisos.acciones.includes("redes_aprobar")) n.redes = rPorAprobar().length;
+  if (TURNOS && (YO.org || {}).turno) n.turnos = tSlots(YO.usuario.nombre, hoyISO()).filter(x => x.estado === "pend").length;
+  if (MOVS) n.salud = (n.salud || 0) + mvFuera().length + mvCapturar().length;
   const nombre = String(YO.usuario.nombre || "").split(" ")[0];
   return `<p class="menu-hola">Hola, ${esc(nombre)}</p><p class="sub" style="margin:0">${esc(fDia(hoyISO()))} · Todas las secciones</p>
     <div class="menu-grid">${YO.permisos.secciones.filter(s => s !== "reglamento").map(s => `<button class="menu-tile" type="button" data-ir="${s}"><span class="ico" aria-hidden="true">${ICONOS[s] || "•"}</span>${esc(SECCIONES[s])}${n[s] ? `<span class="n">${n[s]}</span>` : ""}</button>`).join("")}</div>`;
@@ -543,13 +572,15 @@ const nivelYo = () => (YO.org && YO.org.revisaTodo) ? "dir" : ["admin", "direcci
 const lim = t => isoDe(t["Fecha límite"]);
 function bloque(titulo, html, cls = "") { return html ? `<section class="blk ${cls}"><h3>${titulo}</h3>${html}</section>` : ""; }
 function plegado(titulo, html) { return html ? `<details class="mas"><summary>${titulo}</summary>${html}</details>` : ""; }
-function hoyAcciones() { // 5 oct 2026: en orden de lo que más se usa en cada puesto
+function hoyAcciones(enMenu) { // 5 oct 2026: en orden de lo que más se usa en cada puesto
   const A = YO.permisos.acciones, O = YO.org || {}, b = [], campo = ["campo", "medico"].includes(YO.usuario.rol);
   const conteo = tiene("compras") && YO.usuario.rol === "campo" && (YO.org || {}).area === "Caballos" && COMP && COMP.tocaContar; // lo cuenta Chito
+  if (O.turno && tiene("turnos") && enMenu) b.push(`<button class="qa qa-ya" type="button" data-turno-rep="1"><span class="ico">📷</span><span>Reportar mi turno<small>foto o video y qué hiciste</small></span></button>`);
   if (conteo) b.push(`<button class="qa qa-ya" type="button" data-cp-conteo="1"><span class="ico">🌾</span><span>Contar alimento<small>Toca esta semana</small></span></button>`);
-  if (A.includes("caja") && O.caja === "lleva") b.push(`<button class="qa" type="button" data-caja-nuevo="Gasto"><span class="ico">🧾</span>Gasto de caja chica</button>`, `<button class="qa" type="button" data-caja-nuevo="Efectivo de cliente"><span class="ico">💵</span>Recibí efectivo</button>`);
+  if (A.includes("caja") && O.caja === "lleva") b.push(`<button class="qa" type="button" data-caja-nuevo="Gasto"><span class="ico">🧾</span><span>Registrar un gasto<small>efectivo o tarjeta</small></span></button>`, `<button class="qa" type="button" data-caja-nuevo="Efectivo de cliente"><span class="ico">💵</span>Recibí efectivo</button>`);
   if (A.includes("servicio") && YO.usuario.rol === "medico" && tiene("salud")) b.push(`<button class="qa" type="button" data-sv-jornada="medico"><span class="ico">💉</span><span>Servicio médico<small>con costo</small></span></button>`);
   if (A.includes("reporte") && tiene("bitacora")) b.push(`<button class="qa" type="button" data-nuevo-rep=""><span class="ico">📝</span>${campo ? "Reportar algo" : "Reportar avance o problema"}</button>`);
+  if (A.includes("movimiento")) b.push(`<button class="qa" type="button" data-mv-nuevo=""><span class="ico">🚑</span><span>Salida, regreso o trámite<small>clínica, gastos médicos, chip</small></span></button>`);
   if (A.includes("reporte") && tiene("salud")) b.push(`<button class="qa" type="button" data-nuevo-rep="Salud"><span class="ico">🩺</span><span>Nota de salud<small>lo que viste o se le dio</small></span></button>`);
   if (A.includes("insumo") && tiene("compras")) b.push(`<button class="qa" type="button" data-cp-falta=""><span class="ico">🛒</span>Hace falta</button>`, `<button class="qa" type="button" data-cp-llego=""><span class="ico">📦</span>Llegó algo</button>`);
   if (A.includes("servicio") && YO.usuario.rol !== "medico" && tiene("herrajes")) b.push(`<button class="qa" type="button" data-sv-jornada="herraje"><span class="ico">🔨</span>Registrar herraje</button>`);
@@ -560,7 +591,7 @@ function hoyAcciones() { // 5 oct 2026: en orden de lo que más se usa en cada p
 }
 function abrirAcciones() {
   if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
-  const b = hoyAcciones();
+  const b = hoyAcciones(true);
   dialogo("¿Qué quieres hacer?", b.length ? `<div class="qa-lista">${b.join("")}</div>` : `<div class="empty">No hay acciones para tu puesto.</div>`);
   if ((tiene("bitacora") || tiene("salud")) && !REPORTES) cargar("reportes").catch(() => {});
 }
@@ -577,6 +608,7 @@ function vHoy() {
   const hoy = hoyISO(), man = masDias(hoy, 1), sem = masDias(hoy, 7), nv = nivelYo(), O = YO.org || {};
   const nombre = String(YO.usuario.nombre || "").split(/[\s(]+/)[0];
   let h = `<p class="menu-hola">Hola, ${esc(nombre)}</p><p class="sub" style="margin:0">${esc(fDia(hoy))}${O.reportaA ? " · Tu encargado: " + esc(O.reportaA) : ""}</p>${verComoSelect()}`;
+  if (O.turno) h += hoyTurnos(); // 10 oct 2026: el reporte de turno va primero
   const acts = hoyAcciones(); if (acts.length) h += `<div class="hoy-acts">${acts.join("")}</div>`;
 
   /* 1. espera tu decisión (5 oct 2026: Mario dinero y rancho · Nico ventas y sistemas; lo del otro queda plegado, de respaldo) */
@@ -628,9 +660,11 @@ function vHoy() {
     if (ms.length) h += plegado(`Lo que pediste y espera respuesta (${ms.length})`, ms.map(cardTarea).join(""));
   }
 
+  if (!O.turno) h += hoyTurnos();
   h += hoyFuera();
   h += hoyCaja();
   h += hoyServicios();
+  h += hoyMovimientos();
   h += hoyCompras();
 
   /* 3. hoy en el rancho */
@@ -741,11 +775,14 @@ function vCaballos() {
   const kpi = `<div class="grid-kpi"><div class="kpi"><span>Caballos en el rancho</span><b>${C.caballos.length}</b></div><div class="kpi"><span>En venta</span><b>${enVenta.length}</b></div>
     <div class="kpi"><span>Apartados</span><b>${apart.length}</b></div>${P.dinero !== "nada" ? `<div class="kpi"><span>${P.dinero === "propio" ? "Mis ventas activas" : "Ventas activas"}</span><b>${activas.length}</b></div>
     <div class="kpi"><span>Por cobrar en ventas</span><b>${money(activas.reduce((a, v) => a + numv(v["Saldo"]), 0))}</b></div>` : ""}</div>`;
-  return `<h2>Caballos y ventas</h2><p class="sub">Datos de la Maestra Caballos CRD v2.</p>${kpi}
+  const A = P.acciones, btns = [A.includes("caballo_alta") ? `<button class="btn btn-dark" type="button" data-ca-nuevo="1">🐴 Registrar caballo nuevo</button>` : "",
+    A.includes("caballo_pago") ? `<button class="btn btn-dark" type="button" data-pc-nuevo="">💳 Registrar pago o gasto de un caballo</button>` : ""].filter(Boolean).join("");
+  const lista = P.dinero === "todo" ? `<h3>Todos los caballos</h3><p class="card-m">Toca uno para ver su ficha: venta, compra, pagos, gastos y movimientos.</p><input class="search" id="ca-busca" placeholder="Buscar por nombre, ID o estatus" value="${esc(st.caBusca || "")}"><div id="ca-lista">${caLista()}</div>` : "";
+  return `<h2>Caballos y ventas</h2><p class="sub">Datos de la Maestra Caballos CRD v2.</p>${btns ? `<div class="big-actions">${btns}</div>` : ""}${kpi}
     <h3>${P.dinero === "propio" ? "Mis ventas activas" : "Ventas activas"}</h3>${tabla(activas, ["Folio", "Concepto", "Comprador", "Precio", "Pagado", "Saldo", "Estatus", "Monto próximo", "Vendedor"], "No hay ventas activas.")}
     ${C.pensiones.length ? `<h3>Pensiones</h3>${tabla(C.pensiones.filter(p => !/termin|cerrad/i.test(p["Situación"])), ["Folio", "Cliente", "Caballo", "Inicio", "Días", "Tarifa diaria", "Total a la fecha", "Pagado", "Saldo", "Estatus"], "Sin pensiones vigentes.")}` : ""}
     ${C.maquilas.length ? `<h3>Maquilas con saldo</h3>${tabla(C.maquilas.filter(m => numv(m["Saldo"]) > 0), ["Folio", "Cliente", "Yegua", "Semental", "Fecha monta", "Precio", "Pagado", "Saldo", "Vendedor"], "Todas las maquilas están pagadas.")}` : ""}
-    <h3>En venta y apartados</h3>${tabla([...apart, ...enVenta], ["ID", "Nombre", "Raza", "Sexo", "Nacimiento", ...(P.dinero !== "nada" ? ["Precio"] : []), "Estatus"], "No hay caballos en venta.")}`;
+    <h3>En venta y apartados</h3>${tabla([...apart, ...enVenta], ["ID", "Nombre", "Raza", "Sexo", "Nacimiento", ...(P.dinero !== "nada" ? ["Precio"] : []), "Estatus"], "No hay caballos en venta.")}${lista}`;
 }
 function vComisiones() {
   const filas = PAGOS.comisiones;
@@ -760,6 +797,9 @@ function vComisiones() {
 const CC_BADGE = {"Por capturar": "b-warn", "Por revisar": "b-warn", "Por entregar": "b-warn", "Por confirmar": "b-warn", "Capturado": "b-ok", "Revisado": "b-ok", "Entregado a Mario": "b-ok", "Recibida": "b-ok", "Cancelado": "b-info"};
 const CC_ICO = {"Gasto": "🧾", "Efectivo de cliente": "💵", "Reposición": "🔄"};
 const CC_PEND = ["Por capturar", "Por revisar", "Por entregar", "Por confirmar"];
+const CC_FORMAS = ["Efectivo (caja chica)", "Tarjeta de débito empresarial", "Transferencia", "Otro"]; // 10 oct 2026
+const CC_FP_TXT = {"Efectivo (caja chica)": "💵 Efectivo", "Tarjeta de débito empresarial": "💳 Tarjeta", "Transferencia": "🏦 Transferencia", "Otro": "Otro"};
+const ccEfectivo = x => x["Tipo"] !== "Gasto" || !x["Forma de pago"] || x["Forma de pago"] === CC_FORMAS[0];
 const ccPapel = () => (YO.org && YO.org.caja) || "";
 function ccAcciones(x) {
   const pp = ccPapel(), e = x["Estatus"], t = x["Tipo"], yo = YO.usuario.nombre, a = [];
@@ -773,7 +813,8 @@ function ccAcciones(x) {
 function cardCaja(x) {
   const menos = x["Tipo"] === "Gasto", acts = ccAcciones(x), foto = btnFotos(x["Comprobante"], x["Tipo"] === "Gasto" ? "Ticket" : "Foto");
   const sub = [String(x["Fecha"]).slice(0, 16), x["Registró"], x["Cliente"] ? "de " + x["Cliente"] : "", x["Categoría"], x["Tipo"] === "Efectivo de cliente" ? (x["Destino"] === "Caja" ? "a la caja" : "para Mario") : ""].filter(Boolean).map(esc).join(" · ");
-  return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${CC_ICO[x["Tipo"]] || ""} ${esc(x["Concepto"] || x["Tipo"])}</p><p class="card-m">${sub}</p></div>
+  const fp = x["Tipo"] === "Gasto" ? `<span class="tag${ccEfectivo(x) ? "" : " oro"}">${esc(CC_FP_TXT[x["Forma de pago"]] || "💵 Efectivo")}${ccEfectivo(x) ? "" : " · no sale de la caja"}</span> ` : "";
+  return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${CC_ICO[x["Tipo"]] || ""} ${esc(x["Concepto"] || x["Tipo"])}</p><p class="card-m">${fp}${sub}</p></div>
     <div style="text-align:right"><div class="cc-monto ${menos ? "cc-menos" : "cc-mas"}">${menos ? "−" : "+"}${money(numv(x["Monto"]))}</div><span class="badge ${CC_BADGE[x["Estatus"]] || "b-info"}">${esc(x["Estatus"])}</span></div></div>
     ${x["Notas"] ? `<p class="card-m" style="white-space:pre-wrap">${esc(x["Notas"])}</p>` : ""}
     ${acts.length || foto ? `<div class="acts">${foto}${acts.join("")}</div>` : ""}</article>`;
@@ -789,25 +830,29 @@ function ccPendientesMios() {
 function hoyCaja() {
   if (!CAJA || !tiene("caja")) return "";
   const pp = ccPapel(), bajo = CAJA.saldo < CAJA.aviso, pend = ccPendientesMios();
-  let d = `<div class="grid-kpi"><div class="kpi${bajo ? " bajo" : ""}"><span>En caja</span><b>${money(CAJA.saldo)}</b></div><div class="kpi"><span>Fondo</span><b>${money(CAJA.fondo)}</b></div>${CAJA.porEntregar ? `<div class="kpi"><span>Por entregar a Mario</span><b>${money(CAJA.porEntregar)}</b></div>` : ""}</div>`;
+  let d = `<div class="grid-kpi"><div class="kpi${bajo ? " bajo" : ""}"><span>Efectivo en caja</span><b>${money(CAJA.saldo)}</b></div><div class="kpi"><span>Fondo</span><b>${money(CAJA.fondo)}</b></div>${CAJA.porEntregar ? `<div class="kpi"><span>Por entregar a Mario</span><b>${money(CAJA.porEntregar)}</b></div>` : ""}</div>`;
   if (bajo) d += `<p class="aviso">${pp === "lleva" ? "Queda poco en la caja. Avísale a Judith para que te reponga." : `Queda poco en la caja: faltan ${money(CAJA.fondo - CAJA.saldo)} para completar el fondo.`}</p>`;
   if (pend.length) d += `<p class="lbl oro">${pp === "lleva" ? "Dinero que te mandaron" : "Por capturar o revisar"} (${pend.length})</p>${pend.slice(0, 4).map(cardCaja).join("")}`;
   d += `<button class="btn" type="button" onclick="ir('caja')">Ver la caja chica</button>`;
-  if (pp !== "lleva" && !pend.length && !bajo) return plegado(`Caja chica · ${money(CAJA.saldo)} en caja`, d);
+  if (pp !== "lleva" && !pend.length && !bajo) return plegado(`Caja chica · ${money(CAJA.saldo)} en efectivo`, d);
   return bloque("Caja chica", d);
 }
 function vCaja() {
   const C = CAJA, pp = ccPapel(), M = C.movimientos.slice().reverse(), mes = hoyISO().slice(0, 7), bajo = C.saldo < C.aviso;
-  const gastoMes = M.filter(x => x["Tipo"] === "Gasto" && x["Estatus"] !== "Cancelado" && String(x["Fecha"]).slice(0, 7) === mes).reduce((a, x) => a + numv(x["Monto"]), 0);
+  const gMes = M.filter(x => x["Tipo"] === "Gasto" && x["Estatus"] !== "Cancelado" && String(x["Fecha"]).slice(0, 7) === mes);
+  const gastoMes = gMes.filter(ccEfectivo).reduce((a, x) => a + numv(x["Monto"]), 0), tarjetaMes = gMes.filter(x => x["Forma de pago"] === CC_FORMAS[1]).reduce((a, x) => a + numv(x["Monto"]), 0);
+  const otrosMes = gMes.filter(x => !ccEfectivo(x) && x["Forma de pago"] !== CC_FORMAS[1]).reduce((a, x) => a + numv(x["Monto"]), 0);
   const pend = M.filter(x => CC_PEND.includes(x["Estatus"])), f = st.ccFiltro || "todo";
-  const L = (f === "todo" ? M : M.filter(x => x["Tipo"] === f)).filter(x => !CC_PEND.includes(x["Estatus"]));
+  const filtra = x => f === "todo" ? true : f === "efectivo" ? x["Tipo"] === "Gasto" && ccEfectivo(x) : f === "tarjeta" ? x["Tipo"] === "Gasto" && x["Forma de pago"] === CC_FORMAS[1] : f === "otra" ? x["Tipo"] === "Gasto" && !ccEfectivo(x) && x["Forma de pago"] !== CC_FORMAS[1] : x["Tipo"] === f;
+  const L = M.filter(filtra).filter(x => !CC_PEND.includes(x["Estatus"]));
   const btns = [];
   if (pp === "lleva" || pp === "dir") btns.push(`<button class="btn btn-dark" data-caja-nuevo="Gasto">🧾 Registrar gasto</button>`, `<button class="btn btn-dark" data-caja-nuevo="Efectivo de cliente">💵 Recibí efectivo</button>`);
   if (pp === "oficina" || pp === "dir") btns.push(`<button class="btn btn-dark" data-caja-nuevo="Reposición">🔄 Registrar reposición</button>`);
-  const chips = [["todo", "Todo"], ["Gasto", "Gastos"], ["Efectivo de cliente", "Efectivo"], ["Reposición", "Reposiciones"]].map(([k, n]) => `<button class="chip" data-ccf="${esc(k)}" aria-pressed="${f === k}">${n}</button>`).join("");
-  return `<h2>Caja chica</h2><p class="sub">${pp === "lleva" ? "Anota aquí cada gasto con la foto del ticket y el efectivo que te den los clientes. Judith lo pasa a contabilidad." : "La lleva Olga en el rancho. Cada gasto se pasa a GASTOS con \"Capturar\"; el efectivo de clientes entra a la caja o se le entrega a Mario."}</p>
-    <div class="grid-kpi"><div class="kpi${bajo ? " bajo" : ""}"><span>En caja</span><b>${money(C.saldo)}</b></div><div class="kpi"><span>Fondo</span><b>${money(C.fondo)}</b></div>
-      <div class="kpi"><span>Gastado este mes</span><b>${money(gastoMes)}</b></div><div class="kpi"><span>Por entregar a Mario</span><b>${money(C.porEntregar)}</b></div></div>
+  const chips = [["todo", "Todo"], ["efectivo", "💵 Gastos en efectivo"], ["tarjeta", "💳 Gastos con tarjeta"], ["otra", "Transferencia u otro"], ["Efectivo de cliente", "Efectivo de clientes"], ["Reposición", "Reposiciones"]].map(([k, n]) => `<button class="chip" data-ccf="${esc(k)}" aria-pressed="${f === k}">${n}</button>`).join("");
+  return `<h2>Caja chica</h2><p class="sub">${pp === "lleva" ? "Anota aquí cada gasto con la foto del ticket y di cómo lo pagaste: con el efectivo de la caja o con la tarjeta de débito del rancho. También el efectivo que te den los clientes. Judith lo pasa a contabilidad." : "La lleva Olga en el rancho. Cada gasto dice si se pagó con el efectivo de la caja o con la tarjeta de débito empresarial (solo el efectivo baja la caja). Se pasa a GASTOS con \"Capturar\"; el efectivo de clientes entra a la caja o se le entrega a Mario."}</p>
+    <div class="grid-kpi"><div class="kpi${bajo ? " bajo" : ""}"><span>Efectivo en caja</span><b>${money(C.saldo)}</b></div><div class="kpi"><span>Fondo</span><b>${money(C.fondo)}</b></div>
+      <div class="kpi"><span>💵 Gastado en efectivo (mes)</span><b>${money(gastoMes)}</b></div><div class="kpi"><span>💳 Pagado con tarjeta (mes)</span><b>${money(tarjetaMes)}</b></div>
+      ${otrosMes ? `<div class="kpi"><span>Transferencia u otro (mes)</span><b>${money(otrosMes)}</b></div>` : ""}<div class="kpi"><span>Por entregar a Mario</span><b>${money(C.porEntregar)}</b></div></div>
     ${bajo ? `<p class="aviso">${pp === "lleva" ? "Queda poco en la caja. Avísale a Judith para que te reponga." : `Queda poco: faltan ${money(C.fondo - C.saldo)} para completar el fondo de ${money(C.fondo)}.`}</p>` : ""}
     ${btns.length ? `<div class="big-actions">${btns.join("")}</div>` : ""}
     <h3>Pendientes (${pend.length})</h3>${pend.length ? pend.map(cardCaja).join("") : `<div class="empty">Nada pendiente. 👍</div>`}
@@ -824,6 +869,7 @@ document.addEventListener("click", async e => {
     const cuerpo = tipo === "Gasto" ? `<div class="dos"><div><label>¿Cuánto fue?</label><input id="cc-m" type="number" inputmode="decimal" min="1" step="0.01" placeholder="$"></div><div><label>Fecha</label><input id="cc-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div></div>
         ${(CAJA.pedidos || []).length ? `<label>¿Es algo de la lista de compras?</label><select id="cc-p"><option value="">No, es otra cosa</option>${CAJA.pedidos.map(x => `<option value="${esc(x.id)}">${esc(x.articulo)}${x.cantidad ? " · " + esc(x.cantidad) + " " + esc(x.unidad || "") : ""}</option>`).join("")}</select>
         <p class="card-m" style="margin-top:-6px">Si lo eliges, queda como "llegó" en Alimento y compras y Judith lo captura una sola vez.</p>` : ""}
+        <label>¿Cómo se pagó?</label><div class="rads">${CC_FORMAS.map((x, i) => `<label class="rad"><input type="radio" name="cc-fp" value="${esc(x)}"${i === 0 ? " checked" : ""}> <span><b>${esc(CC_FP_TXT[x])}${i === 1 ? " de débito del rancho" : i === 0 ? " de la caja chica" : ""}</b>${i === 0 ? "<small>Sale del dinero de la caja.</small>" : i === 1 ? "<small>No sale de la caja; Judith lo cuadra con el banco.</small>" : ""}</span></label>`).join("")}</div>
         <label>¿Qué se compró?</label><input id="cc-c" maxlength="120" placeholder="Ej. Bolsas de basura y cloro">
         <label>Categoría</label><select id="cc-cat">${opt(CATS_GASTO, "Mantenimiento")}</select>
         ${campoFotos("Foto del ticket (obligatoria)")}
@@ -839,7 +885,7 @@ document.addEventListener("click", async e => {
         <label>¿Cuánto le das a Olga?</label><input id="cc-m" type="number" inputmode="decimal" min="1" step="0.01" value="${falta ? Math.round(falta * 100) / 100 : ""}">
         <label>Nota (opcional)</label><input id="cc-n" maxlength="300" placeholder="Ej. En efectivo, el lunes">
         <p class="card-m">Olga confirma en el portal cuando le llegue; hasta entonces no suma a la caja.</p>`;
-    const box = dialogo({"Gasto": "Gasto de caja chica", "Efectivo de cliente": "Recibí efectivo", "Reposición": "Reposición de caja chica"}[tipo], `<div class="frm">${cuerpo}<button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+    const box = dialogo({"Gasto": "Registrar un gasto", "Efectivo de cliente": "Recibí efectivo", "Reposición": "Reposición de caja chica"}[tipo], `<div class="frm">${cuerpo}<button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
     activarFotos(box);
     const selP = box.querySelector("#cc-p"); if (selP) selP.addEventListener("change", () => { const x = CAJA.pedidos.find(y => y.id === selP.value); if (!x) return;
       const c = box.querySelector("#cc-c"); if (!c.value.trim()) c.value = x.articulo + (x.cantidad ? " · " + x.cantidad + " " + (x.unidad || "") : "");
@@ -849,9 +895,9 @@ document.addEventListener("click", async e => {
       if (!(Number(monto) > 0)) return alert("Escribe el monto.");
       if (tipo !== "Reposición" && v("#cc-c").length < 3) return alert(tipo === "Gasto" ? "Escribe qué se compró." : "Escribe de qué es el pago.");
       if (tipo === "Gasto" && !box.querySelector("#d-fotos").files.length) return alert("Toma la foto del ticket.");
-      const d = box.querySelector("input[name=cc-d]:checked");
-      enviar(box, {tipo: "caja", op: "registrar", mov: {tipo, monto, concepto: v("#cc-c"), categoria: v("#cc-cat"), cliente: v("#cc-cl"), fecha: v("#cc-f"), destino: d ? d.value : "caja", notas: v("#cc-n"), pedido: v("#cc-p")}},
-        tipo === "Gasto" ? "Gasto anotado. Judith lo captura." : tipo === "Reposición" ? "Reposición anotada. Olga la confirma cuando le llegue." : d && d.value === "mario" ? "Anotado: queda por entregar a Mario." : "Anotado: el efectivo entró a la caja.");
+      const d = box.querySelector("input[name=cc-d]:checked"), fp = box.querySelector("input[name=cc-fp]:checked");
+      enviar(box, {tipo: "caja", op: "registrar", mov: {tipo, monto, concepto: v("#cc-c"), categoria: v("#cc-cat"), cliente: v("#cc-cl"), fecha: v("#cc-f"), destino: d ? d.value : "caja", notas: v("#cc-n"), pedido: v("#cc-p"), forma: fp ? fp.value : ""}},
+        tipo === "Gasto" ? (fp && fp.value !== CC_FORMAS[0] ? "Gasto anotado (" + CC_FP_TXT[fp.value] + "). Judith lo captura." : "Gasto anotado. Judith lo captura.") : tipo === "Reposición" ? "Reposición anotada. Olga la confirma cuando le llegue." : d && d.value === "mario" ? "Anotado: queda por entregar a Mario." : "Anotado: el efectivo entró a la caja.");
     };
   }
   if (b.dataset.cajaAcc) {
@@ -1445,8 +1491,9 @@ document.addEventListener("click", async e => {
       <label>¿Cuánto llegó? <span id="cp-u" class="card-m"></span></label><input id="cp-q" type="number" inputmode="decimal" min="0" value="${p ? esc(p["Cantidad"] || "") : ""}">
       <label>¿Quién lo trajo?</label><input id="cp-pv" maxlength="60" value="${p ? esc(p["Proveedor"] || "") : ""}" placeholder="Proveedor">
       <label>Nota (opcional)</label><input id="cp-n" maxlength="300" placeholder="Ej. llegaron 2 bultos rotos">
-      ${cpPagaCaja() ? `<label class="chk"><input type="checkbox" id="cp-cj"> <span><b>Lo pagué con la caja chica</b><br><small class="card-m">Se anota como gasto de tu caja con esta foto del ticket. Judith lo captura una sola vez.</small></span></label>
-        <div id="cp-cj-w" class="hide"><label>¿Cuánto pagaste?</label><input id="cp-cjm" type="number" inputmode="decimal" min="1" step="0.01" placeholder="$"></div>` : ""}
+      ${cpPagaCaja() ? `<label class="chk"><input type="checkbox" id="cp-cj"> <span><b>Lo pagué yo (caja chica o tarjeta)</b><br><small class="card-m">Se anota como gasto en Caja chica con esta foto del ticket. Judith lo captura una sola vez.</small></span></label>
+        <div id="cp-cj-w" class="hide"><div class="dos"><div><label>¿Cuánto pagaste?</label><input id="cp-cjm" type="number" inputmode="decimal" min="1" step="0.01" placeholder="$"></div>
+          <div><label>¿Cómo?</label><select id="cp-cjf">${CC_FORMAS.map(x => `<option value="${esc(x)}">${esc(CC_FP_TXT[x])}</option>`).join("")}</select></div></div></div>` : ""}
       ${campoFotos("Foto de la nota, remisión o ticket")}
       <button class="btn btn-dark" id="d-ok" type="button">Registrar llegada</button></div>`);
     cpActivarArt(box); activarFotos(box);
@@ -1455,8 +1502,8 @@ document.addEventListener("click", async e => {
       const conCaja = cj && cj.checked, mc = conCaja ? box.querySelector("#cp-cjm").value : "";
       if (conCaja && !(Number(mc) > 0)) return alert("Escribe cuánto pagaste con la caja chica.");
       if (conCaja && !box.querySelector("#d-fotos").files.length) return alert("Toma la foto del ticket.");
-      enviar(box, {tipo: "compra", op: "llego", ...a, id: p ? p.ID : "", cantidad: box.querySelector("#cp-q").value, proveedor: box.querySelector("#cp-pv").value.trim(), notas: box.querySelector("#cp-n").value.trim(), ...(conCaja ? {caja: {monto: mc}} : {})},
-        conCaja ? "Llegada registrada y anotada en tu caja chica" : "Llegada registrada", () => { COMP = null; CAJA = null; }); };
+      enviar(box, {tipo: "compra", op: "llego", ...a, id: p ? p.ID : "", cantidad: box.querySelector("#cp-q").value, proveedor: box.querySelector("#cp-pv").value.trim(), notas: box.querySelector("#cp-n").value.trim(), ...(conCaja ? {caja: {monto: mc, forma: box.querySelector("#cp-cjf").value}} : {})},
+        conCaja ? "Llegada registrada y anotada en Caja chica" : "Llegada registrada", () => { COMP = null; CAJA = null; }); };
     return; }
   if (b.dataset.cpConteo) { if (ver()) return; if (!COMP) { try { await cargar("compras"); } catch (err) { return alert(err.message); } }
     const A = COMP.insumos.filter(i => i.categoria === "Alimento");
@@ -1592,12 +1639,15 @@ function cardReporte(r) {
 function vSalud() {
   const f = st.saTab || "historial", A = YO.permisos.acciones, conServ = !!SERV, dinero = YO.permisos.dinero === "todo", p = conServ ? svPendientes("medico") : null;
   const nPend = p ? p.pagar.length + p.capturar.length : 0;
-  const tabs = [["historial", "Historial"], ...(conServ ? [["jornadas", `Servicios del médico${nPend ? " (" + nPend + ")" : ""}`], ["caballos", "Por caballo"]] : []),
+  const nFuera = MOVS ? mvFuera().length + mvCapturar().length : 0;
+  const tabs = [["historial", "Historial"], ...(MOVS ? [["movimientos", `Salidas y trámites${nFuera ? " (" + nFuera + ")" : ""}`]] : []), ...(conServ ? [["jornadas", `Servicios del médico${nPend ? " (" + nPend + ")" : ""}`], ["caballos", "Por caballo"]] : []),
     ...(conServ && dinero ? [["cargos", `Cargos a clientes${p.precios.length ? " (" + p.precios.length + ")" : ""}`]] : [])];
   const acts = [A.includes("servicio") ? `<button class="btn btn-dark" data-sv-jornada="medico">💉 Servicio médico (con costo)</button>` : "",
+    A.includes("movimiento") ? `<button class="btn btn-dark" data-mv-nuevo="">🚑 Salida, regreso o trámite</button>` : "",
     A.includes("reporte") && REPORTES ? `<button class="btn${A.includes("servicio") ? "" : " btn-dark"}" data-nuevo-rep="Salud">🩺 Nota de salud</button>` : ""].filter(Boolean).join("");
   let cuerpo = "";
   if (f === "historial" || !tabs.some(t => t[0] === f)) cuerpo = saludHistorial();
+  else if (f === "movimientos") cuerpo = vMovimientos();
   else cuerpo = vServicios("medico", {tab: f, embed: true});
   return `<h2>Salud de caballos</h2><p class="sub">Todo lo de salud en un solo lugar: lo que ve Chito, las vacunas, desparasitaciones, revisiones, tratamientos y reproducción, y los servicios del médico con su costo. Los herrajes van en su sección.</p>
     ${acts ? `<div class="big-actions">${acts}</div>` : ""}
@@ -1976,10 +2026,13 @@ function rCardPub(p, modo) {
   if (editable) acts.push(`<button class="btn btn-dark r-ap" type="button" data-raprobar="${esc(p.ID)}">✓ Aprobar</button>`, `<button class="btn" type="button" data-rcambios="${esc(p.ID)}">Pedir cambio</button>`, `<button class="btn" type="button" data-rdescartar="${esc(p.ID)}">Descartar</button>`);
   else if (rPuedeAprobar() && ["Aprobado", "Agendado", "Pedido", "Pedir cambios"].includes(p["Estatus"])) acts.push(`<button class="btn" type="button" data-rdescartar="${esc(p.ID)}">Descartar</button>`);
   if (p["Liga publicada"]) acts.push(`<a class="btn" href="${esc(p["Liga publicada"])}" target="_blank" rel="noopener">Ver publicación</a>`);
-  if (vp && !vpDrive && /^https:\/\//.test(vp)) acts.push(`<a class="btn" href="${esc(vp)}" target="_blank" rel="noopener">Ver vista previa</a>`);
+  if (!editable && rPuedeAprobar() && ["Aprobado", "Agendado"].includes(p["Estatus"]) && String(p["Fecha y hora"]).slice(0, 10) >= hoyISO()) acts.push(`<button class="btn" type="button" data-rcambios="${esc(p.ID)}">Pedir cambio</button>`);
+  const vpImg = vp && !vpDrive && /^https:\/\/static\.metricool\.com\//.test(vp);
+  if (vp && !vpDrive && !vpImg && /^https:\/\//.test(vp)) acts.push(`<a class="btn" href="${esc(vp)}" target="_blank" rel="noopener">Ver vista previa</a>`);
   return `<article class="card r-card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(p["Categoría"] || "Publicación")}${p["Caballo / evento"] ? " · " + esc(p["Caballo / evento"]) : ""}</p>
       <p class="card-m">${p["Fecha y hora"] ? esc(rFecha(p["Fecha y hora"])) : "Fecha por definir"}${p["Formato"] ? " · " + esc(p["Formato"]) : ""}${p["Redes"] ? " · " + esc(rRedesTxt(p["Redes"])) : ""}</p></div>
       <span class="badge ${R_BADGE[p["Estatus"]] || "b-info"}">${esc(R_TXT[p["Estatus"]] || p["Estatus"])}</span></div>
+    ${vpImg ? `<a href="${esc(vp)}" target="_blank" rel="noopener"><img class="r-vp" src="${esc(vp)}" alt="Vista previa" loading="lazy" onerror="this.closest('a').remove()"></a>` : ""}
     ${media.length || vpDrive ? `<div class="r-media">${vpDrive ? rTile({"ID Drive": vpDrive, Tipo: /video|reel/i.test(p["Formato"] || "") ? "Video" : "Foto"}) : ""}${media.slice(0, 10).map(m => rTile({...m, Estatus: ""})).join("")}</div>` : ""}
     ${editable ? `<div class="frm" style="margin-top:12px"><label>Texto de la publicación (puedes corregirlo antes de aprobar)</label><textarea rows="6" id="rt-${esc(p.ID)}" maxlength="2200">${esc(p["Texto"])}</textarea>
       <label>Hashtags</label><input id="rh-${esc(p.ID)}" maxlength="600" value="${esc(p["Hashtags"])}"></div>`
@@ -2008,14 +2061,15 @@ function vRedes() {
   if (f === "inicio") {
     const plan = R.plan.length ? `<h3>Plan de la semana</h3><div class="tbl-wrap"><table><thead><tr><th>Día</th><th>Qué se publica</th><th>Idea</th></tr></thead><tbody>${R.plan.map(x => `<tr><td>${esc(x["Día"])}</td><td><b>${esc(x["Categoría"])}</b></td><td>${esc(x["Idea"])}</td></tr>`).join("")}</tbody></table></div><p class="card-m">Para cambiar la mezcla, edita la pestaña REDES_PLAN de la Maestra.</p>` : "";
     const pedidos = P.filter(p => ["Pedido", "Pedir cambios", "Borrador"].includes(p["Estatus"]));
-    cuerpo = `<div class="grid-kpi">${R.aprueba ? `<div class="kpi"><span>Por aprobar</span><b>${porAp.length}</b></div>` : ""}<div class="kpi"><span>Agendadas</span><b>${prox.length}</b></div>
+    cuerpo = rInstrucciones() + `<div class="grid-kpi">${R.aprueba ? `<div class="kpi"><span>Por aprobar</span><b>${porAp.length}</b></div>` : ""}<div class="kpi"><span>Agendadas</span><b>${prox.length}</b></div>
       <div class="kpi"><span>Publicadas este mes</span><b>${pubMes.length}</b></div><div class="kpi"><span>Material nuevo</span><b>${nuevo.length}</b></div></div>
       ${R.aprueba && porAp.length ? `<div class="big-actions"><button class="btn btn-dark" type="button" data-rtab="aprobar">Revisar ${porAp.length} por aprobar</button></div>` : ""}
       <h3>Próximas publicaciones</h3>${prox.length ? prox.slice(0, 5).map(p => rCardPub(p)).join("") : `<div class="empty">Nada agendado todavía. El agente prepara borradores a las 9 am y a las 5 pm.</div>`}
       ${pedidos.length ? `<h3>En preparación (${pedidos.length})</h3>${pedidos.slice(0, 6).map(p => rCardPub(p)).join("")}` : ""}${plan}`;
   }
   if (f === "aprobar") cuerpo = porAp.length ? `<p class="sub">Revisa cada una: si está bien, aprieta <b>Aprobar</b> y el agente la agenda en su siguiente pasada. Con que la apruebe uno de los dos basta.</p>${porAp.map(p => rCardPub(p, "aprobar")).join("")}` : `<div class="empty">No hay nada por aprobar. ¡Todo al día!</div>`;
-  if (f === "calendario") {
+  if (f === "calendario") cuerpo = rCalendario();
+  if (f === "calendario_lista") {
     const vivas = P.filter(p => !["Descartado"].includes(p["Estatus"]) && (String(p["Fecha y hora"]).slice(0, 10) >= masDias(hoy, -14) || !p["Fecha y hora"]));
     const g = {}; vivas.forEach(p => { const d = String(p["Fecha y hora"]).slice(0, 10) || "sin-fecha"; (g[d] = g[d] || []).push(p); });
     cuerpo = Object.keys(g).length ? Object.keys(g).sort().map(d => `<section class="day"><p class="day-h">${d === "sin-fecha" ? "Sin fecha" : esc(fDia(d))}${d === hoy ? " <small>· hoy</small>" : ""}</p>${g[d].map(p => rCardPub(p)).join("")}</section>`).join("")
@@ -2030,7 +2084,8 @@ function vRedes() {
     const tiles = redes.map(r => { const L = M.filter(x => x["Red"] === r).sort((a, b) => a["Fecha"] < b["Fecha"] ? -1 : 1), u = L[L.length - 1], ant = L.find(x => x["Fecha"] >= masDias(String(u["Fecha"]).slice(0, 10), -30)) || L[0];
       const dif = numv(u["Seguidores"]) - numv(ant["Seguidores"]);
       return `<div class="kpi"><span>${esc(R_RED[String(r).toLowerCase()] || r)}</span><b>${Number(numv(u["Seguidores"])).toLocaleString("es-MX")}</b><span>seguidores${L.length > 1 ? ` · ${dif >= 0 ? "+" : ""}${dif.toLocaleString("es-MX")} en 30 días` : ""}</span>
-        <span>Alcance 7 días: ${esc(u["Alcance 7 días"] || "—")} · Interacciones: ${esc(u["Interacciones 7 días"] || "—")}</span></div>`; }).join("");
+        <span>Alcance 7 días: ${esc(u["Alcance 7 días"] || "—")} · Interacciones: ${esc(u["Interacciones 7 días"] || "—")}</span>
+        ${rGrafica(L.slice(-30), "Seguidores", "#A3853C")}<span class="card-m">Seguidores (últimos ${Math.min(L.length, 30)} días)</span>${rGrafica(L.slice(-30), "Alcance 7 días", "#1f7a3d")}${numv(u["Alcance 7 días"]) ? `<span class="card-m">Alcance de 7 días</span>` : ""}</div>`; }).join("");
     const top = P.filter(p => p["Estatus"] === "Publicado" && (p["Alcance"] || p["Interacciones"])).sort((a, b) => numv(b["Alcance"]) - numv(a["Alcance"])).slice(0, 10);
     cuerpo = M.length ? `<p class="sub">Se actualizan solas cuando pasa el agente. Último dato: ${esc(M[M.length - 1]["Fecha"])}.</p><div class="grid-kpi r-kpi">${tiles}</div>
       <h3>Publicaciones con más alcance</h3>${top.length ? tabla(top.map(p => ({Fecha: String(p["Fecha y hora"]).slice(0, 10), Qué: p["Categoría"] + (p["Caballo / evento"] ? " · " + p["Caballo / evento"] : ""), Alcance: p["Alcance"], Interacciones: p["Interacciones"]})), ["Fecha", "Qué", "Alcance", "Interacciones"], "") : `<div class="empty">Todavía no hay publicaciones medidas.</div>`}`
@@ -2171,7 +2226,7 @@ function activarFotos(box) {
 async function archivosDe(box) { const inp = box.querySelector("#d-fotos"); if (!inp || !inp.files.length) return []; const out = []; for (const f of [...inp.files].slice(0, 6)) out.push(await comprimir(f)); return out; }
 async function enviar(box, body, ok, despues) {
   const b = box.querySelector("#d-ok"); b.disabled = true; b.textContent = "Guardando…";
-  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = SERV = COMP = EST = FUERA = null; if (despues) despues(j); render(); }
+  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = SERV = COMP = EST = FUERA = TURNOS = MOVS = null; if (despues) despues(j); render(); }
   catch (e) { alert(e.message); b.disabled = false; b.textContent = "Intentar de nuevo"; }
 }
 const opt = (l, sel) => l.map(x => `<option${x === sel ? " selected" : ""}>${esc(x)}</option>`).join("");
@@ -2390,6 +2445,395 @@ document.addEventListener("click", async e => {
   }
 });
 document.addEventListener("input", e => { if (e.target.id === "busca") { st.busca = e.target.value; const pos = e.target.selectionStart; render().then(() => { const i = $("#busca"); if (i) { i.focus(); i.setSelectionRange(pos, pos); } }); } });
+/* =====================================================================================================
+   10 oct 2026 (decidido por Nico): reportes de turno cada 3 h, avisos al celular, forma de pago en caja chica,
+   alta de caballos y pagos del caballo, movimientos de caballos (clínica, salidas, trámites) y redes con calendario por mes.
+   ===================================================================================================== */
+let TURNOS = null, MOVS = null;
+const ahoraMin = () => { const [h, m] = new Intl.DateTimeFormat("en-GB", {timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false}).format(new Date()).split(":"); return (+h % 24) * 60 + +m; };
+const diaSemana = iso => { const d = new Date(iso + "T12:00:00Z").getUTCDay(); return d === 0 ? 7 : d; }; // 1 = lunes … 7 = domingo
+const sinCosto = () => COMO ? (toast("Estás en \"Ver como\": solo se puede ver."), true) : false;
+const esIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent);
+
+/* ----- avisos al celular (Web Push) ----- */
+function b64aBytes(s) { const p = "=".repeat((4 - s.length % 4) % 4), r = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(r, c => c.charCodeAt(0)); }
+async function activarAvisos(btn) {
+  if (sinCosto()) return;
+  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window))
+    return alert(esIOS() ? "En iPhone: abre el portal en Safari, toca Compartir (□↑) → \"Agregar a inicio\", ábrelo desde el ícono nuevo y vuelve a tocar este botón." : "Este navegador no permite avisos. Abre el portal en Chrome.");
+  if (!YO.vapid) return alert("Los avisos todavía no están configurados. Avísale a Nico.");
+  if (btn) { btn.disabled = true; btn.textContent = "Activando…"; }
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") throw new Error("Para recibir los avisos, permite las notificaciones del portal en tu celular (Configuración → Notificaciones).");
+    const reg = await navigator.serviceWorker.register("/equipo/sw.js", {scope: "/equipo/"});
+    if (!reg.active) await new Promise(ok => { const w = reg.installing || reg.waiting; if (!w) return ok(); w.addEventListener("statechange", () => { if (w.state === "activated") ok(); }); });
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64aBytes(YO.vapid)});
+    await post({accion: "hacer", tipo: "turno", op: "suscribir", sub: sub.toJSON(), dispositivo: (navigator.userAgent.match(/iPhone|iPad|Android|Windows|Macintosh/) || [""])[0]});
+    try { localStorage.setItem("crd_avisos", "1"); } catch (e) {}
+    toast("Listo: los avisos te llegan a este celular."); TURNOS = null; render();
+  } catch (e) { alert(e.message || "No se pudieron activar los avisos."); if (btn) { btn.disabled = false; btn.textContent = "🔔 Activar avisos en este celular"; } }
+}
+function avisosLocal() { try { return localStorage.getItem("crd_avisos") === "1"; } catch (e) { return false; } }
+
+/* ----- reportes de turno ----- */
+const T_TXT = {ok: "✓", pend: "⏳", falta: "✗", futuro: "·"};
+function tSlots(persona, fecha) {
+  const T = TURNOS || {}, horas = T.horas || [8, 11, 14, 17], dias = T.dias || [1, 2, 3, 4, 5, 6], hoy = hoyISO(), m = ahoraMin();
+  if (!dias.includes(diaSemana(fecha))) return [];
+  const reps = (T.reportes || []).filter(r => r["Quién"] === persona && String(r["Fecha"]).slice(0, 10) === fecha);
+  return horas.map(h => {
+    const slot = String(h).padStart(2, "0") + ":00", rep = reps.filter(r => r["Turno"] === slot);
+    let estado = rep.length ? "ok" : "falta";
+    if (!rep.length && fecha === hoy) estado = m < h * 60 - 20 ? "futuro" : m < h * 60 + 90 ? "pend" : "falta";
+    if (!rep.length && fecha > hoy) estado = "futuro";
+    return {h, slot, estado, reps: rep};
+  });
+}
+function tTurnoActual() { const horas = (TURNOS && TURNOS.horas) || [8, 11, 14, 17], m = ahoraMin(); let t = horas[0]; horas.forEach(x => { if (m >= x * 60 - 20) t = x; }); return String(t).padStart(2, "0") + ":00"; }
+function tChips(persona, fecha) {
+  const S = tSlots(persona, fecha); if (!S.length) return `<span class="card-m">Domingo: sin reportes</span>`;
+  return `<div class="t-chips">${S.map(s => `<span class="t-chip t-${s.estado}" title="${esc(s.slot)}">${T_TXT[s.estado]} ${esc(s.slot.slice(0, 2).replace(/^0/, ""))}${s.reps.some(r => /^⚠️/.test(r["Descripción"])) ? " ⚠️" : ""}</span>`).join("")}</div>`;
+}
+function tEvidencias(txt) {
+  const L = String(txt || "").split("\n").filter(Boolean), fotos = L.filter(l => !/· video$/.test(l)).join("\n"), vids = L.filter(l => /· video$/.test(l));
+  return [btnFotos(fotos), ...vids.map((v, i) => { const id = idsDe(v)[0]; return id ? `<a class="btn" href="https://drive.google.com/file/d/${esc(id)}/view" target="_blank" rel="noopener">▶ Video${vids.length > 1 ? " " + (i + 1) : ""}</a>` : ""; })].filter(Boolean).join("");
+}
+function cardTurno(r, conNombre) {
+  const prob = /^⚠️/.test(r["Descripción"] || ""), hr = String(r["Hora"] || ""), t = String(r["Turno"] || "");
+  const tarde = hr && t && (Number(hr.slice(0, 2)) * 60 + Number(hr.slice(3, 5))) > (Number(t.slice(0, 2)) * 60 + 90);
+  const ev = tEvidencias(r["Evidencias"]);
+  return `<article class="card${prob ? " t-prob" : ""}"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${conNombre ? esc(r["Quién"]) + " · " : ""}Turno de las ${esc(t)}</p>
+    <p class="card-m">${esc(fDia(String(r["Fecha"]).slice(0, 10)))} · ${esc(hr)}${r["Área"] ? " · " + esc(r["Área"]) : ""}</p></div>
+    ${prob ? `<span class="badge b-bad">Problema</span>` : tarde ? `<span class="badge b-warn">Tarde</span>` : `<span class="badge b-ok">A tiempo</span>`}</div>
+    ${r["Descripción"] ? `<p style="white-space:pre-wrap;margin:10px 0 0">${esc(String(r["Descripción"]).replace(/^⚠️ PROBLEMA · /, ""))}</p>` : ""}
+    ${ev ? `<div class="acts">${ev}</div>` : ""}</article>`;
+}
+function botonAvisos(texto) { return `<button class="btn" type="button" data-avisos="1">🔔 ${texto || "Activar avisos en este celular"}</button>`; }
+function hoyTurnos() {
+  if (!TURNOS || !tiene("turnos")) return "";
+  const hoy = hoyISO(), O = YO.org || {};
+  if (O.turno) { // Alan, Jesús, Gabriel: su reporte va hasta arriba
+    const S = tSlots(YO.usuario.nombre, hoy), act = tTurnoActual(), ya = S.find(s => s.slot === act && s.estado === "ok");
+    let d = S.length ? tChips(YO.usuario.nombre, hoy) : `<div class="empty">Hoy es domingo: no hay reportes.</div>`;
+    if (S.length) d += `<button class="qa qa-turno${ya ? "" : " qa-ya"}" type="button" data-turno-rep="1"><span class="ico">📷</span><span>${ya ? "Mandar otro reporte" : "Reportar mi turno de las " + act}<small>Foto o video y qué hiciste</small></span></button>`;
+    if (!TURNOS.avisoMio && !avisosLocal()) d += `<p class="aviso">Activa los avisos para que te llegue el recordatorio a las ${(TURNOS.horas || []).join(", ")} h.</p>${botonAvisos()}`;
+    return bloque("Tu reporte de turno", d, "blk-dec");
+  }
+  if (!TURNOS.todos) return "";
+  const G = TURNOS.gente || []; if (!G.length) return "";
+  const probs = (TURNOS.reportes || []).filter(r => String(r["Fecha"]).slice(0, 10) === hoy && /^⚠️/.test(r["Descripción"] || ""));
+  const faltan = G.reduce((a, g) => a + tSlots(g.nombre, hoy).filter(s => s.estado === "falta").length, 0);
+  let d = `<div class="tbl-wrap"><table class="t-tabla"><tbody>${G.map(g => `<tr><td><b>${esc(String(g.nombre).split(" ")[0])}</b><br><span class="card-m">${esc(g.area || "")}</span></td><td>${tChips(g.nombre, hoy)}</td></tr>`).join("")}</tbody></table></div>`;
+  if (probs.length) d += `<p class="lbl rojo">Problemas reportados hoy (${probs.length})</p>${probs.map(r => cardTurno(r, true)).join("")}`;
+  d += `<button class="btn" type="button" onclick="ir('turnos')">Ver los reportes</button>`;
+  return probs.length || faltan ? bloque(`Reportes de turno${faltan ? " · " + faltan + " sin reporte" : ""}`, d) : plegado("Reportes de turno de hoy · todo al día", d);
+}
+function vTurnos() {
+  const T = TURNOS, O = YO.org || {}, hoy = hoyISO();
+  if (O.turno) {
+    const mios = T.reportes.slice().reverse();
+    return `<h2>Mis reportes de turno</h2><p class="sub">Cada 3 horas (${(T.horas || []).map(h => h + ":00").join(", ")}, de lunes a sábado) toma foto o video de tu área y escribe qué hiciste.</p>
+      ${hoyTurnos()}<h3>Lo que has reportado</h3>${mios.length ? mios.slice(0, 60).map(r => cardTurno(r)).join("") : `<div class="empty">Todavía no has mandado reportes.</div>`}`;
+  }
+  const fecha = st.tDia || hoy, G = T.gente || [], quien = st.tQuien || "";
+  const dias = [...Array(7)].map((_, i) => masDias(hoy, -i));
+  const L = T.reportes.filter(r => String(r["Fecha"]).slice(0, 10) === fecha && (!quien || r["Quién"] === quien)).sort((a, b) => String(b["Hora"]).localeCompare(String(a["Hora"])));
+  return `<h2>Reportes de turno</h2><p class="sub">${G.map(g => esc(String(g.nombre).split(" ")[0]) + " (" + esc(g.area || "") + ")").join(" · ") || "Nadie tiene reportes de turno."}. Reportan a las ${(T.horas || []).map(h => h + ":00").join(", ")}, de lunes a sábado; si no reportan, les llega otro aviso a la hora y media.</p>
+    <div class="bar">${dias.map(d => `<button class="chip" type="button" data-t-dia="${d}" aria-pressed="${d === fecha}">${d === hoy ? "Hoy" : d === masDias(hoy, -1) ? "Ayer" : esc(fDia(d).split(",")[0] + " " + d.slice(8))}</button>`).join("")}</div>
+    <div class="tbl-wrap"><table class="t-tabla"><thead><tr><th>Quién</th><th>Turnos (${esc(fDia(fecha))})</th><th>Avisos</th></tr></thead><tbody>${G.map(g => `<tr><td><b>${esc(g.nombre)}</b><br><span class="card-m">${esc(g.area || "")}</span></td><td>${tChips(g.nombre, fecha)}</td>
+      <td>${g.avisos ? `<span class="badge b-ok">Activos</span>` : `<span class="badge b-warn">Sin activar</span>`}</td></tr>`).join("")}</tbody></table></div>
+    <p class="card-m">✓ reportó · ⏳ le toca ahora · ✗ no reportó · ⚠️ reportó un problema. Para darles acceso: sección Equipo → "Liga de celular" y mándasela por WhatsApp; al entrar, que toquen "Activar avisos".</p>
+    ${T.avisoMio || avisosLocal() ? "" : `<div class="big-actions">${botonAvisos("Recibir en mi celular los problemas y movimientos de caballos")}</div>`}
+    <div class="bar"><button class="chip" type="button" data-t-quien="" aria-pressed="${!quien}">Todos</button>${G.map(g => `<button class="chip" type="button" data-t-quien="${esc(g.nombre)}" aria-pressed="${quien === g.nombre}">${esc(String(g.nombre).split(" ")[0])}</button>`).join("")}</div>
+    ${L.length ? L.map(r => cardTurno(r, true)).join("") : `<div class="empty">Sin reportes ese día.</div>`}`;
+}
+async function tSubirVideo(file, prog) {
+  const mime = rMime(file); if (!/^video\//.test(mime)) throw new Error(file.name + " no es un video.");
+  if (file.size > 1024 * 1024 * 1024) throw new Error("El video pesa más de 1 GB. Graba uno más corto.");
+  const s = await post({accion: "hacer", tipo: "turno", op: "subida", mime, tamano: file.size, nombre: file.name});
+  const CH = 16 * 1024 * 1024; let ini = 0, res = null;
+  while (ini < file.size) {
+    const blob = file.slice(ini, Math.min(ini + CH, file.size)); let x = null;
+    for (let i = 0; i < 4 && !x; i++) { try { x = await rPut(s.url, blob, ini, file.size, prog); } catch (e) { if (i === 3) throw e; await new Promise(r => setTimeout(r, 2000 * (i + 1))); } }
+    if (x.status === 308) { const r = x.getResponseHeader("Range"); ini = r ? Number(r.split("-")[1]) + 1 : ini + blob.size; continue; }
+    if (x.status === 200 || x.status === 201) { res = JSON.parse(x.responseText || "{}"); break; }
+    throw new Error("Drive respondió " + x.status + ". Intenta otra vez.");
+  }
+  if (!res || !res.id) throw new Error("No se pudo terminar de subir el video.");
+  return res.id;
+}
+function dialogoTurno() {
+  if (sinCosto()) return;
+  const act = tTurnoActual(), O = YO.org || {};
+  const box = dialogo("Reporte de las " + act, `<div class="frm"><p class="ctx">${esc(O.area || O.puesto || "")} · ${esc(fDia(hoyISO()))}</p>
+    <label>¿Cómo está tu área?</label><div class="rads"><label class="rad"><input type="radio" name="tr-e" value="ok" checked> <span><b>Todo en orden</b></span></label>
+      <label class="rad"><input type="radio" name="tr-e" value="prob"> <span><b>Hay un problema</b><small>Le llega aviso a Mario y a Nico en ese momento.</small></span></label></div>
+    <label>¿Qué hiciste?</label><textarea id="tr-d" rows="4" maxlength="2000" placeholder="Ej. Limpié los corrales 1 y 2, cambié el agua y revisé las cercas"></textarea>
+    ${campoFotos("Tomar fotos")}
+    <label class="foto-btn">🎥 Grabar o subir video<input type="file" id="tr-v" accept="video/*"></label><div class="fotos-prev" id="tr-vp"></div>
+    <button class="btn btn-dark" id="d-ok" type="button">Enviar reporte</button></div>`);
+  activarFotos(box);
+  const vi = box.querySelector("#tr-v"); vi.addEventListener("change", () => { box.querySelector("#tr-vp").innerHTML = [...vi.files].map(f => `<span class="badge b-info">🎥 ${esc(f.name)} · ${Math.round(f.size / 1048576)} MB</span>`).join(""); });
+  box.querySelector("#d-ok").onclick = async () => {
+    const b = box.querySelector("#d-ok"), desc = box.querySelector("#tr-d").value.trim(), fotos = box.querySelector("#d-fotos").files, vids = [...vi.files].slice(0, 2);
+    if (desc.length < 3) return alert("Escribe qué hiciste.");
+    if (!fotos.length && !vids.length) return alert("Toma una foto o un video de cómo quedó tu área.");
+    b.disabled = true; R_SUBIENDO = true;
+    try {
+      const videos = [];
+      for (const [i, f] of vids.entries()) { videos.push(await tSubirVideo(f, n => { b.textContent = `Subiendo video${vids.length > 1 ? " " + (i + 1) : ""}… ${Math.round(n / f.size * 100)}%`; })); }
+      b.textContent = "Guardando…";
+      const archivos = await archivosDe(box);
+      const j = await post({accion: "hacer", tipo: "turno", op: "reporte", archivos: archivos.slice(0, 4), videos, reporte: {descripcion: desc, problema: box.querySelector("input[name=tr-e]:checked").value === "prob"}});
+      $("#dlg").close(); toast("Reporte de las " + (j.turno || act) + " enviado. ¡Gracias!"); TURNOS = null; render();
+    } catch (e) { alert(e.message); b.disabled = false; b.textContent = "Intentar de nuevo"; }
+    finally { R_SUBIENDO = false; }
+  };
+}
+
+/* ----- movimientos de caballos (salidas, regresos, gastos médicos extraordinarios y trámites) ----- */
+const MV_ICO = {"Salió a clínica": "🚑", "Salió del rancho": "🚚", "Regresó al rancho": "🏠", "Gasto médico extraordinario": "💊", "Trámite de chip": "🔖", "Trámite de clínica": "🏥"};
+const mvFuera = () => MOVS ? MOVS.movimientos.filter(m => m["Estatus"] === "Fuera del rancho") : [];
+const mvCapturar = () => MOVS && MOVS.oficina ? MOVS.movimientos.filter(m => m["Paga"] === "Rancho" && numv(m["Costo"]) > 0 && !m["Capturó"]) : [];
+function cardMov(m) {
+  const fuera = m["Estatus"] === "Fuera del rancho", a = [], ev = btnFotos(m["Evidencias"], "Fotos o documentos");
+  if (fuera && YO.permisos.acciones.includes("movimiento")) a.push(`<button class="btn btn-dark" type="button" data-mv-regreso="${esc(m.ID)}">Ya regresó</button>`);
+  if (MOVS && MOVS.oficina && m["Paga"] === "Rancho" && numv(m["Costo"]) > 0 && !m["Capturó"]) a.push(`<button class="btn btn-dark" type="button" data-mv-capturar="${esc(m.ID)}">Capturar en GASTOS</button>`);
+  const sub = [fCorta(m["Fecha"]), m["Registró"], m["Dueño"] && m["Dueño"] !== "Rancho" ? "de " + m["Dueño"] : "", m["Destino"], m["Chip"] ? "chip " + m["Chip"] : "", m["Regreso estimado"] && fuera ? "regresa aprox. " + fCorta(m["Regreso estimado"]) : ""].filter(Boolean).map(esc).join(" · ");
+  return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${MV_ICO[m["Tipo"]] || ""} ${esc(m["Tipo"])} · ${esc(m["Caballo"])}</p><p class="card-m">${sub}</p></div>
+    <div style="text-align:right">${numv(m["Costo"]) ? `<div class="cc-monto cc-menos">${money(numv(m["Costo"]))}</div><span class="card-m">${m["Paga"] === "Cliente" ? "cargo al cliente" : "paga el rancho"}</span><br>` : ""}
+    <span class="badge ${fuera ? "b-warn" : "b-ok"}">${esc(fuera ? "Fuera del rancho" : m["Estatus"])}</span></div></div>
+    ${m["Descripción"] ? `<p style="white-space:pre-wrap;margin:10px 0 0">${esc(m["Descripción"])}</p>` : ""}${m["Regresó"] ? `<p class="card-m">Regresó: ${esc(m["Regresó"])}</p>` : ""}
+    ${a.length || ev ? `<div class="acts">${ev}${a.join("")}</div>` : ""}</article>`;
+}
+function hoyMovimientos() {
+  if (!MOVS) return "";
+  const F = mvFuera(), C = mvCapturar(); let d = "";
+  if (F.length) d += `<p class="lbl oro">Caballos fuera del rancho (${F.length})</p>${F.map(cardMov).join("")}`;
+  if (C.length) d += `<p class="lbl oro">Gastos médicos por capturar (${C.length})</p>${C.map(cardMov).join("")}`;
+  return d ? bloque("Movimientos de caballos", d) : "";
+}
+function vMovimientos() {
+  if (!MOVS) return `<div class="empty">No pude cargar los movimientos.</div>`;
+  const F = mvFuera(), L = MOVS.movimientos.slice().reverse(), f = st.mvFiltro || "todo";
+  const tipos = [["todo", "Todo"], ["salidas", "Salidas y regresos"], ["gastos", "Gastos extraordinarios"], ["tramites", "Trámites"]];
+  const ok = m => f === "todo" || (f === "salidas" && /^(Salió|Regresó)/.test(m["Tipo"])) || (f === "gastos" && /^Gasto/.test(m["Tipo"])) || (f === "tramites" && /^Trámite/.test(m["Tipo"]));
+  return `${F.length ? `<h3>Fuera del rancho ahora (${F.length})</h3>${F.map(cardMov).join("")}` : `<div class="empty">Todos los caballos están en el rancho. 👍</div>`}
+    <h3>Historial</h3><div class="bar">${tipos.map(([k, n]) => `<button class="chip" type="button" data-mv-f="${k}" aria-pressed="${f === k}">${n}</button>`).join("")}</div>
+    ${L.filter(ok).slice(0, 100).map(cardMov).join("") || `<div class="empty">Sin movimientos todavía.</div>`}`;
+}
+async function dialogoMovimiento(tipo0) {
+  if (sinCosto()) return;
+  try { await Promise.all([cargar("servicios").catch(() => {}), cargar("movimientos")]); } catch (e) { return alert(e.message); }
+  const C = (SERV && SERV.caballos) || ((REPORTES && REPORTES.caballos) || []).map(c => ({id: c.ID, nombre: c.Nombre, raza: c.Raza, grupo: "Plantel", dueno: "Rancho", folio: ""}));
+  const grupos = [...new Set(C.map(c => c.grupo || "Plantel"))];
+  const optsC = grupos.map(g => `<optgroup label="${esc(g)}">${C.filter(c => (c.grupo || "Plantel") === g).map(c => `<option value="${esc(c.id + "|" + c.nombre)}">${esc(c.nombre)}${c.dueno && c.dueno !== "Rancho" ? " · " + esc(c.dueno) : ""}</option>`).join("")}</optgroup>`).join("");
+  const conCosto = YO.permisos.dinero === "todo" || YO.usuario.rol === "medico";
+  const box = dialogo("Movimiento o trámite de un caballo", `<div class="frm">
+    <label>¿Qué pasó?</label><div class="sv-chips">${MOVS.tipos.map(t => `<button type="button" class="chip" data-mv-t="${esc(t)}" aria-pressed="${t === (tipo0 || "Salió a clínica")}">${MV_ICO[t] || ""} ${esc(t)}</button>`).join("")}</div>
+    <label>Caballo</label><select id="mv-c"><option value="">Elige el caballo…</option>${optsC}</select>
+    <div class="dos"><div><label>Fecha</label><input id="mv-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div><div id="mv-reg-w"><label>Regreso estimado</label><input id="mv-reg" type="date" min="${hoyISO()}"></div></div>
+    <div id="mv-dest-w"><label id="mv-dest-l">¿A dónde fue?</label><input id="mv-dest" maxlength="80" placeholder="Ej. Clínica Equina del Bajío"></div>
+    <div id="mv-chip-w"><label>Número de chip</label><input id="mv-chip" maxlength="30" inputmode="numeric" placeholder="15 dígitos"></div>
+    <div id="mv-cost-w"${conCosto ? "" : " hidden"}><label>Costo (si hubo)</label><input id="mv-cost" type="number" inputmode="decimal" min="0" step="0.01" placeholder="$"><p class="card-m" id="mv-paga" style="margin-top:-6px"></p></div>
+    <label id="mv-d-l">¿Qué pasó o qué se hizo?</label><textarea id="mv-d" rows="3" maxlength="1500" placeholder="Ej. Cólico; lo llevaron a revisión y se queda en observación"></textarea>
+    ${campoFotos("Foto, receta o documento", true)}
+    <button class="btn btn-dark" id="d-ok" type="button">Guardar y avisar</button></div>`);
+  activarFotos(box);
+  const tipo = () => (box.querySelector("[data-mv-t][aria-pressed=true]") || {}).dataset?.mvT || "Salió a clínica";
+  const pinta = () => { const t = tipo(), sale = /^Salió/.test(t);
+    box.querySelector("#mv-reg-w").hidden = !sale; box.querySelector("#mv-dest-w").hidden = !(sale || t === "Trámite de clínica");
+    box.querySelector("#mv-dest-l").textContent = t === "Salió a clínica" || t === "Trámite de clínica" ? "Clínica" : "¿A dónde fue?";
+    box.querySelector("#mv-chip-w").hidden = t !== "Trámite de chip"; box.querySelector("#mv-cost-w").hidden = !conCosto || t === "Regresó al rancho";
+    const v = box.querySelector("#mv-c").value.split("|"), c = C.find(x => x.id === v[0] && x.nombre === v[1]);
+    box.querySelector("#mv-paga").textContent = c && c.dueno && c.dueno !== "Rancho" ? `Caballo de ${c.dueno}: el costo se le carga en su estado de cuenta (Judith confirma el precio).` : "Caballo del rancho: Judith lo captura en GASTOS."; };
+  box.querySelectorAll("[data-mv-t]").forEach(x => x.addEventListener("click", () => { box.querySelectorAll("[data-mv-t]").forEach(y => y.setAttribute("aria-pressed", y === x)); pinta(); }));
+  box.querySelector("#mv-c").addEventListener("change", pinta); pinta();
+  box.querySelector("#d-ok").onclick = () => {
+    const v = box.querySelector("#mv-c").value.split("|"), c = C.find(x => x.id === v[0] && x.nombre === v[1]); if (!c) return alert("Elige el caballo.");
+    const g = id => (box.querySelector(id) || {}).value || "", t = tipo();
+    if (/^Salió/.test(t) && g("#mv-dest").trim().length < 2) return alert(t === "Salió a clínica" ? "Escribe a qué clínica fue." : "Escribe a dónde fue.");
+    if (t === "Trámite de chip" && g("#mv-chip").trim().length < 5) return alert("Escribe el número de chip.");
+    if (t === "Gasto médico extraordinario" && !(Number(g("#mv-cost")) > 0)) return alert("Escribe cuánto costó.");
+    if (!/^(Salió|Regresó)/.test(t) && g("#mv-d").trim().length < 3) return alert("Escribe qué se hizo.");
+    enviar(box, {tipo: "movimiento", op: "nuevo", mov: {tipo: t, idCaballo: /^CRD-/.test(c.id) ? c.id : "", caballo: c.nombre, dueno: c.dueno || "Rancho", folio: c.folio || "", destino: g("#mv-dest").trim(),
+      descripcion: g("#mv-d").trim(), chip: g("#mv-chip").trim(), costo: g("#mv-cost"), fecha: g("#mv-f"), regreso: g("#mv-reg")}}, "Guardado. Ya les llegó el aviso a Mario y a Nico.", () => { MOVS = null; });
+  };
+}
+
+/* ----- caballos: alta completa, pagos y ficha ----- */
+const FORMAS_PAGO = ["Transferencia", "Efectivo", "Tarjeta", "Depósito", "Cheque", "Otro"];
+const CATS_CABALLO = ["Veterinario", "Medicamentos", "Transporte", "Papeles y registros", "Herraje", "Alimento", "Entrenamiento", "Otro"];
+function dialogoAltaCaballo() {
+  if (sinCosto()) return;
+  const box = dialogo("Registrar caballo nuevo", `<div class="frm">
+    <p class="ctx">Se da de alta en CABALLOS CRD de la Maestra con su ID, y se crea su carpeta de fotos en "01 · Caballos".</p>
+    <label>Nombre</label><input id="ca-n" maxlength="60" placeholder="Como aparece en sus papeles">
+    <div class="dos"><div><label>Raza</label><select id="ca-r"><option>Friesian</option><option>Gypsy Vanner</option><option>Otra</option></select></div>
+      <div><label>Sexo</label><select id="ca-s"><option>Hembra</option><option>Macho</option></select></div></div>
+    <div class="dos"><div><label>Capa</label><input id="ca-c" maxlength="40" placeholder="Ej. Negro, Cremello"></div><div><label>Nacimiento</label><input id="ca-na" type="date" max="${hoyISO()}"></div></div>
+    <div class="dos"><div><label>Estatus</label><select id="ca-e"><option>Plantel</option><option>En venta</option><option>Apartado</option></select></div>
+      <div><label>Propiedad</label><input id="ca-p" maxlength="30" value="CRD"></div></div>
+    <div id="ca-venta" hidden><div class="dos"><div><label>Precio de venta</label><input id="ca-pr" type="number" inputmode="decimal" min="0" placeholder="$"></div>
+      <div><label>¿Sale en la página?</label><select id="ca-pu"><option value="NO">No todavía</option><option value="SI">Sí, publicar</option></select></div></div></div>
+    <div id="ca-sem" hidden><label class="chk"><input type="checkbox" id="ca-se"> <span>Es semental</span></label></div>
+    <details class="mas"><summary>Más datos (padre, madre, registro, chip, alzada)</summary>
+      <div class="dos"><div><label>Padre</label><input id="ca-pa" maxlength="60"></div><div><label>Madre</label><input id="ca-ma" maxlength="60"></div></div>
+      <div class="dos"><div><label>No. registro</label><input id="ca-rg" maxlength="30"></div><div><label>Chip</label><input id="ca-ch" maxlength="30" inputmode="numeric"></div></div>
+      <label>Alzada (m)</label><input id="ca-al" type="number" inputmode="decimal" step="0.01" min="0" max="2.5" placeholder="Ej. 1.68"></details>
+    <label class="chk"><input type="checkbox" id="ca-co"> <span><b>Lo compramos</b><br><small class="card-m">Crea su folio en COMPRAS para registrar lo que se le paga al vendedor.</small></span></label>
+    <div id="ca-compra" hidden><div class="dos"><div><label>¿A quién se le compró?</label><input id="ca-cp" maxlength="60" placeholder="Proveedor"></div><div><label>Precio de compra</label><input id="ca-cpr" type="number" inputmode="decimal" min="0" placeholder="$"></div></div>
+      <div class="dos"><div><label>Moneda</label><select id="ca-cm"><option>MXN</option><option>USD</option><option>EUR</option></select></div><div><label>Embarque o nota</label><input id="ca-ce" maxlength="60"></div></div></div>
+    <label>Notas (opcional)</label><input id="ca-no" maxlength="300">
+    ${campoFotos("Fotos del caballo (opcional)")}
+    <button class="btn btn-dark" id="d-ok" type="button">Dar de alta</button></div>`);
+  activarFotos(box);
+  const q = id => box.querySelector(id), pinta = () => { q("#ca-venta").hidden = q("#ca-e").value === "Plantel"; q("#ca-sem").hidden = q("#ca-s").value !== "Macho"; q("#ca-compra").hidden = !q("#ca-co").checked; };
+  ["#ca-e", "#ca-s", "#ca-co"].forEach(id => q(id).addEventListener("change", pinta)); pinta();
+  const manda = forzar => {
+    const v = id => (q(id).value || "").trim(); if (v("#ca-n").length < 2) return alert("Escribe el nombre del caballo.");
+    if (q("#ca-co").checked && v("#ca-cp").length < 2) return alert("Escribe a quién se le compró.");
+    enviar(box, {tipo: "caballo", op: "alta", caballo: {nombre: v("#ca-n"), raza: v("#ca-r"), sexo: v("#ca-s"), capa: v("#ca-c"), nacimiento: v("#ca-na"), estatus: v("#ca-e"), propiedad: v("#ca-p"),
+      precio: q("#ca-venta").hidden ? "" : v("#ca-pr"), publicar: q("#ca-venta").hidden ? "NO" : v("#ca-pu"), semental: q("#ca-se").checked && v("#ca-s") === "Macho" ? "SI" : "NO",
+      padre: v("#ca-pa"), madre: v("#ca-ma"), registro: v("#ca-rg"), chip: v("#ca-ch"), alzada: v("#ca-al"), notas: v("#ca-no"), forzar},
+      compra: q("#ca-co").checked ? {proveedor: v("#ca-cp"), precio: v("#ca-cpr"), moneda: v("#ca-cm"), embarque: v("#ca-ce")} : null},
+      "Caballo dado de alta", j => { CABALLOS = null; setTimeout(() => alert(`Listo: ${j.id}${j.folio ? " · compra " + j.folio : ""}.${j.carpeta ? "\nSe creó su carpeta de fotos en 01 · Caballos." : ""}\nCompleta en la Maestra los datos que falten.`), 300); });
+  };
+  q("#d-ok").onclick = () => manda(false);
+}
+async function dialogoPagoCaballo(id0) {
+  if (sinCosto()) return;
+  try { await cargar("caballos"); } catch (e) { return alert(e.message); }
+  const C = CABALLOS.caballos.slice().sort((a, b) => String(a.Nombre).localeCompare(String(b.Nombre)));
+  const box = dialogo("Registrar pago de un caballo", `<div class="frm">
+    <label>Caballo</label><select id="pc-c"><option value="">Elige el caballo…</option>${C.map(c => `<option value="${esc(c.ID)}"${c.ID === id0 ? " selected" : ""}>${esc(c.Nombre)} · ${esc(c.ID)}${c.Estatus ? " · " + esc(c.Estatus) : ""}</option>`).join("")}</select>
+    <label>¿Qué pago es?</label><div class="rads">
+      <label class="rad"><input type="radio" name="pc-k" value="venta" checked> <span><b>Abono del comprador</b><small>Un cliente que nos compró el caballo y va pagando (VENTAS).</small></span></label>
+      <label class="rad"><input type="radio" name="pc-k" value="compra"> <span><b>Pago a quien nos lo vendió</b><small>Lo que pagamos por comprarlo (COMPRAS).</small></span></label>
+      <label class="rad"><input type="radio" name="pc-k" value="gasto"> <span><b>Gasto del caballo</b><small>Veterinario, transporte, papeles, etc. (GASTOS).</small></span></label></div>
+    <div id="pc-folio-w"><label id="pc-folio-l">Venta</label><select id="pc-folio"></select><p class="card-m" id="pc-info" style="margin-top:-6px"></p></div>
+    <div id="pc-gasto-w" hidden><div class="dos"><div><label>Categoría</label><select id="pc-cat">${opt(CATS_CABALLO, "Veterinario")}</select></div><div><label>Proveedor</label><input id="pc-pv" maxlength="60"></div></div>
+      <label>¿De qué es?</label><input id="pc-con" maxlength="120" placeholder="Ej. Flete de Querétaro al rancho"></div>
+    <div class="dos"><div><label>Monto</label><input id="pc-m" type="number" inputmode="decimal" min="1" step="0.01" placeholder="$"></div><div><label>Fecha</label><input id="pc-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div></div>
+    <div id="pc-tc-w" hidden><label>Tipo de cambio (opcional)</label><input id="pc-tc" type="number" inputmode="decimal" step="0.0001" min="0"></div>
+    <div class="dos"><div><label>Forma de pago</label><select id="pc-fp">${opt(FORMAS_PAGO, "Transferencia")}</select></div><div><label>Cuenta (opcional)</label><input id="pc-cu" maxlength="60" placeholder="Ej. BAJIO ·1408"></div></div>
+    <label>Notas (opcional)</label><input id="pc-n" maxlength="300">
+    ${campoFotos("Comprobante (foto o PDF)", true)}
+    <button class="btn btn-dark" id="d-ok" type="button">Registrar pago</button></div>`);
+  activarFotos(box);
+  const q = id => box.querySelector(id); let ficha = null;
+  const clase = () => box.querySelector("input[name=pc-k]:checked").value;
+  const pinta = () => {
+    const k = clase(), id = q("#pc-c").value, sel = q("#pc-folio");
+    q("#pc-gasto-w").hidden = k !== "gasto"; q("#pc-folio-w").hidden = k === "gasto"; q("#pc-folio-l").textContent = k === "venta" ? "Venta" : "Compra";
+    let L = [];
+    if (k === "venta") { const tiene = v => String(v["ID caballo"] || "").split(/[,\s]+/).includes(id); L = CABALLOS.ventas.filter(v => !id || tiene(v)); if (id && !L.length) L = CABALLOS.ventas.filter(v => numv(v["Saldo"]) > 0);
+      sel.innerHTML = L.length ? L.map(v => `<option value="${esc(v.Folio)}" data-m="${esc(v.Moneda || "MXN")}">${esc(v.Folio)} · ${esc(v.Concepto)} · ${esc(v.Comprador)} · saldo ${esc(v.Saldo || "—")}</option>`).join("") : `<option value="">No hay ventas de este caballo</option>`; }
+    if (k === "compra") { L = ficha ? ficha.compras : [];
+      sel.innerHTML = !id ? `<option value="">Primero elige el caballo</option>` : !ficha ? `<option value="">Cargando…</option>` : L.length ? L.map(c => `<option value="${esc(c.Folio)}" data-m="${esc(c.Moneda || "MXN")}">${esc(c.Folio)} · ${esc(c.Proveedor)} · saldo ${esc(c.Saldo || "—")} ${esc(c.Moneda || "")}</option>`).join("") : `<option value="">Este caballo no tiene compra registrada</option>`; }
+    const o = sel.selectedOptions[0]; q("#pc-tc-w").hidden = k === "gasto" || !o || (o.dataset.m || "MXN") === "MXN";
+    q("#pc-info").textContent = k === "venta" && id && !CABALLOS.ventas.some(v => String(v["ID caballo"] || "").includes(id)) ? "Este caballo no tiene venta ligada; se muestran las ventas con saldo." : "";
+  };
+  const cargaFicha = async () => { ficha = null; pinta(); const id = q("#pc-c").value; if (!id) return; try { ficha = await api("accion=caballo_ficha&id=" + encodeURIComponent(id)); } catch (e) { ficha = {compras: []}; } if (q("#pc-c").value === id) pinta(); };
+  q("#pc-c").addEventListener("change", cargaFicha); box.querySelectorAll("input[name=pc-k]").forEach(x => x.addEventListener("change", pinta)); q("#pc-folio").addEventListener("change", pinta);
+  cargaFicha();
+  q("#d-ok").onclick = () => {
+    const k = clase(), v = id => (q(id).value || "").trim(), c = C.find(x => x.ID === v("#pc-c"));
+    if (!c && k === "gasto") return alert("Elige el caballo.");
+    if (k !== "gasto" && !v("#pc-folio")) return alert(k === "venta" ? "Elige la venta." : "Elige la compra.");
+    if (!(Number(v("#pc-m")) > 0)) return alert("Escribe el monto.");
+    if (k === "gasto" && v("#pc-con").length < 3) return alert("Escribe de qué es el gasto.");
+    enviar(box, {tipo: "caballo", op: "pago", pago: {clase: k, folio: v("#pc-folio"), monto: v("#pc-m"), tc: v("#pc-tc"), fecha: v("#pc-f"), forma: v("#pc-fp"), cuenta: v("#pc-cu"), notas: v("#pc-n"),
+      categoria: v("#pc-cat"), proveedor: v("#pc-pv"), concepto: v("#pc-con"), idCaballo: c ? c.ID : "", caballo: c ? c.Nombre : ""}},
+      {venta: "Abono registrado en PAGOS", compra: "Pago a proveedor registrado en PAGOS", gasto: "Gasto registrado en GASTOS"}[k], () => { CABALLOS = null; });
+  };
+}
+async function fichaCaballo(id) {
+  const c = CABALLOS && CABALLOS.caballos.find(x => x.ID === id); if (!c) return;
+  const box = dialogo(c.Nombre + " · " + c.ID, `<p class="load">Cargando…</p>`);
+  try {
+    const f = await api("accion=caballo_ficha&id=" + encodeURIComponent(id)); if (!box.isConnected) return;
+    const tot = L => L.reduce((a, x) => a + numv(x.Total), 0);
+    box.innerHTML = `<p class="card-m">${[c.Raza, c.Sexo, c.Capa, c.Nacimiento ? "nació " + c.Nacimiento : "", c.Estatus, c.Precio ? "precio " + c.Precio : ""].filter(Boolean).map(esc).join(" · ")}</p>
+      ${YO.permisos.acciones.includes("caballo_pago") ? `<div class="big-actions"><button class="btn btn-dark" type="button" data-pc-nuevo="${esc(id)}">💳 Registrar pago o gasto</button></div>` : ""}
+      ${f.ventas.length ? `<h3>Venta</h3>${tabla(f.ventas, ["Folio", "Comprador", "Precio", "Pagado", "Saldo", "Estatus", "Próximo pago"], "")}` : ""}
+      ${f.compras.length ? `<h3>Compra</h3>${tabla(f.compras, ["Folio", "Proveedor", "Moneda", "Precio CRD", "Pagado", "Saldo", "Estatus"], "")}` : ""}
+      ${f.pagos.length ? `<h3>Pagos</h3>${tabla(f.pagos, ["Fecha", "Tipo", "Referencia", "Monto", "Forma de pago", "Registró"], "")}` : ""}
+      <h3>Gastos del caballo${f.gastos.length ? " · " + money(tot(f.gastos)) : ""}</h3>${tabla(f.gastos, ["Fecha", "Categoría", "Concepto", "Total", "Forma de pago"], "Sin gastos registrados.")}
+      ${f.movimientos.length ? `<h3>Movimientos y trámites</h3>${tabla(f.movimientos, ["Fecha", "Tipo", "Destino", "Costo", "Estatus"], "")}` : ""}`;
+  } catch (e) { box.innerHTML = `<div class="err">${esc(e.message)}</div>`; }
+}
+
+/* ----- redes: calendario por mes, indicaciones al agente y gráficas ----- */
+function rThumbPub(p) {
+  const vp = String(p["Vista previa"] || ""), d = (vp.match(/\/d\/([A-Za-z0-9_-]{20,})/) || vp.match(/[?&]id=([A-Za-z0-9_-]{20,})/) || [])[1];
+  if (d) return rThumb(d);
+  if (/^https:\/\/static\.metricool\.com\//.test(vp)) return vp;
+  const m = rMediaDe(p)[0]; return m ? rThumb(m["ID Drive"]) : "";
+}
+function rCalendario() {
+  const P = REDES.publicaciones.filter(p => p["Estatus"] !== "Descartado" && /^\d{4}-\d{2}-\d{2}/.test(String(p["Fecha y hora"])));
+  const hoy = hoyISO(), mes = st.rMes || hoy.slice(0, 7), [y, mm] = mes.split("-").map(Number);
+  const primero = mes + "-01", dias = new Date(Date.UTC(y, mm, 0)).getUTCDate(), off = diaSemana(primero) - 1;
+  const nav = d => { const t = new Date(Date.UTC(y, mm - 1 + d, 1)); return t.toISOString().slice(0, 7); };
+  const nombreMes = new Date(Date.UTC(y, mm - 1, 15)).toLocaleDateString("es-MX", {month: "long", year: "numeric", timeZone: "UTC"});
+  const sel = st.rDia && st.rDia.startsWith(mes) ? st.rDia : (mes === hoy.slice(0, 7) ? hoy : primero);
+  let celdas = ""; for (let i = 0; i < off; i++) celdas += `<div class="rc-d rc-vacio"></div>`;
+  for (let d = 1; d <= dias; d++) {
+    const iso = mes + "-" + String(d).padStart(2, "0"), L = P.filter(p => String(p["Fecha y hora"]).slice(0, 10) === iso).sort((a, b) => String(a["Fecha y hora"]).localeCompare(String(b["Fecha y hora"])));
+    celdas += `<button type="button" class="rc-d${iso === hoy ? " rc-hoy" : ""}${iso === sel ? " rc-sel" : ""}" data-r-dia="${iso}"><span class="rc-n">${d}</span>${L.slice(0, 2).map(p => { const t = rThumbPub(p);
+      return `<span class="rc-p rc-${esc(String(p["Estatus"]).replace(/\s+/g, "-").toLowerCase())}">${t ? `<img src="${esc(t)}" alt="" loading="lazy" onerror="this.remove()">` : ""}<i>${esc(String(p["Fecha y hora"]).slice(11, 16))}</i></span>`; }).join("")}${L.length > 2 ? `<span class="rc-mas">+${L.length - 2}</span>` : ""}</button>`;
+  }
+  const Ld = P.filter(p => String(p["Fecha y hora"]).slice(0, 10) === sel), sinF = REDES.publicaciones.filter(p => !["Descartado", "Publicado"].includes(p["Estatus"]) && !/^\d{4}-\d{2}-\d{2}/.test(String(p["Fecha y hora"])));
+  return `<div class="rc-bar"><button class="btn" type="button" data-r-mes="${nav(-1)}">‹</button><b>${esc(nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1))}</b><button class="btn" type="button" data-r-mes="${nav(1)}">›</button>${mes !== hoy.slice(0, 7) ? `<button class="chip" type="button" data-r-mes="${hoy.slice(0, 7)}">Hoy</button>` : ""}</div>
+    <div class="rc-sem">${["L", "M", "M", "J", "V", "S", "D"].map(x => `<span>${x}</span>`).join("")}</div><div class="rc-grid">${celdas}</div>
+    <p class="card-m rc-ley"><span class="rc-k rc-por-aprobar"></span>Por aprobar <span class="rc-k rc-agendado"></span>Agendada <span class="rc-k rc-publicado"></span>Publicada <span class="rc-k rc-borrador"></span>En preparación</p>
+    <h3>${esc(fDia(sel))}</h3>${Ld.length ? Ld.map(p => rCardPub(p, p["Estatus"] === "Por aprobar" && REDES.aprueba ? "aprobar" : "")).join("") : `<div class="empty">Nada programado ese día.</div>`}
+    ${sinF.length ? plegado(`Sin fecha (${sinF.length})`, sinF.map(p => rCardPub(p)).join("")) : ""}`;
+}
+function rInstrucciones() {
+  if (!REDES.aprueba) return "";
+  const L = REDES.instrucciones || [];
+  return `<section class="blk"><h3>Indicaciones para el agente</h3><p class="sub" style="margin:0 0 8px">Lo que escribas aquí lo toma en cuenta en cada pasada (9 am y 5 pm) para todo lo que arme, hasta la fecha que pongas.</p>
+    ${L.map(x => `<div class="r-ins"><p>${esc(x["Instrucción"])}</p><span class="card-m">${esc(x["Quién"])} · ${esc(String(x["Fecha"]).slice(0, 10))}${x["Vigente hasta"] ? " · hasta " + esc(fCorta(x["Vigente hasta"])) : ""}</span>
+      <button class="btn r-mini" type="button" data-r-insq="${esc(x.ID)}">Quitar</button></div>`).join("")}
+    <div class="frm"><textarea id="r-ins-t" rows="2" maxlength="1000" placeholder="Ej. Esta semana empuja la venta de BOB2 y menciona el plan de pagos"></textarea>
+      <div class="dos"><div><label>Vigente hasta (opcional)</label><input id="r-ins-h" type="date" min="${hoyISO()}"></div><div style="align-self:end"><button class="btn btn-dark" type="button" data-r-ins="1">Darle la indicación</button></div></div></div></section>`;
+}
+function rGrafica(L, campo, color) { // línea simple de los últimos datos (seguidores o alcance)
+  const pts = L.map(x => numv(x[campo])).filter(n => n > 0); if (pts.length < 2) return "";
+  const min = Math.min(...pts), max = Math.max(...pts), W = 220, H = 48, k = (W - 8) / (pts.length - 1);
+  const xy = pts.map((v, i) => [4 + i * k, max === min ? H / 2 : H - 4 - (v - min) / (max - min) * (H - 8)]);
+  return `<svg class="r-graf" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(campo)}"><polyline fill="none" stroke="${color}" stroke-width="2" points="${xy.map(p => p.map(n => n.toFixed(1)).join(",")).join(" ")}"/><circle cx="${xy[xy.length - 1][0].toFixed(1)}" cy="${xy[xy.length - 1][1].toFixed(1)}" r="3" fill="${color}"/></svg>`;
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.avisos) return activarAvisos(b);
+  if (b.dataset.turnoRep) return dialogoTurno();
+  if (b.dataset.tDia) { st.tDia = b.dataset.tDia; render(); return; }
+  if (b.dataset.tQuien !== undefined && b.closest("main")) { st.tQuien = b.dataset.tQuien; render(); return; }
+  if (b.dataset.mvNuevo !== undefined) return dialogoMovimiento(b.dataset.mvNuevo);
+  if (b.dataset.mvF) { st.mvFiltro = b.dataset.mvF; render(); return; }
+  if (b.dataset.mvRegreso) { if (sinCosto()) return; const nota = prompt("¿Ya regresó al rancho? Escribe una nota si quieres (cómo llegó, indicaciones):", ""); if (nota === null) return;
+    b.disabled = true; try { await post({accion: "hacer", tipo: "movimiento", op: "regreso", id: b.dataset.mvRegreso, nota}); toast("Listo, quedó de regreso en el rancho"); MOVS = null; render(); } catch (err) { alert(err.message); b.disabled = false; } return; }
+  if (b.dataset.mvCapturar) { if (sinCosto()) return; const forma = prompt("¿Cómo se pagó? (Transferencia, Efectivo, Tarjeta…)", "Transferencia"); if (forma === null) return;
+    b.disabled = true; try { await post({accion: "hacer", tipo: "movimiento", op: "capturar", id: b.dataset.mvCapturar, forma}); toast("Capturado en GASTOS"); MOVS = null; render(); } catch (err) { alert(err.message); b.disabled = false; } return; }
+  if (b.dataset.caNuevo) return dialogoAltaCaballo();
+  if (b.dataset.pcNuevo !== undefined) return dialogoPagoCaballo(b.dataset.pcNuevo);
+  if (b.dataset.caFicha) return fichaCaballo(b.dataset.caFicha);
+  if (b.dataset.rMes) { st.rMes = b.dataset.rMes; st.rDia = ""; render(); return; }
+  if (b.dataset.rDia) { st.rDia = b.dataset.rDia; render(); return; }
+  if (b.dataset.rIns) { if (sinCosto()) return; const t = $("#r-ins-t").value.trim(); if (t.length < 5) return alert("Escribe la indicación.");
+    b.disabled = true; try { await post({accion: "hacer", tipo: "redes", op: "instruccion", texto: t, hasta: $("#r-ins-h").value}); toast("Listo. El agente la toma en su siguiente pasada."); REDES = null; render(); } catch (err) { alert(err.message); b.disabled = false; } return; }
+  if (b.dataset.rInsq) { if (sinCosto()) return; try { await post({accion: "hacer", tipo: "redes", op: "instruccion_quitar", id: b.dataset.rInsq}); toast("Indicación quitada"); REDES = null; render(); } catch (err) { alert(err.message); } return; }
+});
+document.addEventListener("input", e => { if (e.target.id === "ca-busca") { st.caBusca = e.target.value; const L = $("#ca-lista"); if (L) L.innerHTML = caLista(); } });
+function caLista() {
+  const t = String(st.caBusca || "").toLowerCase(), L = (CABALLOS ? CABALLOS.caballos : []).filter(c => !t || (c.Nombre + " " + c.ID + " " + c.Raza + " " + c.Estatus).toLowerCase().includes(t));
+  return L.slice(0, 80).map(c => `<button class="ca-row" type="button" data-ca-ficha="${esc(c.ID)}"><b>${esc(c.Nombre)}</b><span>${esc(c.ID)} · ${esc(c.Raza)} · ${esc(c.Sexo)}</span><span class="badge ${/venta/i.test(c.Estatus) ? "b-warn" : /vendid/i.test(c.Estatus) ? "b-info" : "b-ok"}">${esc(c.Estatus)}</span></button>`).join("") || `<div class="empty">Ningún caballo coincide.</div>`;
+}
 window.addEventListener("hashchange", () => { const h = location.hash.slice(1) || "hoy"; if (YO && h !== ACTUAL && (YO.permisos.secciones.includes(h) || h === "menu")) ir(h); });
 iniciar();
 </script>
