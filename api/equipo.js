@@ -1060,7 +1060,7 @@ module.exports = async (req, res) => {
       const movs = j.movimientos.map(r => { const x = {...r}; delete x._fila; return x; });
       const pc = ["lleva", "dir"].includes(papelCaja(u)) && puede(u, "compras") ? await agendaPost("panel_compras", {op: "lista"}).catch(() => null) : null;
       return res.status(200).json({movimientos: movs, saldo: saldoCaja(movs), porEntregar: movs.filter(x => x["Estatus"] === "Por entregar").reduce((a, x) => a + monto(x), 0),
-        fondo: CAJA.fondo, aviso: CAJA.aviso, papel: papelCaja(u), formas: FORMAS_CAJA,
+        fondo: CAJA.fondo, aviso: CAJA.aviso, papel: papelCaja(u), formas: FORMAS_CAJA, conteo: (movs.filter(x => x["Tipo"] === "Conteo" && x["Estatus"] !== "Cancelado").pop() || null),
         pedidos: pc && pc.ok ? pc.pedidos.filter(r => ["Hace falta", "Pedido"].includes(r["Estatus"])).map(r => ({id: r["ID"], articulo: r["Artículo"], categoria: r["Categoría"], cantidad: r["Cantidad"], unidad: r["Unidad"]})) : []});
     }
     if (q.accion === "reglamento") {

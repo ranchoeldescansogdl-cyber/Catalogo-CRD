@@ -806,6 +806,9 @@ const CC_PEND = ["Por capturar", "Por revisar", "Por entregar", "Por confirmar"]
 const CC_FORMAS = ["Efectivo (caja chica)", "Tarjeta de débito empresarial", "Transferencia", "Otro"]; // 10 oct 2026
 const CC_FP_TXT = {"Efectivo (caja chica)": "💵 Efectivo", "Tarjeta de débito empresarial": "💳 Tarjeta", "Transferencia": "🏦 Transferencia", "Otro": "Otro"};
 const ccEfectivo = x => x["Tipo"] !== "Gasto" || !x["Forma de pago"] || x["Forma de pago"] === CC_FORMAS[0];
+const ccSinConteo = () => !CAJA.conteo; // 10 oct 2026: el saldo empieza con el primer conteo que Judith registra
+const ccKpiSaldo = (bajo) => ccSinConteo() ? `<div class="kpi"><span>Efectivo en caja</span><b>Falta el conteo</b></div>` : `<div class="kpi${bajo ? " bajo" : ""}"><span>Efectivo en caja</span><b>${money(CAJA.saldo)}</b></div>`;
+const ccTxtConteo = pp => `<p class="aviso">${pp === "lleva" ? "Cuenta cuánto efectivo hay en la caja y díselo a Judith: con eso empieza el saldo." : "Pídele a Olga que cuente cuánto efectivo hay en la caja y regístralo con \"Conteo de caja\": desde ahí empieza el saldo."}</p>`;
 const ccPapel = () => (YO.org && YO.org.caja) || "";
 function ccAcciones(x) {
   const pp = ccPapel(), e = x["Estatus"], t = x["Tipo"], yo = YO.usuario.nombre, a = [];
@@ -837,16 +840,17 @@ function ccPendientesMios() {
 }
 function hoyCaja() {
   if (!CAJA || !tiene("caja")) return "";
-  const pp = ccPapel(), bajo = CAJA.saldo < CAJA.aviso, pend = ccPendientesMios();
-  let d = `<div class="grid-kpi"><div class="kpi${bajo ? " bajo" : ""}"><span>Efectivo en caja</span><b>${money(CAJA.saldo)}</b></div><div class="kpi"><span>Fondo</span><b>${money(CAJA.fondo)}</b></div>${CAJA.porEntregar ? `<div class="kpi"><span>Por entregar a Mario</span><b>${money(CAJA.porEntregar)}</b></div>` : ""}</div>`;
-  if (bajo) d += `<p class="aviso">${pp === "lleva" ? "Queda poco en la caja. Avísale a Judith para que te reponga." : `Queda poco en la caja: faltan ${money(CAJA.fondo - CAJA.saldo)} para completar el fondo.`}</p>`;
+  const pp = ccPapel(), bajo = !ccSinConteo() && CAJA.saldo < CAJA.aviso, pend = ccPendientesMios();
+  let d = `<div class="grid-kpi">${ccKpiSaldo(bajo)}${CAJA.porEntregar ? `<div class="kpi"><span>Por entregar a Mario</span><b>${money(CAJA.porEntregar)}</b></div>` : ""}</div>`;
+  if (ccSinConteo()) d += ccTxtConteo(pp);
+  else if (bajo) d += `<p class="aviso">${pp === "lleva" ? "Queda poco en la caja. Avísale a Judith para que te reponga." : `Queda poco en la caja: ${money(CAJA.saldo)}.`}</p>`;
   if (pend.length) d += `<p class="lbl oro">${pp === "lleva" ? "Dinero que te mandaron" : "Por capturar o revisar"} (${pend.length})</p>${pend.slice(0, 4).map(cardCaja).join("")}`;
   d += `<button class="btn" type="button" onclick="ir('caja')">Ver la caja chica</button>`;
-  if (pp !== "lleva" && !pend.length && !bajo) return plegado(`Caja chica · ${money(CAJA.saldo)} en efectivo`, d);
+  if (pp !== "lleva" && !pend.length && !bajo && !ccSinConteo()) return plegado(`Caja chica · ${money(CAJA.saldo)} en efectivo`, d);
   return bloque("Caja chica", d);
 }
 function vCaja() {
-  const C = CAJA, pp = ccPapel(), M = C.movimientos.slice().reverse(), mes = hoyISO().slice(0, 7), bajo = C.saldo < C.aviso;
+  const C = CAJA, pp = ccPapel(), M = C.movimientos.slice().reverse(), mes = hoyISO().slice(0, 7), bajo = !ccSinConteo() && C.saldo < C.aviso;
   const gMes = M.filter(x => x["Tipo"] === "Gasto" && x["Estatus"] !== "Cancelado" && String(x["Fecha"]).slice(0, 7) === mes);
   const gastoMes = gMes.filter(ccEfectivo).reduce((a, x) => a + numv(x["Monto"]), 0), tarjetaMes = gMes.filter(x => x["Forma de pago"] === CC_FORMAS[1]).reduce((a, x) => a + numv(x["Monto"]), 0);
   const otrosMes = gMes.filter(x => !ccEfectivo(x) && x["Forma de pago"] !== CC_FORMAS[1]).reduce((a, x) => a + numv(x["Monto"]), 0);
@@ -858,10 +862,10 @@ function vCaja() {
   if (pp === "oficina" || pp === "dir") btns.push(`<button class="btn btn-dark" data-caja-nuevo="Reposición">🔄 Registrar reposición</button>`, `<button class="btn" data-caja-nuevo="Conteo">🧮 Conteo de caja</button>`);
   const chips = [["todo", "Todo"], ["efectivo", "💵 Gastos en efectivo"], ["tarjeta", "💳 Gastos con tarjeta"], ["otra", "Transferencia u otro"], ["Efectivo de cliente", "Efectivo de clientes"], ["Reposición", "Reposiciones"]].map(([k, n]) => `<button class="chip" data-ccf="${esc(k)}" aria-pressed="${f === k}">${n}</button>`).join("");
   return `<h2>Caja chica</h2><p class="sub">${pp === "lleva" ? "Anota aquí cada gasto con la foto del ticket y di cómo lo pagaste: con el efectivo de la caja o con la tarjeta de débito del rancho. También el efectivo que te den los clientes. Judith lo pasa a contabilidad." : "La lleva Olga en el rancho. Cada gasto dice si se pagó con el efectivo de la caja o con la tarjeta de débito empresarial (solo el efectivo baja la caja). Se pasa a GASTOS con \"Capturar\"; el efectivo de clientes entra a la caja o se le entrega a Mario."}</p>
-    <div class="grid-kpi"><div class="kpi${bajo ? " bajo" : ""}"><span>Efectivo en caja</span><b>${money(C.saldo)}</b></div><div class="kpi"><span>Fondo</span><b>${money(C.fondo)}</b></div>
+    <div class="grid-kpi">${ccKpiSaldo(bajo)}
       <div class="kpi"><span>💵 Gastado en efectivo (mes)</span><b>${money(gastoMes)}</b></div><div class="kpi"><span>💳 Pagado con tarjeta (mes)</span><b>${money(tarjetaMes)}</b></div>
       ${otrosMes ? `<div class="kpi"><span>Transferencia u otro (mes)</span><b>${money(otrosMes)}</b></div>` : ""}<div class="kpi"><span>Por entregar a Mario</span><b>${money(C.porEntregar)}</b></div></div>
-    ${bajo ? `<p class="aviso">${pp === "lleva" ? "Queda poco en la caja. Avísale a Judith para que te reponga." : `Queda poco: faltan ${money(C.fondo - C.saldo)} para completar el fondo de ${money(C.fondo)}.`}</p>` : ""}
+    ${ccSinConteo() ? ccTxtConteo(pp) : bajo ? `<p class="aviso">${pp === "lleva" ? "Queda poco en la caja. Avísale a Judith para que te reponga." : `Queda poco en la caja: ${money(C.saldo)}.`}</p>` : ""}
     ${btns.length ? `<div class="big-actions">${btns.join("")}</div>` : ""}
     <h3>Pendientes (${pend.length})</h3>${pend.length ? pend.map(cardCaja).join("") : `<div class="empty">Nada pendiente. 👍</div>`}
     <h3>Movimientos</h3><div class="bar">${chips}</div>${L.length ? L.slice(0, 150).map(cardCaja).join("") : `<div class="empty">Sin movimientos todavía.</div>`}`;
@@ -873,7 +877,7 @@ document.addEventListener("click", async e => {
     if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
     const tipo = b.dataset.cajaNuevo;
     if (!CAJA) { try { await cargar("caja"); } catch (err) { return alert(err.message); } }
-    const falta = Math.max(0, CAJA.fondo - CAJA.saldo);
+
     const cuerpo = tipo === "Gasto" ? `<div class="dos"><div><label>¿Cuánto fue?</label><input id="cc-m" type="number" inputmode="decimal" min="1" step="0.01" placeholder="$"></div><div><label>Fecha</label><input id="cc-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div></div>
         ${(CAJA.pedidos || []).length ? `<label>¿Es algo de la lista de compras?</label><select id="cc-p"><option value="">No, es otra cosa</option>${CAJA.pedidos.map(x => `<option value="${esc(x.id)}">${esc(x.articulo)}${x.cantidad ? " · " + esc(x.cantidad) + " " + esc(x.unidad || "") : ""}</option>`).join("")}</select>
         <p class="card-m" style="margin-top:-6px">Si lo eliges, queda como "llegó" en Alimento y compras y Judith lo captura una sola vez.</p>` : ""}
@@ -891,11 +895,11 @@ document.addEventListener("click", async e => {
           <label class="rad"><input type="radio" name="cc-d" value="mario"> <span><b>Lo guardo para entregárselo a Mario</b><small>Mario confirma en el portal cuando se lo des.</small></span></label></div>
         ${campoFotos("Foto del recibo (opcional)")}
         <label>Nota (opcional)</label><input id="cc-n" maxlength="300">`
-      : tipo === "Conteo" ? `<p class="ctx">Pregúntale a Olga cuánto efectivo hay exactamente en la caja. Desde este conteo empieza el saldo; lo anterior queda como historial. Hoy el portal calcula ${money(CAJA.saldo)}.</p>
+      : tipo === "Conteo" ? `<p class="ctx">Pregúntale a Olga cuánto efectivo hay exactamente en la caja. Desde este conteo empieza el saldo; lo anterior queda como historial. ${CAJA.conteo ? "Último conteo: " + money(numv(CAJA.conteo["Monto"])) + " el " + esc(String(CAJA.conteo["Fecha"]).slice(0, 10)) + "." : ""}</p>
         <label>¿Cuánto hay en la caja?</label><input id="cc-m" type="number" inputmode="decimal" min="0" step="0.01" placeholder="$">
         <label>Nota (opcional)</label><input id="cc-n" maxlength="300" placeholder="Ej. Contado por Olga el 12 de octubre">`
-      : `<p class="ctx">En caja hay ${money(CAJA.saldo)}. Para completar el fondo de ${money(CAJA.fondo)} faltan <b>${money(falta)}</b>.</p>
-        <label>¿Cuánto le das a Olga?</label><input id="cc-m" type="number" inputmode="decimal" min="1" step="0.01" value="${falta ? Math.round(falta * 100) / 100 : ""}">
+      : `${ccSinConteo() ? "" : `<p class="ctx">En caja hay ${money(CAJA.saldo)}.</p>`}
+        <label>¿Cuánto le das a Olga?</label><input id="cc-m" type="number" inputmode="decimal" min="1" step="0.01">
         <label>Nota (opcional)</label><input id="cc-n" maxlength="300" placeholder="Ej. En efectivo, el lunes">
         <p class="card-m">Olga confirma en el portal cuando le llegue; hasta entonces no suma a la caja.</p>`;
     const box = dialogo({"Gasto": "Registrar un gasto", "Efectivo de cliente": "Recibí efectivo", "Reposición": "Reposición de caja chica", "Conteo": "Conteo de caja chica"}[tipo], `<div class="frm">${cuerpo}<button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
