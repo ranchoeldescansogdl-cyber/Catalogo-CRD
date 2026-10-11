@@ -76,7 +76,8 @@
      del rancho ven todos. GET accion=turnos · POST hacer tipo:"turno" op: reporte|subida|suscribir|baja.
      Avisos al celular: POST /api/equipo?accion=push (solo el Apps Script, header x-rancho-token) → Web Push a las suscripciones que manda.
    - Caja chica: forma de pago en cada gasto (FORMAS_CAJA); solo el efectivo baja el saldo.
-   - Caballos: tipo:"caballo" op: alta (Nico, Mario: acción caballo_alta) | pago (venta, compra o gasto; oficina: acción caballo_pago). GET accion=caballo_ficha&id=
+   - Caballos: tipo:"caballo" op: alta | pago (venta, compra o gasto). Nico, Mario y Judith (acciones caballo_alta y caballo_pago). GET accion=caballo_ficha&id=
+   - Redes: cuentas en el calendario (REDES_CUENTAS). "Wellington Q" solo la ve y la maneja Nico; sus filas de REDES llevan Cuenta = "Wellington Q".
    - Movimientos de caballos: tipo:"movimiento" op: nuevo|regreso (quien tiene Salud) | capturar (oficina). GET accion=movimientos.
    - Redes: op instruccion|instruccion_quitar (indicaciones generales para el agente; solo quien aprueba). */
 const crypto = require("crypto");
@@ -101,7 +102,7 @@ const PERMISOS = {
                  acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "prospecto", "agendar"]},
   ventas:       {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones"], dinero: "propio", contacto: true, ine: true, jefe: false, acciones: ["nota", "liga", "tarea", "prospecto", "agendar"]},
   contabilidad: {secciones: ["hoy", "tareas", "agenda", "cambios", "pagos", "estados", "caballos", "comisiones", "caja", "herrajes", "salud", "compras", "proveedores", "conta", "bitacora"], dinero: "todo", contacto: true, ine: false, jefe: true,
-                 acciones: ["saldo_pagado", "nota", "tarea", "reporte", "registro", "caja", "agendar", "caballo_pago"]},
+                 acciones: ["saldo_pagado", "nota", "tarea", "reporte", "registro", "caja", "agendar", "caballo_alta", "caballo_pago"]},
   /* campo: contacto del cliente y notas de la cita (sin montos) por si hay que llamarle el día de la sesión o evento */
   campo:        {secciones: ["hoy", "tareas", "salud", "herrajes", "compras", "bitacora", "agenda"], dinero: "nada", contacto: true, ine: true, jefe: false, acciones: ["nota", "tarea", "reporte", "servicio", "insumo"]},
   /* médicos: qué pasa en el rancho (eventos, bloqueos, citas), sin sesiones de fotos ni datos del cliente */
@@ -110,6 +111,9 @@ const PERMISOS = {
 /* Redes sociales (3 oct 2026; 4 oct: solo Mario, Nico y la cuenta del rancho). Ellos suben el material ("Fotos para redes",
    dentro de la sección Redes), piden publicaciones y aprueban. El resto del equipo ya no sube material ni ve la sección. */
 const CAJA = {fondo: 5000, aviso: 1250}; // caja chica (4 oct 2026)
+const REDES_CUENTAS = {"Wellington Q": ["nicolas@legaius.com"]}; // 10 oct 2026: cuentas extra en Redes y quién las maneja
+const cuentasDe = u => ["Rancho El Descanso", ...Object.keys(REDES_CUENTAS).filter(k => REDES_CUENTAS[k].includes(String(u.email || "").toLowerCase()))];
+const cuentaDeFila = x => x["Cuenta"] || "Rancho El Descanso";
 const OFICINA = ["admin", "direccion", "ventas", "contabilidad"];
 Object.values(PERMISOS).forEach(p => p.secciones.push("reglamento")); // todos pueden releerlo
 const DIAS_CELULAR = 400; // la liga fija del celular dura ~1 año; se invalida al generar otra o con Activo = NO
@@ -707,7 +711,7 @@ async function caballoPost(u, body, res) {
   if (archivos.reduce((a, x) => a + String(x && x.datos || "").length, 0) > 5.5e6) return no("Las fotos pesan demasiado. Manda menos a la vez.", 413);
   const t = (x, n) => String(x == null ? "" : x).slice(0, n);
   if (op === "alta") {
-    if (!A.includes("caballo_alta")) return no("Solo Nico y Mario dan de alta caballos en la Maestra.");
+    if (!A.includes("caballo_alta")) return no("Solo Judith, Mario o Nico dan de alta caballos en la Maestra.");
     const c = body.caballo || {}, k = body.compra || null;
     const caballo = {nombre: t(c.nombre, 60), raza: t(c.raza, 40), sexo: t(c.sexo, 10), capa: t(c.capa, 40), nacimiento: t(c.nacimiento, 10), propiedad: t(c.propiedad, 30), padre: t(c.padre, 60),
       madre: t(c.madre, 60), registro: t(c.registro, 30), chip: t(c.chip, 30), alzada: t(c.alzada, 6), estatus: t(c.estatus, 20), precio: t(c.precio, 14), semental: t(c.semental, 3),
@@ -794,8 +798,13 @@ module.exports = async (req, res) => {
         const op = String(body.op || "");
         if (["aprobar", "cambios", "descartar", "material_estatus", "instruccion", "instruccion_quitar"].includes(op) && !u.permisos.acciones.includes("redes_aprobar")) return res.status(403).json({error: "Solo Nico y Mario aprueban publicaciones."});
         if (!["subida", "material"].includes(op) && !puede(u, "redes")) return res.status(403).json({error: "Tú solo puedes subir fotos y videos."});
-        const permitidas = {subida: ["mime", "tamano", "nombre", "tema"], material: ["fileId", "tema", "caballo", "nota"], pedido: ["tema", "nota", "caballo", "fecha"],
-          aprobar: ["id", "texto", "hashtags"], cambios: ["id", "nota"], descartar: ["id", "nota"], material_estatus: ["id", "estatus"], instruccion: ["texto", "hasta"], instruccion_quitar: ["id"]};
+        if (["aprobar", "cambios", "descartar"].includes(op)) { // filas de una cuenta extra (Wellington Q): solo quien la maneja
+          const l = await agendaPost("panel_redes", {op: "lista"}), f = l.ok && l.publicaciones.find(x => x.ID === String(body.id || ""));
+          if (f && !cuentasDe(u).includes(cuentaDeFila(f))) return res.status(403).json({error: "Esa cuenta la maneja alguien más."});
+        }
+        if (body.cuenta && body.cuenta !== "Rancho El Descanso" && !cuentasDe(u).includes(body.cuenta)) return res.status(403).json({error: "No manejas esa cuenta."});
+        const permitidas = {subida: ["mime", "tamano", "nombre", "tema"], material: ["fileId", "tema", "caballo", "nota"], pedido: ["tema", "nota", "caballo", "fecha", "cuenta"],
+          aprobar: ["id", "texto", "hashtags"], cambios: ["id", "nota"], descartar: ["id", "nota"], material_estatus: ["id", "estatus"], instruccion: ["texto", "hasta", "cuenta"], instruccion_quitar: ["id"]};
         if (!permitidas[op]) return res.status(400).json({error: "acción no válida"});
         const datos = {op, quien: u.nombre}; permitidas[op].forEach(k => { if (body[k] !== undefined) datos[k] = body[k]; });
         if (op === "subida") { datos.origen = String(req.headers.origin || SITIO()); datos.tipo = String(body.mime || ""); delete datos.mime; }
@@ -886,7 +895,9 @@ module.exports = async (req, res) => {
       if (!puede(u, "redes")) return res.status(200).json({soloSubir: true, aprueba: false, oficina: false, material: [], publicaciones: [], plan: [], metricas: [], caballos: j.caballos});
       const ofi = OFICINA.includes(u.rol), aprueba = p.acciones.includes("redes_aprobar");
       const mio = x => String(x["Subió"] || "") === u.nombre || String(x["Origen"] || "").endsWith(" · " + u.nombre);
-      return res.status(200).json({aprueba, oficina: ofi,
+      const cuentas = cuentasDe(u), veo = x => cuentas.includes(cuentaDeFila(x));
+      j.publicaciones = j.publicaciones.filter(veo); j.metricas = j.metricas.filter(veo); j.instrucciones = (j.instrucciones || []).filter(veo);
+      return res.status(200).json({aprueba, oficina: ofi, cuentas,
         material: j.material.filter(x => ofi || mio(x)),
         publicaciones: j.publicaciones.filter(x => aprueba || (ofi ? x["Estatus"] !== "Descartado" : (["Agendado", "Publicado"].includes(x["Estatus"]) || mio(x)))),
         plan: ofi ? j.plan : [], metricas: ofi ? j.metricas : [], caballos: j.caballos, instrucciones: aprueba ? (j.instrucciones || []) : []});

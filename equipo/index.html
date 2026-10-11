@@ -2002,6 +2002,10 @@ const rThumb = id => `https://drive.google.com/thumbnail?id=${encodeURIComponent
 const rFecha = s => { const t = String(s || ""); if (!/^\d{4}-\d{2}-\d{2}/.test(t)) return t; return fDia(t.slice(0, 10)) + (t.length > 10 ? " · " + t.slice(11, 16) : ""); };
 const rPuedeAprobar = () => YO.permisos.acciones.includes("redes_aprobar");
 const rPorAprobar = () => REDES ? REDES.publicaciones.filter(p => p["Estatus"] === "Por aprobar") : [];
+const R_RANCHO = "Rancho El Descanso"; // 10 oct 2026: cuentas en el calendario (Wellington Q solo para Nico)
+const rCuenta = () => REDES && (REDES.cuentas || []).includes(st.rCuenta) ? st.rCuenta : R_RANCHO;
+const rDe = x => (x["Cuenta"] || R_RANCHO) === rCuenta();
+const rEsRancho = () => rCuenta() === R_RANCHO;
 function rMat(id) { return REDES ? REDES.material.find(m => m.ID === id || m["ID Drive"] === id) : null; }
 function rMediaDe(p) { return String(p["Material"] || "").split(/[,\s]+/).filter(Boolean).map(x => rMat(x) || (/^[A-Za-z0-9_-]{20,}$/.test(x) ? {"ID Drive": x, Tipo: "Foto"} : null)).filter(Boolean); }
 function rTile(m, cap) {
@@ -2043,8 +2047,11 @@ function rCardPub(p, modo) {
     ${acts.length ? `<div class="acts">${acts.join("")}</div>` : ""}</article>`;
 }
 function vRedes() {
-  const R = REDES, ofi = R.oficina, yo = YO.usuario.nombre;
-  const hero = `<div class="r-hero"><button class="r-big" type="button" data-rsubir="1"><span class="ico">📷</span><b>Fotos para redes</b><span>Caballos, potros, el rancho, eventos. Directo del celular.</span></button>
+  const R0 = REDES, ofi = R0.oficina, yo = YO.usuario.nombre, cu = rCuenta(), rancho = rEsRancho();
+  const R = {...R0, publicaciones: R0.publicaciones.filter(rDe), metricas: R0.metricas.filter(rDe)};
+  const chipsCuenta = (R0.cuentas || []).length > 1 ? `<div class="bar">${R0.cuentas.map(c => { const n = R0.publicaciones.filter(p => (p["Cuenta"] || R_RANCHO) === c && p["Estatus"] === "Por aprobar").length;
+    return `<button class="chip" type="button" data-r-cuenta="${esc(c)}" aria-pressed="${c === cu}">${c === R_RANCHO ? "🐴 " : "💪 "}${esc(c)}${n ? " (" + n + ")" : ""}</button>`; }).join("")}</div>` : "";
+  const hero = !rancho ? `<div class="r-hero"><button class="r-big r-alt" type="button" data-rpedir="1"><span class="ico">✍️</span><b>Pedir una publicación</b><span>Una idea o un tema para ${esc(cu)}</span></button></div>` : `<div class="r-hero"><button class="r-big" type="button" data-rsubir="1"><span class="ico">📷</span><b>Fotos para redes</b><span>Caballos, potros, el rancho, eventos. Directo del celular.</span></button>
     <button class="r-big r-alt" type="button" data-rpedir="1"><span class="ico">✍️</span><b>Pedir una publicación</b><span>Un anuncio, un evento, una idea</span></button></div>`;
   if (!ofi) { // campo y médicos: solo subir y ver lo suyo
     const mios = R.material.slice().reverse(), pub = R.publicaciones.filter(p => p["Estatus"] === "Publicado").slice(-6).reverse();
@@ -2056,10 +2063,10 @@ function vRedes() {
   const porAp = P.filter(p => p["Estatus"] === "Por aprobar"), nuevo = R.material.filter(m => m.Estatus === "Nuevo");
   const prox = P.filter(p => ["Aprobado", "Agendado"].includes(p["Estatus"]) && String(p["Fecha y hora"]).slice(0, 10) >= hoy).sort((a, b) => String(a["Fecha y hora"]) < String(b["Fecha y hora"]) ? -1 : 1);
   const mes = hoy.slice(0, 7), pubMes = P.filter(p => p["Estatus"] === "Publicado" && String(p["Fecha y hora"]).slice(0, 7) === mes);
-  const tabs = [["inicio", "Resumen"], ...(R.aprueba ? [["aprobar", `Por aprobar (${porAp.length})`]] : []), ["calendario", "Calendario"], ["material", `Material (${nuevo.length} nuevo${nuevo.length === 1 ? "" : "s"})`], ["metricas", "Métricas"]];
+  const tabs = [["inicio", "Resumen"], ...(R.aprueba ? [["aprobar", `Por aprobar (${porAp.length})`]] : []), ["calendario", "Calendario"], ...(rancho ? [["material", `Material (${nuevo.length} nuevo${nuevo.length === 1 ? "" : "s"})`]] : []), ["metricas", "Métricas"]];
   let cuerpo = "";
   if (f === "inicio") {
-    const plan = R.plan.length ? `<h3>Plan de la semana</h3><div class="tbl-wrap"><table><thead><tr><th>Día</th><th>Qué se publica</th><th>Idea</th></tr></thead><tbody>${R.plan.map(x => `<tr><td>${esc(x["Día"])}</td><td><b>${esc(x["Categoría"])}</b></td><td>${esc(x["Idea"])}</td></tr>`).join("")}</tbody></table></div><p class="card-m">Para cambiar la mezcla, edita la pestaña REDES_PLAN de la Maestra.</p>` : "";
+    const plan = rancho && R.plan.length ? `<h3>Plan de la semana</h3><div class="tbl-wrap"><table><thead><tr><th>Día</th><th>Qué se publica</th><th>Idea</th></tr></thead><tbody>${R.plan.map(x => `<tr><td>${esc(x["Día"])}</td><td><b>${esc(x["Categoría"])}</b></td><td>${esc(x["Idea"])}</td></tr>`).join("")}</tbody></table></div><p class="card-m">Para cambiar la mezcla, edita la pestaña REDES_PLAN de la Maestra.</p>` : "";
     const pedidos = P.filter(p => ["Pedido", "Pedir cambios", "Borrador"].includes(p["Estatus"]));
     cuerpo = rInstrucciones() + `<div class="grid-kpi">${R.aprueba ? `<div class="kpi"><span>Por aprobar</span><b>${porAp.length}</b></div>` : ""}<div class="kpi"><span>Agendadas</span><b>${prox.length}</b></div>
       <div class="kpi"><span>Publicadas este mes</span><b>${pubMes.length}</b></div><div class="kpi"><span>Material nuevo</span><b>${nuevo.length}</b></div></div>
@@ -2091,7 +2098,7 @@ function vRedes() {
       <h3>Publicaciones con más alcance</h3>${top.length ? tabla(top.map(p => ({Fecha: String(p["Fecha y hora"]).slice(0, 10), Qué: p["Categoría"] + (p["Caballo / evento"] ? " · " + p["Caballo / evento"] : ""), Alcance: p["Alcance"], Interacciones: p["Interacciones"]})), ["Fecha", "Qué", "Alcance", "Interacciones"], "") : `<div class="empty">Todavía no hay publicaciones medidas.</div>`}`
       : `<div class="empty">Las métricas aparecen aquí en cuanto pase el agente de redes (9 am y 5 pm).</div>`;
   }
-  return `<h2>Redes sociales</h2><p class="sub">Facebook, Instagram, TikTok y YouTube del rancho. El equipo sube material, el agente arma las publicaciones y Nico o Mario las aprueban.</p>${hero}
+  return `<h2>Redes sociales</h2><p class="sub">${rancho ? "Facebook, Instagram, TikTok y YouTube del rancho. El equipo sube material, el agente arma las publicaciones y Nico o Mario las aprueban." : esc(cu) + ": Instagram y TikTok. Su agente deja los borradores aquí cada mañana; lo que apruebes se agenda en Metricool en su siguiente pasada."}</p>${chipsCuenta}${hero}
     <div class="bar">${tabs.map(([k, n]) => `<button class="chip" type="button" data-rtab="${k}" aria-pressed="${f === k}">${n}</button>`).join("")}</div>${cuerpo}`;
 }
 /* subida directa a Drive (sesión reanudable que abre el Apps Script), en pedazos de 16 MB */
@@ -2174,15 +2181,15 @@ document.addEventListener("click", async e => {
   }
   if (b.dataset.rpedir) {
     if (!REDES) { try { await cargar("redes"); } catch (err) {} }
-    const box = dialogo("Pedir una publicación", `<div class="frm">
-      <label>¿De qué se trata?</label><select id="rp-t">${opt(R_PEDIDOS, "Anuncio del rancho")}</select>
+    const box = dialogo("Pedir una publicación" + (rEsRancho() ? "" : " · " + rCuenta()), `<div class="frm">
+      <label>¿De qué se trata?</label><select id="rp-t">${rEsRancho() ? opt(R_PEDIDOS, "Anuncio del rancho") : opt(["Tip de gym", "Receta", "Rutina", "Nutrición", "Hábitos", "Descanso", "Mentalidad", "Trend", "Otro"], "Otro")}</select>
       <label>¿Qué quieres que diga?</label><textarea id="rp-n" rows="4" maxlength="1000" placeholder="Ej. Avisar que ya nacieron los primeros potros 2027 y que se pueden apartar"></textarea>
       <div class="dos"><div><label>Caballo (opcional)</label><input id="rp-c" list="rp-cabs"><datalist id="rp-cabs">${rOpcionesCaballo()}</datalist></div><div><label>¿Para cuándo? (opcional)</label><input id="rp-f" type="date" min="${hoyISO()}"></div></div>
       <button class="btn btn-dark" id="d-ok" type="button">Mandar pedido</button></div>`);
     box.querySelector("#d-ok").onclick = async () => {
       const nota = box.querySelector("#rp-n").value.trim(); if (nota.length < 5) return alert("Escribe qué quieres que se publique.");
       const bt = box.querySelector("#d-ok"); bt.disabled = true; bt.textContent = "Enviando…";
-      try { await post({accion: "hacer", tipo: "redes", op: "pedido", tema: box.querySelector("#rp-t").value, nota, caballo: box.querySelector("#rp-c").value.trim(), fecha: box.querySelector("#rp-f").value});
+      try { await post({accion: "hacer", tipo: "redes", op: "pedido", tema: box.querySelector("#rp-t").value, nota, caballo: box.querySelector("#rp-c").value.trim(), fecha: box.querySelector("#rp-f").value, cuenta: rCuenta()});
         $("#dlg").close(); toast("Pedido enviado. El agente lo prepara en su siguiente pasada."); REDES = null; render(); }
       catch (err) { alert(err.message); bt.disabled = false; bt.textContent = "Mandar pedido"; }
     };
@@ -2774,7 +2781,7 @@ function rThumbPub(p) {
   const m = rMediaDe(p)[0]; return m ? rThumb(m["ID Drive"]) : "";
 }
 function rCalendario() {
-  const P = REDES.publicaciones.filter(p => p["Estatus"] !== "Descartado" && /^\d{4}-\d{2}-\d{2}/.test(String(p["Fecha y hora"])));
+  const P = REDES.publicaciones.filter(p => rDe(p) && p["Estatus"] !== "Descartado" && /^\d{4}-\d{2}-\d{2}/.test(String(p["Fecha y hora"])));
   const hoy = hoyISO(), mes = st.rMes || hoy.slice(0, 7), [y, mm] = mes.split("-").map(Number);
   const primero = mes + "-01", dias = new Date(Date.UTC(y, mm, 0)).getUTCDate(), off = diaSemana(primero) - 1;
   const nav = d => { const t = new Date(Date.UTC(y, mm - 1 + d, 1)); return t.toISOString().slice(0, 7); };
@@ -2786,7 +2793,7 @@ function rCalendario() {
     celdas += `<button type="button" class="rc-d${iso === hoy ? " rc-hoy" : ""}${iso === sel ? " rc-sel" : ""}" data-r-dia="${iso}"><span class="rc-n">${d}</span>${L.slice(0, 2).map(p => { const t = rThumbPub(p);
       return `<span class="rc-p rc-${esc(String(p["Estatus"]).replace(/\s+/g, "-").toLowerCase())}">${t ? `<img src="${esc(t)}" alt="" loading="lazy" onerror="this.remove()">` : ""}<i>${esc(String(p["Fecha y hora"]).slice(11, 16))}</i></span>`; }).join("")}${L.length > 2 ? `<span class="rc-mas">+${L.length - 2}</span>` : ""}</button>`;
   }
-  const Ld = P.filter(p => String(p["Fecha y hora"]).slice(0, 10) === sel), sinF = REDES.publicaciones.filter(p => !["Descartado", "Publicado"].includes(p["Estatus"]) && !/^\d{4}-\d{2}-\d{2}/.test(String(p["Fecha y hora"])));
+  const Ld = P.filter(p => String(p["Fecha y hora"]).slice(0, 10) === sel), sinF = REDES.publicaciones.filter(p => rDe(p) && !["Descartado", "Publicado"].includes(p["Estatus"]) && !/^\d{4}-\d{2}-\d{2}/.test(String(p["Fecha y hora"])));
   return `<div class="rc-bar"><button class="btn" type="button" data-r-mes="${nav(-1)}">‹</button><b>${esc(nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1))}</b><button class="btn" type="button" data-r-mes="${nav(1)}">›</button>${mes !== hoy.slice(0, 7) ? `<button class="chip" type="button" data-r-mes="${hoy.slice(0, 7)}">Hoy</button>` : ""}</div>
     <div class="rc-sem">${["L", "M", "M", "J", "V", "S", "D"].map(x => `<span>${x}</span>`).join("")}</div><div class="rc-grid">${celdas}</div>
     <p class="card-m rc-ley"><span class="rc-k rc-por-aprobar"></span>Por aprobar <span class="rc-k rc-agendado"></span>Agendada <span class="rc-k rc-publicado"></span>Publicada <span class="rc-k rc-borrador"></span>En preparación</p>
@@ -2795,8 +2802,8 @@ function rCalendario() {
 }
 function rInstrucciones() {
   if (!REDES.aprueba) return "";
-  const L = REDES.instrucciones || [];
-  return `<section class="blk"><h3>Indicaciones para el agente</h3><p class="sub" style="margin:0 0 8px">Lo que escribas aquí lo toma en cuenta en cada pasada (9 am y 5 pm) para todo lo que arme, hasta la fecha que pongas.</p>
+  const L = (REDES.instrucciones || []).filter(rDe);
+  return `<section class="blk"><h3>Indicaciones para el agente${rEsRancho() ? "" : " de " + esc(rCuenta())}</h3><p class="sub" style="margin:0 0 8px">Lo que escribas aquí lo toma en cuenta en cada pasada (9 am y 5 pm) para todo lo que arme, hasta la fecha que pongas.</p>
     ${L.map(x => `<div class="r-ins"><p>${esc(x["Instrucción"])}</p><span class="card-m">${esc(x["Quién"])} · ${esc(String(x["Fecha"]).slice(0, 10))}${x["Vigente hasta"] ? " · hasta " + esc(fCorta(x["Vigente hasta"])) : ""}</span>
       <button class="btn r-mini" type="button" data-r-insq="${esc(x.ID)}">Quitar</button></div>`).join("")}
     <div class="frm"><textarea id="r-ins-t" rows="2" maxlength="1000" placeholder="Ej. Esta semana empuja la venta de BOB2 y menciona el plan de pagos"></textarea>
@@ -2823,10 +2830,11 @@ document.addEventListener("click", async e => {
   if (b.dataset.caNuevo) return dialogoAltaCaballo();
   if (b.dataset.pcNuevo !== undefined) return dialogoPagoCaballo(b.dataset.pcNuevo);
   if (b.dataset.caFicha) return fichaCaballo(b.dataset.caFicha);
+  if (b.dataset.rCuenta) { st.rCuenta = b.dataset.rCuenta; st.rMes = st.rDia = ""; if (st.rTab === "material") st.rTab = "inicio"; render(); return; }
   if (b.dataset.rMes) { st.rMes = b.dataset.rMes; st.rDia = ""; render(); return; }
   if (b.dataset.rDia) { st.rDia = b.dataset.rDia; render(); return; }
   if (b.dataset.rIns) { if (sinCosto()) return; const t = $("#r-ins-t").value.trim(); if (t.length < 5) return alert("Escribe la indicación.");
-    b.disabled = true; try { await post({accion: "hacer", tipo: "redes", op: "instruccion", texto: t, hasta: $("#r-ins-h").value}); toast("Listo. El agente la toma en su siguiente pasada."); REDES = null; render(); } catch (err) { alert(err.message); b.disabled = false; } return; }
+    b.disabled = true; try { await post({accion: "hacer", tipo: "redes", op: "instruccion", texto: t, hasta: $("#r-ins-h").value, cuenta: rCuenta()}); toast("Listo. El agente la toma en su siguiente pasada."); REDES = null; render(); } catch (err) { alert(err.message); b.disabled = false; } return; }
   if (b.dataset.rInsq) { if (sinCosto()) return; try { await post({accion: "hacer", tipo: "redes", op: "instruccion_quitar", id: b.dataset.rInsq}); toast("Indicación quitada"); REDES = null; render(); } catch (err) { alert(err.message); } return; }
 });
 document.addEventListener("input", e => { if (e.target.id === "ca-busca") { st.caBusca = e.target.value; const L = $("#ca-lista"); if (L) L.innerHTML = caLista(); } });
