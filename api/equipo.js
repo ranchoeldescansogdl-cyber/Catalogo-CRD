@@ -168,7 +168,7 @@ async function usuarioDe(req) {
 /* permisos del rol + lo que da el organigrama (caja chica para quien la lleva) */
 function permisosDe(u) {
   const b = PERMISOS[u.rol]; if (!b) return null;
-  const p = {...b, secciones: [...b.secciones], acciones: [...b.acciones]};
+  const p = {...b, ...(ORG.vistaDe(u) || {}), secciones: [...b.secciones], acciones: [...b.acciones]};
   ORG.seccionesQuitadas(u).forEach(x => { const i = p.secciones.indexOf(x); if (i >= 0) p.secciones.splice(i, 1);
   });
   if (!p.secciones.includes("herrajes") && !p.secciones.includes("salud")) p.acciones = p.acciones.filter(a => a !== "servicio");

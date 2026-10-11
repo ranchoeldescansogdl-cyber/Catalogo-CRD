@@ -25,7 +25,11 @@ const ORG = [
   {clave: "alan",    busca: ["alan"], puesto: "Encargado de corrales 1, 2, 3 y 4", area: "Corrales 1, 2, 3 y 4", reportaA: "mario", turno: true, quitar: ["herrajes", "agenda", "salud"]},
   {clave: "jesus",   busca: ["jesus"], puesto: "Encargado de sementales", area: "Sementales", reportaA: "mario", turno: true, quitar: ["herrajes", "agenda", "salud"]},
   {clave: "gabriel", busca: ["gabriel"], puesto: "Encargado de caballerizas principales", area: "Caballerizas principales", reportaA: "mario", turno: true, quitar: ["herrajes", "agenda", "salud"]},
-  {clave: "olga",    busca: ["olgaespinoza419@gmail.com", "olga"], puesto: "Jardinería, mantenimiento y caja chica", area: "Jardinería", reportaA: "mario", caja: true, vehiculos: ["RANCHO", "CARPINTERÍA"], quitar: ["salud", "herrajes"]}
+  /* 11 oct 2026: Eliseo lleva todo el mantenimiento del rancho y de las demás empresas de CEICA. Agenda solo de lo que pasa en el rancho
+     (eventos y bloqueos, sin datos del cliente), sin Salud ni Herrajes. vista = ajustes a los permisos de su rol */
+  {clave: "eliseo",  busca: ["eliseo"], puesto: "Mantenimiento (rancho y empresas de CEICA)", area: "Mantenimiento", reportaA: "mario", quitar: ["salud", "herrajes"],
+   vista: {agenda: "rancho", contacto: false, ine: false}},
+  {clave: "olga",    busca: ["olgaespinoza419@gmail.com", "olga"], puesto: "Jardinería y caja chica", area: "Jardinería", reportaA: "mario", caja: true, vehiculos: ["RANCHO", "CARPINTERÍA"], quitar: ["salud", "herrajes"]}
 ];
 const CUENTAS_GENERALES = ["ranchoeldescansogdl@gmail.com"]; // no es una persona: fuera del organigrama, no asigna ni pide
 
@@ -56,6 +60,7 @@ const seccionesQuitadas = p => (puestoDe(p) || {}).quitar || [];
 
 const esTurno = p => { const o = puestoDe(p); return !!o && !!o.turno; };
 const vehiculosDe = p => (puestoDe(p) || {}).vehiculos || null; // 10 oct 2026: áreas del control vehicular que ve y captura
+const vistaDe = p => (puestoDe(p) || {}).vista || null; // 11 oct 2026: ajustes a los permisos del rol (Eliseo)
 const decideDe = p => (puestoDe(p) || {}).decide || [];
 /* quién de los dos directores atiende lo de esta persona (o la tarea): el que la asignó, o según quién la hace o la pidió */
 function responsableTarea(t, equipo) {
@@ -89,5 +94,5 @@ function puedeRevisar(p, t, equipo) {
   return !!dest && puedeAsignarA(p, dest);
 }
 
-module.exports = {ORG, esTurno, vehiculosDe, puestoDe, claveDe, revisaTodo, decideDe, responsableTarea, asignaAlguien, puedePedir, puedeAsignarA, areasDe, llevaCaja, seccionesQuitadas, DISP, SOLI,
+module.exports = {ORG, esTurno, vehiculosDe, vistaDe, puestoDe, claveDe, revisaTodo, decideDe, responsableTarea, asignaAlguien, puedePedir, puedeAsignarA, areasDe, llevaCaja, seccionesQuitadas, DISP, SOLI,
   esDisponible, esSolicitud, candidatos, FOTO, APROBO, pideFoto, puedeTomar, puedeRevisar, primerNombre, norm};
