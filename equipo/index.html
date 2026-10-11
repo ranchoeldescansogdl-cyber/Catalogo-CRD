@@ -337,13 +337,14 @@ const fHora = iso => new Date(iso).toLocaleTimeString("es-MX", {hour: "2-digit",
 const fFecha = iso => new Date(iso).toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "2-digit", timeZone: TZ});
 const ROLES = {admin: "Administración", direccion: "Ventas y eventos", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
 const SECCIONES = {hoy: "Inicio", tareas: "Tareas", turnos: "Reportes de turno", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", estados: "Estados de cuenta", caballos: "Caballos y ventas",
-  comisiones: "Comisiones", caja: "Caja chica", herrajes: "Herrajes", compras: "Alimento y compras", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
-const ICONOS = {hoy: "🏠", tareas: "✅", turnos: "🕒", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", estados: "🧾", caballos: "🐴", comisiones: "💰", caja: "💵", herrajes: "🔨", compras: "📦", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
+  comisiones: "Comisiones", caja: "Caja chica", vehiculos: "Vehículos", herrajes: "Herrajes", compras: "Alimento y compras", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
+const ICONOS = {hoy: "🏠", tareas: "✅", turnos: "🕒", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", estados: "🧾", caballos: "🐴", comisiones: "💰", caja: "💵", vehiculos: "🚜", herrajes: "🔨", compras: "📦", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
 const esCel = () => window.matchMedia("(max-width:899px)").matches;
 const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Administración", "Otro"];
 const TIPOS_SALUD = ["Revisión", "Vacuna", "Desparasitación", "Herraje / cascos", "Dental", "Tratamiento", "Lesión o cólico", "Monta / inseminación", "Palpación / ecografía", "Parto", "Destete", "Trámite KFPS / GVHS", "Otro"];
 const TIPOS_BITACORA = ["Avance", "Problema", "Falta material o compra", "Aviso", "Otro"];
-const CATS_GASTO = ["Alimento", "Veterinario", "Medicamentos", "Herraje", "Mantenimiento", "Jardinería", "Sueldos", "Luz y agua", "Gasolina", "Eventos", "Papelería y trámites", "Otro"];
+const CATS_INGRESO = ["Sesión o evento", "Caballos", "Renta de retro", "Fletes", "Venta de pasojo (estiércol)", "Otro"]; // efectivo que entra a la caja (10 oct 2026)
+const CATS_GASTO = ["Alimento", "Veterinario", "Medicamentos", "Herraje", "Mantenimiento", "Servicios de vehículos", "Jardinería", "Sueldos", "Luz y agua", "Gasolina", "Eventos", "Papelería y trámites", "Otro"];
 const TIPO_PAGO = {sesion: "Sesión", evento: "Evento", caballo: "Caballo", potro: "Potro 2027", saldo_sesion: "Resto de sesión"};
 
 let COMO = "", COMO_NOM = ""; // "Ver como…" (Mario y Nico): solo lectura
@@ -453,6 +454,7 @@ async function cargar(qué) {
   if (qué === "fuera" && !FUERA) FUERA = await api("accion=fuera");
   if (qué === "turnos" && !TURNOS) TURNOS = await api("accion=turnos");
   if (qué === "movimientos" && !MOVS) MOVS = await api("accion=movimientos");
+  if (qué === "vehiculos" && !VEHS) VEHS = await api("accion=vehiculos");
   if (qué === "estados" && (!EST || EST.mes !== (st.estMes || EST.mes))) EST = await api("accion=estados" + (st.estMes ? "&mes=" + st.estMes : ""));
 }
 const tiene = s => YO.permisos.secciones.includes(s);
@@ -490,6 +492,7 @@ async function render() {
     if (s === "herrajes") await cargar("servicios");
     if (s === "salud") { await cargar("servicios").catch(() => {}); await cargar("movimientos").catch(() => {}); }
     if (s === "turnos") await cargar("turnos");
+    if (s === "vehiculos") await cargar("vehiculos");
     if (s === "compras") await cargar("compras");
     if (s === "estados") await cargar("estados");
     if (s === "cambios") { await cargar("agenda"); await cargar("cotizaciones").catch(() => {}); await cargar("cambios"); }
@@ -497,7 +500,7 @@ async function render() {
     if (s !== ACTUAL) return;
     pintarContador();
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
-      tareas: vTareas, turnos: vTurnos, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados})[s]();
+      tareas: vTareas, turnos: vTurnos, vehiculos: vVehiculos, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
 function recargar() { FUERA = EST = COMP = SERV = CAJA = REDES = CAMBIOS = TURNOS = MOVS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
@@ -581,6 +584,7 @@ function hoyAcciones(enMenu) { // 5 oct 2026: en orden de lo que más se usa en 
   if (YO.usuario.rol === "contabilidad" && A.includes("caballo_alta")) b.push(`<button class="qa" type="button" data-ca-nuevo="1"><span class="ico">🐴</span><span>Caballo nuevo<small>alta en la Maestra</small></span></button>`); // 10 oct 2026: Judith desde su portada
   if (YO.usuario.rol === "contabilidad" && A.includes("caballo_pago")) b.push(`<button class="qa" type="button" data-pc-nuevo=""><span class="ico">💳</span><span>Pago o gasto de un caballo<small>abono, compra o gasto</small></span></button>`);
   if (A.includes("servicio") && YO.usuario.rol === "medico" && tiene("salud")) b.push(`<button class="qa" type="button" data-sv-jornada="medico"><span class="ico">💉</span><span>Servicio médico<small>con costo</small></span></button>`);
+  if (O.vehiculos && tiene("vehiculos")) b.push(`<button class="qa" type="button" data-veh-ir="1"><span class="ico">🚜</span><span>Vehículos<small>km, horas y servicios</small></span></button>`); // 10 oct 2026
   if (A.includes("reporte") && tiene("bitacora")) b.push(`<button class="qa" type="button" data-nuevo-rep=""><span class="ico">📝</span>${campo ? "Reportar algo" : "Reportar avance o problema"}</button>`);
   if (A.includes("movimiento")) b.push(`<button class="qa" type="button" data-mv-nuevo=""><span class="ico">🚑</span><span>Salida, regreso o trámite<small>clínica, gastos médicos, chip</small></span></button>`);
   if (A.includes("reporte") && tiene("salud")) b.push(`<button class="qa" type="button" data-nuevo-rep="Salud"><span class="ico">🩺</span><span>Nota de salud<small>lo que viste o se le dio</small></span></button>`);
@@ -797,7 +801,7 @@ function vComisiones() {
 
 /* ---------- Caja chica (4 oct 2026): la lleva Olga; Judith repone y captura en GASTOS; Mario y Nico ven todo y reciben el efectivo ---------- */
 const CC_BADGE = {"Por capturar": "b-warn", "Por revisar": "b-warn", "Por entregar": "b-warn", "Por confirmar": "b-warn", "Capturado": "b-ok", "Revisado": "b-ok", "Entregado a Mario": "b-ok", "Recibida": "b-ok", "Cancelado": "b-info"};
-const CC_ICO = {"Gasto": "🧾", "Efectivo de cliente": "💵", "Reposición": "🔄"};
+const CC_ICO = {"Gasto": "🧾", "Efectivo de cliente": "💵", "Reposición": "🔄", "Conteo": "🧮"};
 const CC_PEND = ["Por capturar", "Por revisar", "Por entregar", "Por confirmar"];
 const CC_FORMAS = ["Efectivo (caja chica)", "Tarjeta de débito empresarial", "Transferencia", "Otro"]; // 10 oct 2026
 const CC_FP_TXT = {"Efectivo (caja chica)": "💵 Efectivo", "Tarjeta de débito empresarial": "💳 Tarjeta", "Transferencia": "🏦 Transferencia", "Otro": "Otro"};
@@ -809,6 +813,8 @@ function ccAcciones(x) {
   if (t === "Efectivo de cliente" && e === "Por entregar" && pp === "dir") a.push(`<button class="btn btn-dark" data-caja-acc="entregado" data-caja-id="${esc(x.ID)}">Ya me lo dio</button>`);
   if (t === "Efectivo de cliente" && e === "Por revisar" && ["oficina", "dir"].includes(pp)) a.push(`<button class="btn btn-dark" data-caja-acc="revisado" data-caja-id="${esc(x.ID)}">Revisado</button>`);
   if (t === "Gasto" && e === "Por capturar" && ["oficina", "dir"].includes(pp)) a.push(`<button class="btn btn-dark" data-caja-acc="capturar" data-caja-id="${esc(x.ID)}">Capturar en GASTOS</button>`);
+  if (t === "Gasto" && e === "Por capturar" && (pp !== "lleva" || x["Registró"] === yo)) a.push(`<button class="btn" data-caja-forma="${esc(x.ID)}">Cambiar forma de pago</button>`); // 10 oct 2026
+  if (pp === "dir" && ["Recibida", "Entregado a Mario", "Registrado"].includes(e) && t !== "Gasto") a.push(`<button class="btn" data-caja-acc="cancelar" data-caja-id="${esc(x.ID)}">Cancelar</button>`); // 10 oct 2026: Mario o Nico corrigen
   if (CC_PEND.includes(e) && (pp !== "lleva" || (x["Registró"] === yo && e !== "Por confirmar"))) a.push(`<button class="btn" data-caja-acc="cancelar" data-caja-id="${esc(x.ID)}">Cancelar</button>`);
   return a;
 }
@@ -817,7 +823,7 @@ function cardCaja(x) {
   const sub = [String(x["Fecha"]).slice(0, 16), x["Registró"], x["Cliente"] ? "de " + x["Cliente"] : "", x["Categoría"], x["Tipo"] === "Efectivo de cliente" ? (x["Destino"] === "Caja" ? "a la caja" : "para Mario") : ""].filter(Boolean).map(esc).join(" · ");
   const fp = x["Tipo"] === "Gasto" ? `<span class="tag${ccEfectivo(x) ? "" : " oro"}">${esc(CC_FP_TXT[x["Forma de pago"]] || "💵 Efectivo")}${ccEfectivo(x) ? "" : " · no sale de la caja"}</span> ` : "";
   return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${CC_ICO[x["Tipo"]] || ""} ${esc(x["Concepto"] || x["Tipo"])}</p><p class="card-m">${fp}${sub}</p></div>
-    <div style="text-align:right"><div class="cc-monto ${menos ? "cc-menos" : "cc-mas"}">${menos ? "−" : "+"}${money(numv(x["Monto"]))}</div><span class="badge ${CC_BADGE[x["Estatus"]] || "b-info"}">${esc(x["Estatus"])}</span></div></div>
+    <div style="text-align:right"><div class="cc-monto ${menos ? "cc-menos" : "cc-mas"}">${x["Tipo"] === "Conteo" ? "= " : menos ? "−" : "+"}${money(numv(x["Monto"]))}</div><span class="badge ${CC_BADGE[x["Estatus"]] || "b-info"}">${esc(x["Estatus"])}</span></div></div>
     ${x["Notas"] ? `<p class="card-m" style="white-space:pre-wrap">${esc(x["Notas"])}</p>` : ""}
     ${acts.length || foto ? `<div class="acts">${foto}${acts.join("")}</div>` : ""}</article>`;
 }
@@ -849,7 +855,7 @@ function vCaja() {
   const L = M.filter(filtra).filter(x => !CC_PEND.includes(x["Estatus"]));
   const btns = [];
   if (pp === "lleva" || pp === "dir") btns.push(`<button class="btn btn-dark" data-caja-nuevo="Gasto">🧾 Registrar gasto</button>`, `<button class="btn btn-dark" data-caja-nuevo="Efectivo de cliente">💵 Recibí efectivo</button>`);
-  if (pp === "oficina" || pp === "dir") btns.push(`<button class="btn btn-dark" data-caja-nuevo="Reposición">🔄 Registrar reposición</button>`);
+  if (pp === "oficina" || pp === "dir") btns.push(`<button class="btn btn-dark" data-caja-nuevo="Reposición">🔄 Registrar reposición</button>`, `<button class="btn" data-caja-nuevo="Conteo">🧮 Conteo de caja</button>`);
   const chips = [["todo", "Todo"], ["efectivo", "💵 Gastos en efectivo"], ["tarjeta", "💳 Gastos con tarjeta"], ["otra", "Transferencia u otro"], ["Efectivo de cliente", "Efectivo de clientes"], ["Reposición", "Reposiciones"]].map(([k, n]) => `<button class="chip" data-ccf="${esc(k)}" aria-pressed="${f === k}">${n}</button>`).join("");
   return `<h2>Caja chica</h2><p class="sub">${pp === "lleva" ? "Anota aquí cada gasto con la foto del ticket y di cómo lo pagaste: con el efectivo de la caja o con la tarjeta de débito del rancho. También el efectivo que te den los clientes. Judith lo pasa a contabilidad." : "La lleva Olga en el rancho. Cada gasto dice si se pagó con el efectivo de la caja o con la tarjeta de débito empresarial (solo el efectivo baja la caja). Se pasa a GASTOS con \"Capturar\"; el efectivo de clientes entra a la caja o se le entrega a Mario."}</p>
     <div class="grid-kpi"><div class="kpi${bajo ? " bajo" : ""}"><span>Efectivo en caja</span><b>${money(C.saldo)}</b></div><div class="kpi"><span>Fondo</span><b>${money(C.fondo)}</b></div>
@@ -874,32 +880,44 @@ document.addEventListener("click", async e => {
         <label>¿Cómo se pagó?</label><div class="rads">${CC_FORMAS.map((x, i) => `<label class="rad"><input type="radio" name="cc-fp" value="${esc(x)}"${i === 0 ? " checked" : ""}> <span><b>${esc(CC_FP_TXT[x])}${i === 1 ? " de débito del rancho" : i === 0 ? " de la caja chica" : ""}</b>${i === 0 ? "<small>Sale del dinero de la caja.</small>" : i === 1 ? "<small>No sale de la caja; Judith lo cuadra con el banco.</small>" : ""}</span></label>`).join("")}</div>
         <label>¿Qué se compró?</label><input id="cc-c" maxlength="120" placeholder="Ej. Bolsas de basura y cloro">
         <label>Categoría</label><select id="cc-cat">${opt(CATS_GASTO, "Mantenimiento")}</select>
+        ${tiene("vehiculos") ? `<div id="cc-veh" hidden></div>` : ""}
         ${campoFotos("Foto del ticket (obligatoria)")}
         <label>Nota (opcional)</label><input id="cc-n" maxlength="300">`
       : tipo === "Efectivo de cliente" ? `<label>¿Cuánto te dieron?</label><input id="cc-m" type="number" inputmode="decimal" min="1" step="0.01" placeholder="$">
         <label>¿Quién te lo dio?</label><input id="cc-cl" maxlength="80" placeholder="Nombre del cliente">
-        <label>¿De qué es?</label><input id="cc-c" maxlength="120" placeholder="Ej. Resto de la sesión del sábado">
+        <label>¿De qué es?</label><select id="cc-cat">${opt(CATS_INGRESO, "Sesión o evento")}</select>
+        <label>Detalle</label><input id="cc-c" maxlength="120" placeholder="Ej. Resto de la sesión del sábado · renta de retro 4 h">
         <label>¿Qué haces con el dinero?</label><div class="rads"><label class="rad"><input type="radio" name="cc-d" value="caja" checked> <span><b>Lo meto a la caja chica</b><small>Suma a lo que tienes en caja.</small></span></label>
           <label class="rad"><input type="radio" name="cc-d" value="mario"> <span><b>Lo guardo para entregárselo a Mario</b><small>Mario confirma en el portal cuando se lo des.</small></span></label></div>
         ${campoFotos("Foto del recibo (opcional)")}
         <label>Nota (opcional)</label><input id="cc-n" maxlength="300">`
+      : tipo === "Conteo" ? `<p class="ctx">Pregúntale a Olga cuánto efectivo hay exactamente en la caja. Desde este conteo empieza el saldo; lo anterior queda como historial. Hoy el portal calcula ${money(CAJA.saldo)}.</p>
+        <label>¿Cuánto hay en la caja?</label><input id="cc-m" type="number" inputmode="decimal" min="0" step="0.01" placeholder="$">
+        <label>Nota (opcional)</label><input id="cc-n" maxlength="300" placeholder="Ej. Contado por Olga el 12 de octubre">`
       : `<p class="ctx">En caja hay ${money(CAJA.saldo)}. Para completar el fondo de ${money(CAJA.fondo)} faltan <b>${money(falta)}</b>.</p>
         <label>¿Cuánto le das a Olga?</label><input id="cc-m" type="number" inputmode="decimal" min="1" step="0.01" value="${falta ? Math.round(falta * 100) / 100 : ""}">
         <label>Nota (opcional)</label><input id="cc-n" maxlength="300" placeholder="Ej. En efectivo, el lunes">
         <p class="card-m">Olga confirma en el portal cuando le llegue; hasta entonces no suma a la caja.</p>`;
-    const box = dialogo({"Gasto": "Registrar un gasto", "Efectivo de cliente": "Recibí efectivo", "Reposición": "Reposición de caja chica"}[tipo], `<div class="frm">${cuerpo}<button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+    const box = dialogo({"Gasto": "Registrar un gasto", "Efectivo de cliente": "Recibí efectivo", "Reposición": "Reposición de caja chica", "Conteo": "Conteo de caja chica"}[tipo], `<div class="frm">${cuerpo}<button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
     activarFotos(box);
+    const selCat = box.querySelector("#cc-cat"), vbox = box.querySelector("#cc-veh");
+    if (tipo === "Gasto" && selCat && vbox) selCat.addEventListener("change", async () => { vbox.hidden = selCat.value !== "Servicios de vehículos"; if (!vbox.hidden && !vbox.innerHTML) vbox.innerHTML = await vehCamposCaja(); });
     const selP = box.querySelector("#cc-p"); if (selP) selP.addEventListener("change", () => { const x = CAJA.pedidos.find(y => y.id === selP.value); if (!x) return;
       const c = box.querySelector("#cc-c"); if (!c.value.trim()) c.value = x.articulo + (x.cantidad ? " · " + x.cantidad + " " + (x.unidad || "") : "");
       const cat = {Alimento: "Alimento", "Médico": "Medicamentos", Caballeriza: "Mantenimiento"}[x.categoria]; if (cat) box.querySelector("#cc-cat").value = cat; });
     box.querySelector("#d-ok").onclick = () => {
       const v = id => ((box.querySelector(id) || {}).value || "").trim(), monto = v("#cc-m");
-      if (!(Number(monto) > 0)) return alert("Escribe el monto.");
-      if (tipo !== "Reposición" && v("#cc-c").length < 3) return alert(tipo === "Gasto" ? "Escribe qué se compró." : "Escribe de qué es el pago.");
+      if (!(Number(monto) > 0) && !(tipo === "Conteo" && monto !== "")) return alert("Escribe el monto.");
+      if (!["Reposición", "Conteo"].includes(tipo) && v("#cc-c").length < 3) return alert(tipo === "Gasto" ? "Escribe qué se compró." : "Escribe de qué es el pago.");
       if (tipo === "Gasto" && !box.querySelector("#d-fotos").files.length) return alert("Toma la foto del ticket.");
       const d = box.querySelector("input[name=cc-d]:checked"), fp = box.querySelector("input[name=cc-fp]:checked");
-      enviar(box, {tipo: "caja", op: "registrar", mov: {tipo, monto, concepto: v("#cc-c"), categoria: v("#cc-cat"), cliente: v("#cc-cl"), fecha: v("#cc-f"), destino: d ? d.value : "caja", notas: v("#cc-n"), pedido: v("#cc-p"), forma: fp ? fp.value : ""}},
-        tipo === "Gasto" ? (fp && fp.value !== CC_FORMAS[0] ? "Gasto anotado (" + CC_FP_TXT[fp.value] + "). Judith lo captura." : "Gasto anotado. Judith lo captura.") : tipo === "Reposición" ? "Reposición anotada. Olga la confirma cuando le llegue." : d && d.value === "mario" ? "Anotado: queda por entregar a Mario." : "Anotado: el efectivo entró a la caja.");
+      let vehiculo = null; // 10 oct 2026: gasto de un vehículo → también a la Bitácora del control vehicular
+      if (tipo === "Gasto" && v("#cc-cat") === "Servicios de vehículos" && box.querySelector("#cc-v")) {
+        if (!v("#cc-v")) return alert("Elige el vehículo.");
+        vehiculo = {id: v("#cc-v"), tipo: v("#cc-vt") || "Servicio", lectura: v("#cc-vl"), taller: v("#cc-vtl"), proximo: {lectura: v("#cc-vpl"), fecha: v("#cc-vpf")}};
+      }
+      enviar(box, {tipo: "caja", op: "registrar", mov: {tipo, monto, concepto: v("#cc-c"), categoria: v("#cc-cat"), cliente: v("#cc-cl"), fecha: v("#cc-f"), destino: d ? d.value : "caja", notas: v("#cc-n"), pedido: v("#cc-p"), forma: fp ? fp.value : "", vehiculo}},
+        tipo === "Gasto" ? (fp && fp.value !== CC_FORMAS[0] ? "Gasto anotado (" + CC_FP_TXT[fp.value] + "). Judith lo captura." : "Gasto anotado. Judith lo captura.") + (vehiculo ? " También quedó en la bitácora del vehículo." : "") : tipo === "Conteo" ? "Conteo registrado: desde aquí empieza el saldo." : tipo === "Reposición" ? "Reposición anotada. Olga la confirma cuando le llegue." : d && d.value === "mario" ? "Anotado: queda por entregar a Mario." : "Anotado: el efectivo entró a la caja.");
     };
   }
   if (b.dataset.cajaAcc) {
@@ -2235,7 +2253,7 @@ function activarFotos(box) {
 async function archivosDe(box) { const inp = box.querySelector("#d-fotos"); if (!inp || !inp.files.length) return []; const out = []; for (const f of [...inp.files].slice(0, 6)) out.push(await comprimir(f)); return out; }
 async function enviar(box, body, ok, despues) {
   const b = box.querySelector("#d-ok"); b.disabled = true; b.textContent = "Guardando…";
-  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = SERV = COMP = EST = FUERA = TURNOS = MOVS = null; if (despues) despues(j); render(); }
+  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = SERV = COMP = EST = FUERA = TURNOS = MOVS = VEHS = null; if (despues) despues(j); render(); }
   catch (e) { alert(e.message); b.disabled = false; b.textContent = "Intentar de nuevo"; }
 }
 const opt = (l, sel) => l.map(x => `<option${x === sel ? " selected" : ""}>${esc(x)}</option>`).join("");
@@ -2844,6 +2862,162 @@ function caLista() {
   const t = String(st.caBusca || "").toLowerCase(), L = (CABALLOS ? CABALLOS.caballos : []).filter(c => !t || (c.Nombre + " " + c.ID + " " + c.Raza + " " + c.Estatus).toLowerCase().includes(t));
   return L.slice(0, 80).map(c => `<button class="ca-row" type="button" data-ca-ficha="${esc(c.ID)}"><b>${esc(c.Nombre)}</b><span>${esc(c.ID)} · ${esc(c.Raza)} · ${esc(c.Sexo)}</span><span class="badge ${/venta/i.test(c.Estatus) ? "b-warn" : /vendid/i.test(c.Estatus) ? "b-info" : "b-ok"}">${esc(c.Estatus)}</span></button>`).join("") || `<div class="empty">Ningún caballo coincide.</div>`;
 }
+/* ===================== 10 oct 2026 · control vehicular (base: Google Sheet "CONTROL VEHICULAR MCM") =====================
+   Oficina (Nico, Mario, Judith): todas las unidades; lecturas, servicios, seguros, refrendo y verificación.
+   Olga: unidades de RANCHO y CARPINTERÍA; lecturas (km u horas) y servicios. Cada registro es una fila nueva en la Bitácora. */
+let VEHS = null;
+const VEH_BADGE = {"VENCIDO": "b-bad", "POR VENCER": "b-warn", "AL CORRIENTE": "b-ok", "SIN DATO": "b-info"};
+const vehM = id => (VEHS.mantenimiento || []).find(x => x["ID"] === id) || {};
+const vehS = id => (VEHS.seguros || []).find(x => x["ID"] === id) || null;
+const vehR = id => (VEHS.refrendo || []).find(x => x["ID"] === id) || null;
+const vehActivos = () => (VEHS.vehiculos || []).filter(v => !/vendido|baja/i.test(v["Estatus"] || ""));
+const vehNom = v => `${v["ID"]} · ${v["Vehículo"] || ""}`;
+const vehBadge = e => e && e !== "N/A" ? `<span class="badge ${VEH_BADGE[e] || "b-info"}">${esc(e === "VENCIDO" ? "Vencido" : e === "POR VENCER" ? "Por vencer" : e === "AL CORRIENTE" ? "Al corriente" : e === "SIN DATO" ? "Sin dato" : e)}</span>` : "";
+function vehPendientes() {
+  const out = [], add = (concepto, id, estado, detalle) => { if (estado === "VENCIDO" || estado === "POR VENCER") { const v = VEHS.vehiculos.find(x => x["ID"] === id); if (v && !/vendido|baja/i.test(v["Estatus"] || "")) out.push({concepto, id, estado, detalle, v}); } };
+  (VEHS.mantenimiento || []).forEach(m => add("Mantenimiento", m["ID"], m["Estado (auto)"], m["Faltan (km/hrs) (auto)"] ? (num(m["Faltan (km/hrs) (auto)"]) < 0 ? "Pasado por " + String(m["Faltan (km/hrs) (auto)"]).replace("-", "") : "Faltan " + m["Faltan (km/hrs) (auto)"]) + " " + (m["Unidad"] || "") : m["Próximo servicio (fecha)"] ? "Tocaba el " + m["Próximo servicio (fecha)"] : ""));
+  (VEHS.seguros || []).forEach(s => add("Seguro", s["ID"], s["Estado (auto)"], [s["Aseguradora"], s["Fin vigencia"] ? "vence " + s["Fin vigencia"] : ""].filter(Boolean).join(" · ")));
+  (VEHS.refrendo || []).forEach(r => { add("Refrendo", r["ID"], r["Estado (auto)"], r["Próxima fecha límite (auto)"] ? "límite " + r["Próxima fecha límite (auto)"] : "");
+    add("Verificación", r["ID"], r["Estado (auto) 2"], [r["Bimestre aplicado (auto)"], r["Próxima fecha límite (auto) 2"] ? "límite " + r["Próxima fecha límite (auto) 2"] : ""].filter(Boolean).join(" · ")); });
+  return out.sort((a, b) => (a.estado === "VENCIDO" ? 0 : 1) - (b.estado === "VENCIDO" ? 0 : 1));
+}
+const num = x => Number(String(x == null ? "" : x).replace(/[^0-9.-]/g, "")) || 0;
+function vVehiculos() {
+  const V = vehActivos(), areas = [...new Set(V.map(v => v["Área"] || "Sin área"))], f = st.vehArea || "todas";
+  const lista = V.filter(v => f === "todas" || (v["Área"] || "Sin área") === f), pend = vehPendientes(), venc = pend.filter(p => p.estado === "VENCIDO").length;
+  const card = v => {
+    const id = v["ID"], m = vehM(id), u = m["Unidad"], conLect = u === "Km" || u === "Hrs", s = vehS(id), r = vehR(id);
+    const lect = m["Última lectura (auto)"] ? `Última lectura <b>${esc(m["Última lectura (auto)"])} ${esc(u || "")}</b>${m["Fecha de lectura (auto)"] ? " (" + esc(m["Fecha de lectura (auto)"]) + ")" : ""}` : conLect ? "Sin lectura registrada" : "";
+    const prox = [m["Próximo servicio (lectura)"] ? m["Próximo servicio (lectura)"] + " " + (u || "") : "", m["Próximo servicio (fecha)"]].filter(Boolean).join(" o ");
+    const ult = m["Último servicio (auto)"] ? `Último servicio ${esc(m["Último servicio (auto)"])}${m["Detalle último servicio (auto)"] ? " · " + esc(m["Detalle último servicio (auto)"]) : ""}` : "";
+    const papeles = VEHS.papeles ? [s ? `Seguro ${esc(s["Aseguradora"] || "")} ${s["Fin vigencia"] ? "vence " + esc(s["Fin vigencia"]) : ""} ${vehBadge(s["Estado (auto)"])}` : "",
+      r && r["Estado (auto)"] !== "N/A" ? `Refrendo ${esc(r["Último año pagado"] || "—")} ${vehBadge(r["Estado (auto)"])}` : "", r && r["Estado (auto) 2"] !== "N/A" ? `Verificación ${vehBadge(r["Estado (auto) 2"])}` : ""].filter(Boolean).join(" · ") : "";
+    return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">🚜 ${esc(vehNom(v))}</p>
+      <p class="card-m">${[v["Placas"] ? "Placas " + v["Placas"] : "", v["Área"], v["Usuario / Resguardo"] ? "usa " + v["Usuario / Resguardo"] : ""].filter(Boolean).map(esc).join(" · ")}</p></div>
+      <div style="text-align:right">${vehBadge(m["Estado (auto)"])}</div></div>
+      ${lect || ult || prox ? `<p class="card-m">${[lect, ult, prox ? "Próximo servicio: " + esc(prox) : ""].filter(Boolean).join("<br>")}</p>` : ""}
+      ${papeles ? `<p class="card-m">${papeles}</p>` : ""}
+      <div class="acts">${conLect ? `<button class="btn btn-dark" data-veh-lect="${esc(id)}">Anotar ${u === "Hrs" ? "horas" : "kilometraje"}</button>` : ""}<button class="btn" data-veh-serv="${esc(id)}">Servicio o reparación</button><button class="btn" data-veh-hist="${esc(id)}">Historial</button>
+      ${VEHS.papeles ? `<button class="btn" data-veh-seg="${esc(id)}">Seguro</button>${r && r["¿Aplica?"] === "Sí" ? `<button class="btn" data-veh-ref="${esc(id)}">Refrendo</button>` : ""}${r && r["¿Aplica? 2"] === "Sí" ? `<button class="btn" data-veh-ver="${esc(id)}">Verificación</button>` : ""}` : ""}</div></article>`;
+  };
+  return `<h2>Vehículos</h2><p class="sub">Control vehicular MCM · ${VEHS.todas ? "todas las unidades" : "unidades del rancho y la carpintería"}. Lo que captures aquí se escribe en el archivo de Drive.</p>
+    <div class="kpis"><div class="kpi"><span>Unidades</span><b>${V.length}</b></div><div class="kpi"><span>Vencidos</span><b>${venc}</b></div><div class="kpi"><span>Por vencer</span><b>${pend.length - venc}</b></div></div>
+    ${pend.length ? `<h3>Pendientes</h3>${pend.map(p => `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(p.concepto)} · ${esc(vehNom(p.v))}</p><p class="card-m">${esc(p.detalle || "")}${p.v["Usuario / Resguardo"] ? " · " + esc(p.v["Usuario / Resguardo"]) : ""}</p></div>${vehBadge(p.estado)}</div></article>`).join("")}` : `<p class="card-m">Nada vencido ni por vencer.</p>`}
+    <h3>Unidades</h3>${VEHS.todas && areas.length > 1 ? `<div class="sv-chips">${["todas", ...areas].map(a => `<button type="button" class="chip" data-veh-area="${esc(a)}" aria-pressed="${a === f}">${esc(a === "todas" ? "Todas" : a)}</button>`).join("")}</div>` : ""}
+    ${lista.map(card).join("") || `<p class="card-m">No hay unidades.</p>`}`;
+}
+async function vehCamposCaja() { // campos extra del gasto de caja chica "Servicios de vehículos"
+  try { await cargar("vehiculos"); } catch (e) { return `<div class="err">${esc(e.message)}</div>`; }
+  return `<label>¿De qué vehículo?</label><select id="cc-v"><option value="">Elige…</option>${vehActivos().map(v => `<option value="${esc(v["ID"])}">${esc(vehNom(v))}${v["Placas"] ? " · " + esc(v["Placas"]) : ""}</option>`).join("")}</select>
+    <div class="dos"><div><label>¿Qué fue?</label><select id="cc-vt">${opt(["Servicio", "Reparación", "Llantas", "Otro"], "Servicio")}</select></div><div><label>Km u horas (si lo sabes)</label><input id="cc-vl" type="number" inputmode="decimal" min="0"></div></div>
+    <label>Taller o proveedor</label><input id="cc-vtl" maxlength="80">
+    <div class="dos"><div><label>Próximo servicio a los (km/hrs)</label><input id="cc-vpl" type="number" inputmode="numeric" min="0"></div><div><label>o en la fecha</label><input id="cc-vpf" type="date"></div></div>
+    <p class="card-m" style="margin-top:-6px">Se anota también en la bitácora del vehículo; no hay que capturarlo dos veces.</p>`;
+}
+async function vehEnviar(box, body, ok) {
+  const b = box.querySelector("#d-ok"); b.disabled = true; b.textContent = "Guardando…";
+  try {
+    const archivos = await archivosDe(box);
+    try { await post({accion: "hacer", ...body, archivos}); }
+    catch (e) { if (!/última lectura/i.test(e.message) || !confirm(e.message + "\n\n¿La guardo así de todos modos?")) throw e; body.reg.forzar = true; await post({accion: "hacer", ...body, archivos}); }
+    $("#dlg").close(); toast(ok); VEHS = null; render();
+  } catch (e) { alert(e.message); b.disabled = false; b.textContent = "Intentar de nuevo"; }
+}
+function dialogoVehBitacora(id, modo) {
+  const v = VEHS.vehiculos.find(x => x["ID"] === id); if (!v) return;
+  const m = vehM(id), u = m["Unidad"], conLect = u === "Km" || u === "Hrs", lbl = u === "Hrs" ? "Horas (horómetro)" : "Kilometraje";
+  const ult = m["Última lectura (auto)"] ? `<p class="ctx">Última lectura: ${esc(m["Última lectura (auto)"])} ${esc(u || "")}${m["Fecha de lectura (auto)"] ? " el " + esc(m["Fecha de lectura (auto)"]) : ""}.</p>` : "";
+  const box = modo === "lectura" ? dialogo("Anotar " + (u === "Hrs" ? "horas" : "kilometraje") + " · " + vehNom(v), `<div class="frm">${ult}
+      <div class="dos"><div><label>${lbl}</label><input id="vb-l" type="number" inputmode="decimal" min="0" step="0.1"></div><div><label>Fecha</label><input id="vb-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div></div>
+      <label>Nota (opcional)</label><input id="vb-n" maxlength="250" placeholder="Ej. Se oye un ruido al frenar">
+      ${campoFotos("Foto del tablero u horómetro (opcional)")}
+      <button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`)
+    : dialogo("Servicio o reparación · " + vehNom(v), `<div class="frm">${ult}
+      <label>¿Qué fue?</label><div class="sv-chips">${["Servicio", "Reparación", "Llantas", "Otro"].map((t, i) => `<button type="button" class="chip" data-vb-t="${t}" aria-pressed="${i === 0}">${t}</button>`).join("")}</div>
+      <div class="dos"><div><label>Fecha</label><input id="vb-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div>${conLect ? `<div><label>${lbl} (si lo sabes)</label><input id="vb-l" type="number" inputmode="decimal" min="0" step="0.1"></div>` : ""}</div>
+      <label>¿Qué se hizo?</label><input id="vb-d" maxlength="200" placeholder="Ej. Cambio de aceite y filtros">
+      <div class="dos"><div><label>Taller o proveedor</label><input id="vb-tl" maxlength="80"></div><div><label>Costo</label><input id="vb-c" type="number" inputmode="decimal" min="0" step="0.01" placeholder="$"></div></div>
+      ${VEHS.papeles ? "" : `<p class="card-m" style="margin-top:-6px">Si lo pagaste con la caja chica, mejor regístralo en Caja chica → Registrar un gasto → "Servicios de vehículos": se anota aquí solo.</p>`}
+      ${`<div class="dos"><div><label>Próximo servicio a los${u ? " (" + esc(u) + ")" : ""}</label><input id="vb-pl" type="number" inputmode="numeric" min="0"></div><div><label>o en la fecha</label><input id="vb-pf" type="date"></div></div>`}
+      <label>Nota (opcional)</label><input id="vb-n" maxlength="250">
+      ${campoFotos("Foto de la factura o del trabajo (opcional)", true)}
+      <button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+  activarFotos(box);
+  box.querySelectorAll("[data-vb-t]").forEach(x => x.addEventListener("click", () => box.querySelectorAll("[data-vb-t]").forEach(y => y.setAttribute("aria-pressed", y === x))));
+  box.querySelector("#d-ok").onclick = () => {
+    const g = s => ((box.querySelector(s) || {}).value || "").trim();
+    if (modo === "lectura") { if (!(Number(g("#vb-l")) > 0)) return alert("Escribe el " + (u === "Hrs" ? "número de horas." : "kilometraje."));
+      return vehEnviar(box, {tipo: "vehiculo", op: "bitacora", id, reg: {tipo: "Lectura", lectura: g("#vb-l"), fecha: g("#vb-f"), notas: g("#vb-n")}}, "Lectura guardada en el control vehicular"); }
+    const t = (box.querySelector("[data-vb-t][aria-pressed=true]") || {}).dataset?.vbT || "Servicio";
+    if (g("#vb-d").length < 3) return alert("Escribe qué se hizo.");
+    vehEnviar(box, {tipo: "vehiculo", op: "bitacora", id, reg: {tipo: t, lectura: g("#vb-l"), fecha: g("#vb-f"), descripcion: g("#vb-d"), taller: g("#vb-tl"), costo: g("#vb-c"), notas: g("#vb-n")},
+      proximo: {lectura: g("#vb-pl"), fecha: g("#vb-pf")}}, "Guardado en la bitácora del vehículo");
+  };
+}
+const vehISO = s => { const m = String(s || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); return m ? `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : ""; };
+function dialogoVehSeguro(id) {
+  const v = VEHS.vehiculos.find(x => x["ID"] === id), s = vehS(id) || {}, n = x => String(s[x] || "").replace(/[^0-9.]/g, "");
+  const box = dialogo("Seguro · " + vehNom(v), `<div class="frm"><p class="ctx">${s["Aseguradora"] ? "Póliza actual: " + esc(s["Aseguradora"]) + " " + esc(s["No. de Póliza"] || "") + (s["Fin vigencia"] ? ", vence " + esc(s["Fin vigencia"]) : "") + ". Al renovar, escribe los datos de la póliza nueva." : "Esta unidad no tiene seguro registrado."}</p>
+    <div class="dos"><div><label>Aseguradora</label><input id="vs-a" maxlength="60" value="${esc(s["Aseguradora"] || "")}"></div><div><label>No. de póliza</label><input id="vs-p" maxlength="60" value="${esc(s["No. de Póliza"] || "")}"></div></div>
+    <div class="dos"><div><label>A nombre de</label><input id="vs-n" maxlength="60" value="${esc(s["Asegurado a nombre de"] || "")}"></div><div><label>Plan / cobertura</label><input id="vs-pl" maxlength="60" value="${esc(s["Plan / Cobertura"] || "")}"></div></div>
+    <div class="dos"><div><label>Inicio de vigencia</label><input id="vs-i" type="date" value="${vehISO(s["Inicio vigencia"])}"></div><div><label>Fin de vigencia</label><input id="vs-f" type="date" value="${vehISO(s["Fin vigencia"])}"></div></div>
+    <div class="dos"><div><label>Forma de pago</label><select id="vs-fp">${opt(["Anual", "Semestral", "Trimestral", "Mensual"], s["Forma de pago"] || "Anual")}</select></div><div><label>Fecha de pago</label><input id="vs-fpg" type="date"></div></div>
+    <div class="dos"><div><label>Prima neta</label><input id="vs-pr" type="number" inputmode="decimal" value="${n("Prima neta")}"></div><div><label>Pago total</label><input id="vs-t" type="number" inputmode="decimal" value="${n("Pago total")}"></div></div>
+    <label>Nota (opcional)</label><input id="vs-no" maxlength="300">
+    ${campoFotos("Póliza o recibo (opcional)", true)}
+    <button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+  activarFotos(box);
+  box.querySelector("#d-ok").onclick = () => { const g = q => ((box.querySelector(q) || {}).value || "").trim();
+    if (!g("#vs-a") || !g("#vs-f")) return alert("Escribe la aseguradora y el fin de vigencia.");
+    vehEnviar(box, {tipo: "vehiculo", op: "seguro", id, seguro: {aseguradora: g("#vs-a"), poliza: g("#vs-p"), asegurado: g("#vs-n"), plan: g("#vs-pl"), inicio: g("#vs-i"), fin: g("#vs-f"), forma: g("#vs-fp"), fechaPago: g("#vs-fpg"), prima: g("#vs-pr"), total: g("#vs-t"), notas: g("#vs-no")}}, "Seguro actualizado"); };
+}
+function dialogoVehPapel(id, op) {
+  const v = VEHS.vehiculos.find(x => x["ID"] === id), r = vehR(id) || {}, ref = op === "refrendo";
+  const box = dialogo((ref ? "Refrendo · " : "Verificación · ") + vehNom(v), `<div class="frm">
+    <p class="ctx">${ref ? "Último año pagado: " + esc(r["Último año pagado"] || "—") + (r["Próxima fecha límite (auto)"] ? " · límite " + esc(r["Próxima fecha límite (auto)"]) : "") : "Última verificación: " + esc(r["Última verificación"] || "—") + (r["Bimestre aplicado (auto)"] ? " · le toca " + esc(r["Bimestre aplicado (auto)"]) : "")}</p>
+    ${ref ? `<div class="dos"><div><label>Año que se pagó</label><input id="vp-a" type="number" inputmode="numeric" value="${new Date().getFullYear()}"></div><div><label>Fecha de pago</label><input id="vp-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div></div>`
+      : `<label>Fecha de la verificación</label><input id="vp-f" type="date" value="${hoyISO()}" max="${hoyISO()}">`}
+    <label>Nota (opcional)</label><input id="vp-n" maxlength="150">
+    ${campoFotos("Comprobante (opcional)", true)}
+    <button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+  activarFotos(box);
+  box.querySelector("#d-ok").onclick = () => { const g = q => ((box.querySelector(q) || {}).value || "").trim();
+    vehEnviar(box, {tipo: "vehiculo", op, id, anio: g("#vp-a"), fecha: g("#vp-f"), notas: g("#vp-n")}, ref ? "Refrendo guardado" : "Verificación guardada"); };
+}
+function vehHistorial(id) {
+  const v = VEHS.vehiculos.find(x => x["ID"] === id); if (!v) return;
+  const B = (VEHS.bitacora || []).filter(x => x["ID"] === id).slice().reverse();
+  const datos = [["Marca / modelo", v["Marca / Modelo"]], ["Versión", v["Versión / Características"]], ["Año", v["Año"]], ["Color", v["Color"]], ["Placas", v["Placas"]], ["Propietario", v["Propietario (factura)"]], ["NIV", v["NIV (No. de Serie)"]], ["Motor", v["No. de Motor"]], ["Notas", v["Notas"]]].filter(x => x[1]);
+  dialogo("Historial · " + vehNom(v), `<div class="frm"><p class="card-m">${datos.map(([k, x]) => `<b>${esc(k)}:</b> ${esc(x)}`).join("<br>")}</p>
+    <h3>Bitácora</h3>${B.map(x => `<article class="card"><p class="card-t">${esc(x["Fecha"] || "")} · ${esc(x["Tipo de registro"] || "")}${x["Lectura (km u hrs)"] ? " · " + esc(x["Lectura (km u hrs)"]) : ""}</p>
+      <p class="card-m">${[x["Descripción"], x["Taller / Proveedor"], x["Costo"], x["Registró"] ? "anotó " + x["Registró"] : ""].filter(Boolean).map(esc).join(" · ")}${x["Notas"] ? `<br>${esc(x["Notas"]).replace(/(https:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">ver archivo</a>')}` : ""}</p></article>`).join("") || `<p class="card-m">Sin registros todavía.</p>`}</div>`);
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const d = b.dataset;
+  if (d.vehArea) { st.vehArea = d.vehArea; render(); return; }
+  if (d.vehIr) return ir("vehiculos");
+  if (d.vehLect || d.vehServ || d.vehSeg || d.vehRef || d.vehVer || d.vehHist) {
+    if (!d.vehHist && COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
+    try { await cargar("vehiculos"); } catch (err) { return alert(err.message); }
+    if (d.vehLect) return dialogoVehBitacora(d.vehLect, "lectura");
+    if (d.vehServ) return dialogoVehBitacora(d.vehServ, "servicio");
+    if (d.vehSeg) return dialogoVehSeguro(d.vehSeg);
+    if (d.vehRef) return dialogoVehPapel(d.vehRef, "refrendo");
+    if (d.vehVer) return dialogoVehPapel(d.vehVer, "verificacion");
+    if (d.vehHist) return vehHistorial(d.vehHist);
+  }
+  if (d.cajaForma) { // corregir cómo se pagó un gasto
+    if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
+    const x = CAJA && CAJA.movimientos.find(m => m.ID === d.cajaForma); if (!x) return;
+    const actual = x["Forma de pago"] || CC_FORMAS[0];
+    const box = dialogo("¿Cómo se pagó? · " + (x["Concepto"] || ""), `<div class="frm"><p class="ctx">${money(numv(x["Monto"]))} · hoy dice ${esc(CC_FP_TXT[actual])}</p>
+      <div class="rads">${CC_FORMAS.map(f => `<label class="rad"><input type="radio" name="cf" value="${esc(f)}"${f === actual ? " checked" : ""}> <span><b>${esc(CC_FP_TXT[f])}</b></span></label>`).join("")}</div>
+      <button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+    box.querySelector("#d-ok").onclick = () => { const f = (box.querySelector("input[name=cf]:checked") || {}).value; if (!f || f === actual) return $("#dlg").close();
+      enviar(box, {tipo: "caja", op: "forma", id: x.ID, forma: f}, "Listo: quedó como " + CC_FP_TXT[f]); };
+  }
+});
 window.addEventListener("hashchange", () => { const h = location.hash.slice(1) || "hoy"; if (YO && h !== ACTUAL && (YO.permisos.secciones.includes(h) || h === "menu")) ir(h); });
 iniciar();
 </script>

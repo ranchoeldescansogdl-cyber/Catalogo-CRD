@@ -95,13 +95,13 @@ const VERSION = "2026-08-26.dahlia";
 
 /* jefe = asigna, edita, revisa y cancela tareas (Nico, Mario y Judith) */
 const PERMISOS = {
-  admin:        {secciones: ["hoy", "tareas", "turnos", "cotizaciones", "agenda", "clientes", "eventos", "cambios", "pagos", "estados", "caballos", "comisiones", "caja", "herrajes", "compras", "redes", "salud", "bitacora", "proveedores", "conta", "equipo"], dinero: "todo", contacto: true, ine: true, jefe: true,
+  admin:        {secciones: ["hoy", "tareas", "turnos", "cotizaciones", "agenda", "clientes", "eventos", "cambios", "pagos", "estados", "caballos", "comisiones", "caja", "vehiculos", "herrajes", "compras", "redes", "salud", "bitacora", "proveedores", "conta", "equipo"], dinero: "todo", contacto: true, ine: true, jefe: true,
                  acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "registro", "liga_celular", "prospecto", "redes", "redes_aprobar", "caja", "servicio", "insumo", "agendar", "caballo_alta", "caballo_pago"]},
   /* "direccion" = Mónica: vendedora con eventos (4 oct 2026). Solo su dinero; confirma eventos, bloquea fechas y marca pagado solo lo suyo */
   direccion:    {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "bitacora"], dinero: "propio", contacto: true, ine: true, jefe: false,
                  acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "prospecto", "agendar"]},
   ventas:       {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones"], dinero: "propio", contacto: true, ine: true, jefe: false, acciones: ["nota", "liga", "tarea", "prospecto", "agendar"]},
-  contabilidad: {secciones: ["hoy", "tareas", "agenda", "cambios", "pagos", "estados", "caballos", "comisiones", "caja", "herrajes", "salud", "compras", "proveedores", "conta", "bitacora"], dinero: "todo", contacto: true, ine: false, jefe: true,
+  contabilidad: {secciones: ["hoy", "tareas", "agenda", "cambios", "pagos", "estados", "caballos", "comisiones", "caja", "vehiculos", "herrajes", "salud", "compras", "proveedores", "conta", "bitacora"], dinero: "todo", contacto: true, ine: false, jefe: true,
                  acciones: ["saldo_pagado", "nota", "tarea", "reporte", "registro", "caja", "agendar", "caballo_alta", "caballo_pago"]},
   /* campo: contacto del cliente y notas de la cita (sin montos) por si hay que llamarle el día de la sesión o evento */
   campo:        {secciones: ["hoy", "tareas", "salud", "herrajes", "compras", "bitacora", "agenda"], dinero: "nada", contacto: true, ine: true, jefe: false, acciones: ["nota", "tarea", "reporte", "servicio", "insumo"]},
@@ -174,6 +174,7 @@ function permisosDe(u) {
   if (!p.secciones.includes("herrajes") && !p.secciones.includes("salud")) p.acciones = p.acciones.filter(a => a !== "servicio");
   if (p.secciones.includes("salud") && !p.acciones.includes("movimiento")) p.acciones.push("movimiento"); // salidas, regresos y trámites (10 oct 2026)
   if (ORG.esTurno(u)) { p.secciones.splice(1, 0, "turnos"); p.acciones.push("turno", "reporte"); } // reportes de turno (10 oct 2026)
+  if (ORG.vehiculosDe(u) && !p.secciones.includes("vehiculos")) p.secciones.splice(p.secciones.indexOf("tareas") + 1, 0, "vehiculos"); // control vehicular (10 oct 2026)
   if (ORG.llevaCaja(u)) { if (!p.secciones.includes("caja")) p.secciones.splice(p.secciones.indexOf("tareas") + 1, 0, "caja"); if (!p.acciones.includes("caja")) p.acciones.push("caja"); }
   return p;
 }
@@ -357,7 +358,7 @@ const puede = (u, s) => u.permisos.secciones.includes(s);
 function orgDe(u, eq) {
   const o = ORG.puestoDe(u) || {}, jefe = o.reportaA ? eq.find(x => ORG.claveDe(x) === o.reportaA) : null;
   return {puesto: o.puesto || "", area: o.area || u.area || "", reportaA: jefe ? jefe.nombre : "", asigna: ORG.asignaAlguien(u), revisaTodo: ORG.revisaTodo(u),
-    pide: ORG.puedePedir(u), areas: ORG.areasDe(u), general: !!o.general, caja: papelCaja(u), decide: ORG.decideDe(u), turno: ORG.esTurno(u),
+    pide: ORG.puedePedir(u), areas: ORG.areasDe(u), general: !!o.general, caja: papelCaja(u), decide: ORG.decideDe(u), turno: ORG.esTurno(u), vehiculos: ORG.vehiculosDe(u),
     otros: o.revisaTodo ? eq.filter(x => x.id !== u.id && ORG.revisaTodo(x)).map(x => ({nombre: x.nombre, decide: ORG.decideDe(x)})) : []};
 }
 async function tareaPorId(id) {
@@ -624,14 +625,15 @@ function prospectoVisible(q, u) {
 const monto = x => Number(String(x["Monto"] || "").replace(/[^0-9.]/g, "")) || 0;
 const FORMAS_CAJA = ["Efectivo (caja chica)", "Tarjeta de débito empresarial", "Transferencia", "Otro"]; // 10 oct 2026
 const esEfectivo = x => !x["Forma de pago"] || x["Forma de pago"] === FORMAS_CAJA[0];
-function saldoCaja(movs) {
-  return Math.round(movs.reduce((a, x) => {
+function saldoCaja(movs) { // 10 oct 2026: el último "Conteo" (arqueo) fija el saldo; solo cuenta lo registrado después
+  let ini = 0, base = 0; movs.forEach((x, i) => { if (x["Tipo"] === "Conteo" && x["Estatus"] !== "Cancelado") { ini = i + 1; base = monto(x); } });
+  return Math.round(movs.slice(ini).reduce((a, x) => {
     if (x["Estatus"] === "Cancelado") return a;
     if (x["Tipo"] === "Gasto") return esEfectivo(x) ? a - monto(x) : a; // con tarjeta o transferencia no sale de la caja
     if (x["Tipo"] === "Reposición") return x["Estatus"] === "Recibida" ? a + monto(x) : a;
     if (x["Tipo"] === "Efectivo de cliente") return x["Destino"] === "Caja" ? a + monto(x) : a;
     return a;
-  }, 0) * 100) / 100;
+  }, base) * 100) / 100;
 }
 const papelCaja = u => ORG.revisaTodo(u) ? "dir" : ORG.llevaCaja(u) ? "lleva" : puede(u, "caja") ? "oficina" : "";
 async function cajaPost(u, body, res) {
@@ -642,16 +644,32 @@ async function cajaPost(u, body, res) {
   if (body.op === "registrar") {
     const m = body.mov || {}, tipo = String(m.tipo || "");
     if (tipo === "Reposición" && papel === "lleva") return no("Las reposiciones las registra Judith; tú confirmas cuando te llegue el dinero.");
+    if (tipo === "Conteo" && !["oficina", "dir"].includes(papel)) return no("El conteo de la caja lo registra Judith con lo que Olga le diga.");
     if (["Gasto", "Efectivo de cliente"].includes(tipo) && papel !== "lleva" && papel !== "dir") return no("Los gastos y el efectivo de la caja los registra quien la lleva.");
-    if (!["Gasto", "Efectivo de cliente", "Reposición"].includes(tipo)) return no("Tipo no válido.", 400);
-    if (!(Number(String(m.monto || "").replace(/[^0-9.]/g, "")) > 0)) return no("Escribe el monto.", 400);
-    if (tipo !== "Reposición" && String(m.concepto || "").trim().length < 3) return no(tipo === "Gasto" ? "Escribe qué se compró." : "Escribe de qué es el pago.", 400);
+    if (!["Gasto", "Efectivo de cliente", "Reposición", "Conteo"].includes(tipo)) return no("Tipo no válido.", 400);
+    if (!(Number(String(m.monto || "").replace(/[^0-9.]/g, "")) > 0) && !(tipo === "Conteo" && String(m.monto).trim() !== "")) return no("Escribe el monto.", 400);
+    if (!["Reposición", "Conteo"].includes(tipo) && String(m.concepto || "").trim().length < 3) return no(tipo === "Gasto" ? "Escribe qué se compró." : "Escribe de qué es el pago.", 400);
     if (tipo === "Gasto" && !archivos.length) return no("Toma la foto del ticket.", 400);
     const mov = {tipo, monto: m.monto, concepto: String(m.concepto || "").slice(0, 120), categoria: String(m.categoria || "").slice(0, 40), cliente: String(m.cliente || "").slice(0, 80),
       destino: tipo === "Efectivo de cliente" && m.destino === "mario" ? "mario" : "caja", fecha: m.fecha, notas: String(m.notas || "").slice(0, 300),
       forma: tipo === "Gasto" ? (FORMAS_CAJA.includes(m.forma) ? m.forma : "") : "",
       pedido: tipo === "Gasto" && /^PR-[\d-]+$/.test(String(m.pedido || "")) ? m.pedido : ""};
+    if (tipo === "Gasto" && m.vehiculo && /^V\d+$/.test(String(m.vehiculo.id || ""))) { // 10 oct 2026: gasto de un vehículo → Bitácora del control vehicular
+      const acc = vehAcceso(u); if (!acc) return no("No tienes acceso al control vehicular.");
+      if (!acc.todas) { const l = await agendaPost("panel_vehiculos", {op: "lista"}), v = l.ok && l.vehiculos.find(x => x["ID"] === m.vehiculo.id);
+        if (!v || !acc.areas.includes(String(v["Área"] || "").toUpperCase())) return no("Ese vehículo no es del rancho."); }
+      const g = m.vehiculo, pr = g.proximo || {};
+      mov.vehiculo = {id: g.id, tipo: VEH_TIPOS.includes(g.tipo) && g.tipo !== "Lectura" ? g.tipo : "Servicio", lectura: g.lectura === "" || g.lectura == null ? "" : Number(g.lectura) || "",
+        taller: String(g.taller || "").slice(0, 80), proximo: pr.lectura || pr.fecha ? {lectura: Number(pr.lectura) || "", fecha: /^\d{4}-\d{2}-\d{2}$/.test(String(pr.fecha || "")) ? pr.fecha : ""} : null};
+    }
     const r = await agendaPost("panel_caja", {op: "registrar", quien: u.nombre, mov, archivos});
+    return res.status(r.ok ? 200 : 400).json(r);
+  }
+  if (body.op === "forma") { // 10 oct 2026: corregir cómo se pagó un gasto que aún no se captura
+    if (!FORMAS_CAJA.includes(body.forma)) return no("Forma de pago no válida.", 400);
+    if (papel === "lleva") { const j = await agendaPost("panel_caja", {op: "lista"}), x = j.ok && j.movimientos.find(r => r["ID"] === String(body.id || ""));
+      if (!x || x["Registró"] !== u.nombre) return no("Solo puedes cambiar los gastos que tú registraste."); }
+    const r = await agendaPost("panel_caja", {op: "forma", id: String(body.id || ""), forma: body.forma, quien: u.nombre});
     return res.status(r.ok ? 200 : 400).json(r);
   }
   if (body.op === "estatus") {
@@ -663,10 +681,51 @@ async function cajaPost(u, body, res) {
       const j = await agendaPost("panel_caja", {op: "lista"}), x = j.ok && j.movimientos.find(r => r["ID"] === String(body.id || ""));
       if (!x || x["Registró"] !== u.nombre || !["Por capturar", "Por revisar", "Por entregar"].includes(x["Estatus"])) return no("Ese movimiento ya no lo puedes cancelar. Pídeselo a Judith.");
     }
-    const r = await agendaPost("panel_caja", {op: "estatus", id: String(body.id || ""), paso: a, quien: u.nombre, nota: String(body.nota || "").slice(0, 200)});
+    const r = await agendaPost("panel_caja", {op: "estatus", id: String(body.id || ""), paso: a, quien: u.nombre, nota: String(body.nota || "").slice(0, 200), forzar: a === "cancelar" && papel === "dir"});
     return res.status(r.ok ? 200 : 400).json(r);
   }
   return no("Acción no válida.", 400);
+}
+
+/* ---------- control vehicular (10 oct 2026) ----------
+   Base: Google Sheet "CONTROL VEHICULAR MCM" (lo lee y escribe el Apps Script, acción panel_vehiculos).
+   Oficina (admin y contabilidad): ve todas las unidades, captura lecturas y servicios, y renueva seguros, refrendo y verificación.
+   Olga: solo las unidades de RANCHO y CARPINTERÍA (organigrama "vehiculos"); captura lecturas y servicios. */
+const VEH_TIPOS = ["Lectura", "Servicio", "Reparación", "Llantas", "Otro"];
+const VEH_OFICINA = ["admin", "contabilidad"];
+function vehAcceso(u) {
+  if (VEH_OFICINA.includes(u.rol) && puede(u, "vehiculos")) return {todas: true, papeles: true, areas: []};
+  const a = ORG.vehiculosDe(u); return a && puede(u, "vehiculos") ? {todas: false, papeles: false, areas: a.map(x => x.toUpperCase())} : null;
+}
+const vehVisible = (acc, v) => acc.todas || acc.areas.includes(String(v["Área"] || "").toUpperCase());
+async function vehiculosVista(u) {
+  const acc = vehAcceso(u); if (!acc) return null;
+  const j = await agendaPost("panel_vehiculos", {op: "lista"}); if (!j.ok) throw new Error(j.error || "vehiculos");
+  const veh = j.vehiculos.filter(v => vehVisible(acc, v)), ids = new Set(veh.map(v => v["ID"])), de = arr => (arr || []).filter(r => ids.has(r["ID"]));
+  return {vehiculos: veh, mantenimiento: de(j.mantenimiento), seguros: acc.papeles ? de(j.seguros) : [], refrendo: acc.papeles ? de(j.refrendo) : [],
+    bitacora: de(j.bitacora).slice(-300), papeles: acc.papeles, todas: acc.todas, tipos: VEH_TIPOS};
+}
+async function vehiculoPost(u, body, res) {
+  const no = (m, c = 403) => res.status(c).json({error: m}), acc = vehAcceso(u);
+  if (!acc) return no("No tienes acceso al control vehicular.");
+  const id = String(body.id || ""); if (!/^V\d+$/.test(id)) return no("Elige el vehículo.", 400);
+  const op = String(body.op || ""); if (!["bitacora", "proximo", "seguro", "refrendo", "verificacion"].includes(op)) return no("Acción no válida.", 400);
+  if (["seguro", "refrendo", "verificacion"].includes(op) && !acc.papeles) return no("Seguros, refrendo y verificación los actualiza la oficina.");
+  if (!acc.todas) { const l = await agendaPost("panel_vehiculos", {op: "lista"}), v = l.ok && l.vehiculos.find(x => x["ID"] === id);
+    if (!v || !vehVisible(acc, v)) return no("Ese vehículo no es del rancho."); }
+  const archivos = Array.isArray(body.archivos) ? body.archivos.slice(0, 4) : [];
+  if (archivos.reduce((a, x) => a + String(x && x.datos || "").length, 0) > 5.5e6) return no("Las fotos pesan demasiado. Manda menos a la vez.", 413);
+  const s = (x, n) => String(x == null ? "" : x).slice(0, n), f = x => /^\d{4}-\d{2}-\d{2}$/.test(String(x || "")) ? x : "";
+  const g = body.reg || {}, pr = body.proximo || {}, sg = body.seguro || {};
+  const payload = {op, id, quien: u.nombre, archivos,
+    reg: {tipo: VEH_TIPOS.includes(g.tipo) ? g.tipo : "", lectura: g.lectura === "" || g.lectura == null ? "" : Number(g.lectura) || "", descripcion: s(g.descripcion, 200), taller: s(g.taller, 80),
+      costo: Number(g.costo) || "", fecha: f(g.fecha), notas: s(g.notas, 250), forzar: !!g.forzar},
+    proximo: pr.lectura || pr.fecha ? {lectura: Number(pr.lectura) || "", fecha: f(pr.fecha)} : null,
+    seguro: {asegurado: s(sg.asegurado, 60), aseguradora: s(sg.aseguradora, 60), plan: s(sg.plan, 60), poliza: s(sg.poliza, 60), inicio: f(sg.inicio), fin: f(sg.fin), forma: s(sg.forma, 30),
+      prima: Number(sg.prima) || "", total: Number(sg.total) || "", fechaPago: f(sg.fechaPago), notas: s(sg.notas, 300)},
+    anio: Number(body.anio) || "", fecha: f(body.fecha), notas: s(body.notas, 150)};
+  const r = await agendaPost("panel_vehiculos", payload);
+  return res.status(r.ok ? 200 : 400).json(r);
 }
 
 /* ---------- 10 oct 2026: reportes de turno, avisos al celular, caballos y movimientos ---------- */
@@ -814,6 +873,7 @@ module.exports = async (req, res) => {
       if (body.tipo === "turno") return await turnoPost(u, body, req, res);
       if (body.tipo === "caballo") return await caballoPost(u, body, res);
       if (body.tipo === "movimiento") return await movimientoPost(u, body, res);
+      if (body.tipo === "vehiculo") return await vehiculoPost(u, body, res);
       if (body.tipo === "cambio") return await cambio(u, body, res);
       if (body.tipo === "caja") return await cajaPost(u, body, res);
       if (body.tipo === "servicio") return await servicioPost(u, body, res);
@@ -908,6 +968,10 @@ module.exports = async (req, res) => {
       const todos = ORG.revisaTodo(u) || u.rol === "admin", av = new Set(j.avisos || []);
       return res.status(200).json({horas: j.horas, dias: j.dias, todos, gente: todos ? j.gente.map(g => ({...g, avisos: av.has(g.id)})) : j.gente.filter(g => g.id === u.id).map(g => ({...g, avisos: av.has(g.id)})),
         reportes: j.reportes.filter(r => todos || r["Quién"] === u.nombre), avisoMio: av.has(u.id)});
+    }
+    if (q.accion === "vehiculos") {
+      const v = await vehiculosVista(u); if (!v) return res.status(403).json({error: "Sin acceso."});
+      return res.status(200).json(v);
     }
     if (q.accion === "movimientos") {
       if (!puede(u, "salud") && !(puede(u, "caballos") && p.dinero === "todo")) return res.status(403).json({error: "Sin acceso."});
