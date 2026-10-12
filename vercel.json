@@ -95,36 +95,102 @@
       "permanent": true
     },
     {
-      "source": "/rancho/:path*",
+      "source": "/rancho",
       "has": [
         {
           "type": "host",
           "value": "rancho-el-descanso.vercel.app"
         }
       ],
-      "destination": "https://www.ranchoeldescanso.com/rancho/:path*",
+      "destination": "https://www.ranchoeldescanso.com/rancho/",
       "permanent": true
     },
     {
-      "source": "/exfr/:path*",
+      "source": "/rancho/",
       "has": [
         {
           "type": "host",
           "value": "rancho-el-descanso.vercel.app"
         }
       ],
-      "destination": "https://www.ranchoeldescanso.com/exfr/:path*",
+      "destination": "https://www.ranchoeldescanso.com/rancho/",
       "permanent": true
     },
     {
-      "source": "/reagendar/:path*",
+      "source": "/rancho/index.html",
       "has": [
         {
           "type": "host",
           "value": "rancho-el-descanso.vercel.app"
         }
       ],
-      "destination": "https://www.ranchoeldescanso.com/reagendar/:path*",
+      "destination": "https://www.ranchoeldescanso.com/rancho/",
+      "permanent": true
+    },
+    {
+      "source": "/exfr",
+      "has": [
+        {
+          "type": "host",
+          "value": "rancho-el-descanso.vercel.app"
+        }
+      ],
+      "destination": "https://www.ranchoeldescanso.com/exfr/",
+      "permanent": true
+    },
+    {
+      "source": "/exfr/",
+      "has": [
+        {
+          "type": "host",
+          "value": "rancho-el-descanso.vercel.app"
+        }
+      ],
+      "destination": "https://www.ranchoeldescanso.com/exfr/",
+      "permanent": true
+    },
+    {
+      "source": "/exfr/index.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "rancho-el-descanso.vercel.app"
+        }
+      ],
+      "destination": "https://www.ranchoeldescanso.com/exfr/",
+      "permanent": true
+    },
+    {
+      "source": "/reagendar",
+      "has": [
+        {
+          "type": "host",
+          "value": "rancho-el-descanso.vercel.app"
+        }
+      ],
+      "destination": "https://www.ranchoeldescanso.com/reagendar/",
+      "permanent": true
+    },
+    {
+      "source": "/reagendar/",
+      "has": [
+        {
+          "type": "host",
+          "value": "rancho-el-descanso.vercel.app"
+        }
+      ],
+      "destination": "https://www.ranchoeldescanso.com/reagendar/",
+      "permanent": true
+    },
+    {
+      "source": "/reagendar/index.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "rancho-el-descanso.vercel.app"
+        }
+      ],
+      "destination": "https://www.ranchoeldescanso.com/reagendar/",
       "permanent": true
     }
   ]
