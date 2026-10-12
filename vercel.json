@@ -70,5 +70,62 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "rancho-el-descanso.vercel.app"
+        }
+      ],
+      "destination": "https://www.ranchoeldescanso.com/",
+      "permanent": true
+    },
+    {
+      "source": "/index.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "rancho-el-descanso.vercel.app"
+        }
+      ],
+      "destination": "https://www.ranchoeldescanso.com/",
+      "permanent": true
+    },
+    {
+      "source": "/rancho/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "rancho-el-descanso.vercel.app"
+        }
+      ],
+      "destination": "https://www.ranchoeldescanso.com/rancho/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/exfr/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "rancho-el-descanso.vercel.app"
+        }
+      ],
+      "destination": "https://www.ranchoeldescanso.com/exfr/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/reagendar/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "rancho-el-descanso.vercel.app"
+        }
+      ],
+      "destination": "https://www.ranchoeldescanso.com/reagendar/:path*",
+      "permanent": true
+    }
   ]
 }

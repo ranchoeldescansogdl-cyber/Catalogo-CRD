@@ -23,6 +23,8 @@ self.addEventListener("fetch", e => {
   if (req.mode === "navigate") {
     e.respondWith(
       fetch(req).then(res => {
+        // la dirección técnica (vercel.app) ahora redirige a ranchoeldescanso.com: se deja pasar, sin guardarla
+        if (res.type === "opaqueredirect" || res.redirected || !res.ok) return res;
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put("/", copy));
         return res;
