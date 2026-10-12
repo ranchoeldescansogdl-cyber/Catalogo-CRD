@@ -29,6 +29,31 @@ async function tamano(url) {
   return n;
 }
 
+/* Un pedazo cortado por bytes empieza y termina a la mitad de un cuadro de MP3.
+   Chrome lo tolera, pero Safari (iPhone) no lo decodifica ("EncodingError: Decoding failed").
+   Por eso se recorta para que empiece en un cuadro completo y termine en el último cuadro entero. */
+const BR1 = [0,32,40,48,56,64,80,96,112,128,160,192,224,256,320], BR2 = [0,8,16,24,32,40,48,56,64,80,96,112,128,144,160];
+const SR = { 3: [44100,48000,32000], 2: [22050,24000,16000], 0: [11025,12000,8000] };
+function cuadro(buf, i) {                       // largo del cuadro MP3 (Layer III) que empieza en i, o 0
+  if (i + 4 > buf.length || buf[i] !== 0xFF || (buf[i + 1] & 0xE0) !== 0xE0) return 0;
+  const ver = (buf[i + 1] >> 3) & 3, capa = (buf[i + 1] >> 1) & 3, bi = buf[i + 2] >> 4, si = (buf[i + 2] >> 2) & 3, pad = (buf[i + 2] >> 1) & 1;
+  if (ver === 1 || capa !== 1 || bi === 0 || bi === 15 || si === 3) return 0;
+  const kbps = (ver === 3 ? BR1 : BR2)[bi], hz = SR[ver][si];
+  return Math.floor((ver === 3 ? 144000 : 72000) * kbps / hz) + pad;
+}
+function alinear(buf) {
+  let ini = -1;
+  for (let i = 0; i < buf.length - 4 && ini < 0; i++) {
+    let j = i, n = 0, l;
+    while (n < 4 && (l = cuadro(buf, j))) { j += l; n++; }   // 4 cuadros seguidos = inicio seguro
+    if (n === 4) ini = i;
+  }
+  if (ini < 0) return buf;
+  let fin = ini, l;
+  while ((l = cuadro(buf, fin)) && fin + l <= buf.length) fin += l;
+  return buf.subarray(ini, fin);
+}
+
 module.exports = async (req, res) => {
   const q = req.query || {};
   const s = SONIDOS[String(q.s || "")];
@@ -57,7 +82,8 @@ module.exports = async (req, res) => {
 
     const up = await fetch(s.url, total ? { headers: { Range: `bytes=${a}-${b}` } } : {});
     if (!up.ok) return res.status(502).json({ error: "no se pudo traer el sonido" });
-    const buf = Buffer.from(await up.arrayBuffer());
+    let buf = Buffer.from(await up.arrayBuffer());
+    if (q.desde != null && total) buf = alinear(buf);   // pedazo: empieza y termina en cuadros completos
 
     // los pedazos tienen URL propia y se guardan en la CDN; los rangos solo en el navegador
     res.setHeader("Cache-Control", parcial ? "public, max-age=604800" : "public, max-age=604800, s-maxage=31536000, immutable");

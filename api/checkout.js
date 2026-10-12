@@ -376,7 +376,7 @@ module.exports = async (req, res) => {
     c.meta = {...c.meta, ...(await atendioDe(body.atendio)), ip: ipHash(ip)};
     const host = String(req.headers["x-forwarded-host"] || req.headers.host || "");
     const origin = process.env.SITE_URL ? process.env.SITE_URL.replace(/\/$/, "")
-      : /^[a-z0-9-]+\.vercel\.app$/i.test(host) ? `https://${host}` : "https://rancho-el-descanso.vercel.app";
+      : /^[a-z0-9-]+\.vercel\.app$/i.test(host) ? `https://${host}` : "https://www.ranchoeldescanso.com"; // quien paga desde la página oficial regresa a ella
     const {url, id} = await crearSesion(c, origin);
     if (c.agenda && AG.AGENDA_URL) {
       // Aparta el horario en la Agenda mientras paga; si alguien lo ganó en ese instante, cancela la liga

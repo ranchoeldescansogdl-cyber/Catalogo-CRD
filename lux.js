@@ -153,12 +153,12 @@ const Amb = (function(){
     later(horseLoop,(x-now)*1000+R(22000,42000));
   }
   /* ---- grabaciones reales: relinchos, cascos al paso, trote, galope, caballeriza ---- */
-  const API = raiz+"api/sonido?s=", bufs={};
+  const API = raiz+"api/sonido?v=2&s=", bufs={};
   function sample(key,desde,largo){
     const k=key+(desde!=null?"@"+desde:"");
     if(!bufs[k]) bufs[k]=fetch(API+key+(desde!=null?`&desde=${desde}&largo=${largo}`:""))
       .then(r=>{ if(!r.ok) throw new Error("sonido"); return r.arrayBuffer(); })
-      .then(b=>new Promise((ok,ko)=>ctx.decodeAudioData(b,ok,ko)))
+      .then(b=>new Promise((ok,ko)=>{ const p=ctx.decodeAudioData(b,ok,ko); if(p&&p.catch) p.catch(()=>{}); }))  // Safari también rechaza la promesa: se atiende aquí
       .then(buf=>{ let pk=0; for(let c=0;c<buf.numberOfChannels;c++){ const a=buf.getChannelData(c); for(let i=0;i<a.length;i+=7){ const v=Math.abs(a[i]); if(v>pk) pk=v; } } buf._pk=pk||1; return buf; })
       .catch(e=>{ delete bufs[k]; throw e; });
     return bufs[k];
@@ -384,7 +384,7 @@ function galeria(){
   const tr=lb.querySelector(".lux-lb-track"), num=lb.querySelector(".lux-lb-n"), cap=lb.querySelector(".lux-lb-c"), dots=lb.querySelector(".lux-lb-dots");
   let items=[], cur=0, foco=null;
   const two=n=>String(n).padStart(2,"0");
-  function show(i){ cur=Math.max(0,Math.min(items.length-1,i)); num.textContent=`${two(cur+1)} / ${two(items.length)}`; cap.textContent=items[cur].cap||"";
+  function show(i){ if(!items.length) return; cur=Math.max(0,Math.min(items.length-1,i)); num.textContent=`${two(cur+1)} / ${two(items.length)}`; cap.textContent=items[cur].cap||"";
     [...tr.children].forEach((s,k)=>s.classList.toggle("cur",k===cur)); [...dots.children].forEach((x,k)=>x.classList.toggle("on",k===cur)); }
   function go(i){ tr.scrollTo({left:tr.clientWidth*Math.max(0,Math.min(items.length-1,i)),behavior:reduce?"auto":"smooth"}); }
   function open(list,i){

@@ -16,7 +16,7 @@ const crypto = require("crypto");
 
 const API = "https://api.stripe.com/v1/";
 const VERSION = "2026-08-26.dahlia";
-const SITIO = () => (process.env.SITE_URL || "https://rancho-el-descanso.vercel.app").replace(/\/$/, "");
+const SITIO = () => (process.env.SITE_URL || "https://www.ranchoeldescanso.com").replace(/\/$/, "");
 const money = n => "$" + Math.round(n).toLocaleString("es-MX");
 const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 

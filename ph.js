@@ -14,7 +14,15 @@
     person_profiles: 'identified_only',
     session_recording: { maskAllInputs: true } // las grabaciones no muestran lo que la gente escribe
   });
-  posthog.register({ sitio: SITIO, empresa: 'Rancho El Descanso' });
+  /* Equipo: quien abre el portal /equipo, o entra una vez con ?interno=1, queda marcado como "interno"
+     y PostHog lo filtra para que no infle visitas ni conversiones (?interno=0 lo quita). */
+  var interno = false;
+  try {
+    if (/[?&]interno=1\b/.test(location.search)) localStorage.setItem('crd_interno', '1');
+    if (/[?&]interno=0\b/.test(location.search)) localStorage.removeItem('crd_interno');
+    interno = localStorage.getItem('crd_interno') === '1';
+  } catch (e) {}
+  posthog.register({ sitio: SITIO, empresa: 'Rancho El Descanso', interno: interno });
 
   /* Nombres en español para los eventos de venta que ya marca la página (los mismos del pixel de Meta) */
   var NOMBRES = {

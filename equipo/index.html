@@ -349,6 +349,7 @@ body.como main .acts,body.como main .big-actions,body.como .hoy-acts,body.como .
 
 <script>
 "use strict";
+try { localStorage.setItem("crd_interno", "1"); } catch (e) {} // este celular es del equipo: PostHog no lo cuenta como cliente
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money = n => "$" + Math.round(Number(n) || 0).toLocaleString("es-MX");
