@@ -46,7 +46,8 @@
 .rcv-h{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--rule)}.rcv-h .t{flex:1;min-width:0}.rcv-h .t b{display:block}.rcv-h .t span{font-size:.85rem;color:var(--muted)}
 .rcv-hora{font-family:var(--display);font-size:1.25rem;min-width:52px}
 .rcv-media{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px 12px 0}.rcv-media>*{flex:0 0 auto;scroll-snap-align:start}
-.rcv-media img{height:190px;width:auto;max-width:280px;object-fit:cover;border-radius:10px;display:block;background:var(--info-bg)}
+.rcv-media img,.rcv-media video{height:190px;width:auto;max-width:280px;object-fit:cover;border-radius:10px;display:block;background:var(--info-bg)}.rcv-media video{object-fit:contain;background:#000}
+.r-vps{display:flex;gap:6px;overflow-x:auto;margin:10px 0 0}.r-vps>*{flex:0 0 auto}.r-vps video.r-vp{max-width:240px;max-height:320px;background:#000;margin:0}.r-vps .r-vp{margin:0;max-height:320px}
 .rcv-media button{padding:0;border:0;background:none;cursor:zoom-in;position:relative}.rcv-media .r-play{position:absolute;left:6px;bottom:6px}
 .rcv-txt{white-space:pre-wrap;padding:10px 12px 0;margin:0;font-size:.95rem}.rcv-txt .h{color:var(--gold-deep)}
 .rcv-meta{padding:6px 12px 0;font-size:.82rem;color:var(--muted)}
@@ -56,7 +57,7 @@
 .rcv-frm .nota{font-size:.82rem;color:var(--muted);margin:6px 0}.rcv-frm .fila{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .rcv details{padding:0 12px 8px}.rcv details summary{cursor:pointer;font-size:.85rem;color:var(--gold-deep)}.rcv details pre{white-space:pre-wrap;font:inherit;font-size:.85rem;margin:6px 0 0}
 .rcp-vacio{text-align:center;color:var(--muted);padding:30px 10px}
-@media (max-width:700px){#rcp{max-width:100%;height:92dvh;max-height:92dvh;margin:auto 0 0;border-radius:16px 16px 0 0}.rcv-media img{height:160px}}
+@media (max-width:700px){#rcp{max-width:100%;height:92dvh;max-height:92dvh;margin:auto 0 0;border-radius:16px 16px 0 0}.rcv-media img,.rcv-media video{height:160px}}
 /* Portal del equipo (1 oct 2026). Datos: /api/equipo (cada rol recibe solo lo suyo). */
 :root{
   --black:#000; --ink:#0A0A0A; --paper:#fff; --mist:#F4F3F0; --muted:#5E5B55; --rule:rgba(0,0,0,.12);
@@ -2078,6 +2079,11 @@ function hoyRedes() {
     ${rPuedeAprobar() && n ? `<button class="r-big r-alt" type="button" onclick="st.rTab='aprobar';ir('redes')"><span class="ico">✅</span><b>${n} por aprobar</b><span>Publicaciones listas para revisar</span></button>` : ""}</div>`;
 }
 function rRedesTxt(s) { return String(s || "").split(/[,\s]+/).filter(Boolean).map(r => R_RED[r.toLowerCase()] || r).join(" · "); }
+/* vista previa de Metricool: una o varias ligas (fotos y videos), separadas por espacio o coma (12 oct 2026) */
+function rVpMet(p) { return String(p["Vista previa"] || "").split(/[\s,]+/).filter(u => /^https:\/\/static\.metricool\.com\//.test(u)); }
+const rEsVid = u => /\.(mp4|mov|m4v|webm)(\?|$)/i.test(u);
+function rVpHTML(u, cls) { const c = cls ? ` class="${cls}"` : "";
+  return rEsVid(u) ? `<video${c} src="${esc(u)}" controls playsinline preload="metadata"></video>` : `<a href="${esc(u)}" target="_blank" rel="noopener"><img${c} src="${esc(u)}" alt="Vista previa" loading="lazy" onerror="this.closest('a').remove()"></a>`; }
 function rCardPub(p, modo) {
   const media = rMediaDe(p), vp = String(p["Vista previa"] || "");
   const vpDrive = (vp.match(/\/d\/([A-Za-z0-9_-]{20,})/) || vp.match(/[?&]id=([A-Za-z0-9_-]{20,})/) || [])[1];
@@ -2087,12 +2093,12 @@ function rCardPub(p, modo) {
   else if (rPuedeAprobar() && ["Aprobado", "Agendado", "Pedido", "Pedir cambios"].includes(p["Estatus"])) acts.push(`<button class="btn" type="button" data-rdescartar="${esc(p.ID)}">Descartar</button>`);
   if (p["Liga publicada"]) acts.push(`<a class="btn" href="${esc(p["Liga publicada"])}" target="_blank" rel="noopener">Ver publicación</a>`);
   if (!editable && rPuedeAprobar() && ["Aprobado", "Agendado"].includes(p["Estatus"]) && String(p["Fecha y hora"]).slice(0, 10) >= hoyISO()) acts.push(`<button class="btn" type="button" data-rcambios="${esc(p.ID)}">Pedir cambio</button>`);
-  const vpImg = vp && !vpDrive && /^https:\/\/static\.metricool\.com\//.test(vp);
+  const met = rVpMet(p), vpImg = met.length > 0;
   if (vp && !vpDrive && !vpImg && /^https:\/\//.test(vp)) acts.push(`<a class="btn" href="${esc(vp)}" target="_blank" rel="noopener">Ver vista previa</a>`);
   return `<article class="card r-card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(p["Categoría"] || "Publicación")}${p["Caballo / evento"] ? " · " + esc(p["Caballo / evento"]) : ""}</p>
       <p class="card-m">${p["Fecha y hora"] ? esc(rFecha(p["Fecha y hora"])) : "Fecha por definir"}${p["Formato"] ? " · " + esc(p["Formato"]) : ""}${p["Redes"] ? " · " + esc(rRedesTxt(p["Redes"])) : ""}</p></div>
       <span class="badge ${R_BADGE[p["Estatus"]] || "b-info"}">${esc(R_TXT[p["Estatus"]] || p["Estatus"])}</span></div>
-    ${vpImg ? `<a href="${esc(vp)}" target="_blank" rel="noopener"><img class="r-vp" src="${esc(vp)}" alt="Vista previa" loading="lazy" onerror="this.closest('a').remove()"></a>` : ""}
+    ${vpImg ? `<div class="r-vps">${met.slice(0, 10).map(u => rVpHTML(u, "r-vp")).join("")}</div>` : ""}
     ${media.length || vpDrive ? `<div class="r-media">${vpDrive ? rTile({"ID Drive": vpDrive, Tipo: /video|reel/i.test(p["Formato"] || "") ? "Video" : "Foto"}) : ""}${media.slice(0, 10).map(m => rTile({...m, Estatus: ""})).join("")}</div>` : ""}
     ${editable ? `<div class="frm" style="margin-top:12px"><label>Texto de la publicación (puedes corregirlo antes de aprobar)</label><textarea rows="6" id="rt-${esc(p.ID)}" maxlength="2200">${esc(p["Texto"])}</textarea>
       <label>Hashtags</label><input id="rh-${esc(p.ID)}" maxlength="600" value="${esc(p["Hashtags"])}"></div>`
@@ -2834,7 +2840,7 @@ async function fichaCaballo(id) {
 function rThumbPub(p) {
   const vp = String(p["Vista previa"] || ""), d = (vp.match(/\/d\/([A-Za-z0-9_-]{20,})/) || vp.match(/[?&]id=([A-Za-z0-9_-]{20,})/) || [])[1];
   if (d) return rThumb(d);
-  if (/^https:\/\/static\.metricool\.com\//.test(vp)) return vp;
+  const met = rVpMet(p), img = met.find(u => !rEsVid(u)); if (img) return img; if (met.length) return "";
   const m = rMediaDe(p)[0]; return m ? rThumb(m["ID Drive"]) : "";
 }
 const rFechaDe = p => String(p["Fecha y hora"] || "");
@@ -2884,7 +2890,7 @@ function rVistaPub(p) {
   const id = esc(p.ID), es = p["Estatus"], ap = REDES.aprueba, futuro = rFechaDe(p).slice(0, 10) >= hoyISO();
   const vp = String(p["Vista previa"] || ""), vpDrive = (vp.match(/\/d\/([A-Za-z0-9_-]{20,})/) || vp.match(/[?&]id=([A-Za-z0-9_-]{20,})/) || [])[1];
   const media = rMediaDe(p), fotos = [];
-  if (/^https:\/\/static\.metricool\.com\//.test(vp)) fotos.push(`<a href="${esc(vp)}" target="_blank" rel="noopener"><img src="${esc(vp)}" alt="Vista previa" loading="lazy" onerror="this.closest('a').remove()"></a>`);
+  rVpMet(p).slice(0, 10).forEach(u => fotos.push(rVpHTML(u)));
   if (vpDrive) fotos.push(`<button type="button" data-rver="${esc(vpDrive)}" data-rvid="${/video|reel/i.test(p["Formato"] || "") ? 1 : ""}"><img src="${rThumb(vpDrive)}" alt="" loading="lazy" onerror="this.remove()"></button>`);
   media.slice(0, 10).forEach(m => { if (m["ID Drive"] === vpDrive) return; const v = m.Tipo === "Video";
     fotos.push(`<button type="button" data-rver="${esc(m["ID Drive"])}" data-rvid="${v ? 1 : ""}"><img src="${rThumb(m["ID Drive"])}" alt="" loading="lazy" onerror="this.remove()">${v ? `<span class="r-play">▶ Video</span>` : ""}</button>`); });
