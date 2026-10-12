@@ -879,19 +879,26 @@ function vCaja() {
   const gMes = M.filter(x => x["Tipo"] === "Gasto" && x["Estatus"] !== "Cancelado" && String(x["Fecha"]).slice(0, 7) === mes);
   const gastoMes = gMes.filter(ccEfectivo).reduce((a, x) => a + numv(x["Monto"]), 0), tarjetaMes = gMes.filter(x => x["Forma de pago"] === CC_FORMAS[1]).reduce((a, x) => a + numv(x["Monto"]), 0);
   const otrosMes = gMes.filter(x => !ccEfectivo(x) && x["Forma de pago"] !== CC_FORMAS[1]).reduce((a, x) => a + numv(x["Monto"]), 0);
+  const vMes = M.filter(x => x["Tipo"] === "Efectivo de cliente" && x["Estatus"] !== "Cancelado" && String(x["Fecha"]).slice(0, 7) === mes); // 12 oct 2026: Olga quiere ver lo que vende (pasojo, retro…)
+  const ventasMes = vMes.reduce((a, x) => a + numv(x["Monto"]), 0), porCat = {};
+  vMes.forEach(x => { const k = x["Categoría"] || "Otro"; porCat[k] = porCat[k] || {n: 0, m: 0}; porCat[k].n++; porCat[k].m += numv(x["Monto"]); });
+  const resVentas = vMes.length ? `<h3>Ventas y cobros del mes</h3><div class="tbl-wrap"><table><thead><tr><th>Concepto</th><th class="num">Veces</th><th class="num">Total</th></tr></thead><tbody>
+    ${Object.entries(porCat).sort((a, b) => b[1].m - a[1].m).map(([k, o]) => `<tr><td>${esc(k)}</td><td class="num">${o.n}</td><td class="num">${money(o.m)}</td></tr>`).join("")}
+    <tr><td><b>Total</b></td><td class="num"><b>${vMes.length}</b></td><td class="num"><b>${money(ventasMes)}</b></td></tr></tbody></table></div>` : "";
   const pend = M.filter(x => CC_PEND.includes(x["Estatus"])), f = st.ccFiltro || "todo";
   const filtra = x => f === "todo" ? true : f === "efectivo" ? x["Tipo"] === "Gasto" && ccEfectivo(x) : f === "tarjeta" ? x["Tipo"] === "Gasto" && x["Forma de pago"] === CC_FORMAS[1] : f === "otra" ? x["Tipo"] === "Gasto" && !ccEfectivo(x) && x["Forma de pago"] !== CC_FORMAS[1] : x["Tipo"] === f;
   const L = M.filter(filtra).filter(x => !CC_PEND.includes(x["Estatus"]));
   const btns = [];
-  if (pp === "lleva" || pp === "dir") btns.push(`<button class="btn btn-dark" data-caja-nuevo="Gasto">🧾 Registrar gasto</button>`, `<button class="btn btn-dark" data-caja-nuevo="Efectivo de cliente">💵 Recibí efectivo</button>`);
+  if (pp === "lleva" || pp === "dir") btns.push(`<button class="btn btn-dark" data-caja-nuevo="Gasto">🧾 Registrar gasto</button>`, `<button class="btn btn-dark" data-caja-nuevo="Efectivo de cliente">💵 Vendí o cobré algo</button>`);
   if (pp === "oficina" || pp === "dir") btns.push(`<button class="btn btn-dark" data-caja-nuevo="Reposición">🔄 Registrar reposición</button>`, `<button class="btn" data-caja-nuevo="Conteo">🧮 Conteo de caja</button>`);
-  const chips = [["todo", "Todo"], ["efectivo", "💵 Gastos en efectivo"], ["tarjeta", "💳 Gastos con tarjeta"], ["otra", "Transferencia u otro"], ["Efectivo de cliente", "Efectivo de clientes"], ["Reposición", "Reposiciones"]].map(([k, n]) => `<button class="chip" data-ccf="${esc(k)}" aria-pressed="${f === k}">${n}</button>`).join("");
-  return `<h2>Caja chica</h2><p class="sub">${pp === "lleva" ? "Anota aquí cada gasto con la foto del ticket y di cómo lo pagaste: con el efectivo de la caja o con la tarjeta de débito del rancho. También el efectivo que te den los clientes. Judith lo pasa a contabilidad." : "La lleva Olga en el rancho. Cada gasto dice si se pagó con el efectivo de la caja o con la tarjeta de débito empresarial (solo el efectivo baja la caja). Se pasa a GASTOS con \"Capturar\"; el efectivo de clientes entra a la caja o se le entrega a Mario."}</p>
+  const chips = [["todo", "Todo"], ["efectivo", "💵 Gastos en efectivo"], ["tarjeta", "💳 Gastos con tarjeta"], ["otra", "Transferencia u otro"], ["Efectivo de cliente", "💵 Ventas y cobros"], ["Reposición", "Reposiciones"]].map(([k, n]) => `<button class="chip" data-ccf="${esc(k)}" aria-pressed="${f === k}">${n}</button>`).join("");
+  return `<h2>Caja chica</h2><p class="sub">${pp === "lleva" ? "Anota aquí cada gasto con la foto del ticket y di cómo lo pagaste: con el efectivo de la caja o con la tarjeta de débito del rancho. También lo que vendas o cobres (pasojo, renta de la retro, fletes…) con \"Vendí o cobré algo\". Judith lo pasa a contabilidad." : "La lleva Olga en el rancho. Cada gasto dice si se pagó con el efectivo de la caja o con la tarjeta de débito empresarial (solo el efectivo baja la caja). Se pasa a GASTOS con \"Capturar\"; el efectivo de clientes entra a la caja o se le entrega a Mario."}</p>
     <div class="grid-kpi">${ccKpiSaldo(bajo)}
-      <div class="kpi"><span>💵 Gastado en efectivo (mes)</span><b>${money(gastoMes)}</b></div><div class="kpi"><span>💳 Pagado con tarjeta (mes)</span><b>${money(tarjetaMes)}</b></div>
+      <div class="kpi"><span>💵 Ventas y cobros (mes)</span><b>${money(ventasMes)}</b></div><div class="kpi"><span>🧾 Gastado en efectivo (mes)</span><b>${money(gastoMes)}</b></div><div class="kpi"><span>💳 Pagado con tarjeta (mes)</span><b>${money(tarjetaMes)}</b></div>
       ${otrosMes ? `<div class="kpi"><span>Transferencia u otro (mes)</span><b>${money(otrosMes)}</b></div>` : ""}<div class="kpi"><span>Por entregar a Mario</span><b>${money(C.porEntregar)}</b></div></div>
     ${ccSinConteo() ? ccTxtConteo(pp) : bajo ? `<p class="aviso">${pp === "lleva" ? "Queda poco en la caja. Avísale a Judith para que te reponga." : `Queda poco en la caja: ${money(C.saldo)}.`}</p>` : ""}
     ${btns.length ? `<div class="big-actions">${btns.join("")}</div>` : ""}
+    ${resVentas}
     <h3>Pendientes (${pend.length})</h3>${pend.length ? pend.map(cardCaja).join("") : `<div class="empty">Nada pendiente. 👍</div>`}
     <h3>Movimientos</h3><div class="bar">${chips}</div>${L.length ? L.slice(0, 150).map(cardCaja).join("") : `<div class="empty">Sin movimientos todavía.</div>`}`;
 }
@@ -913,9 +920,9 @@ document.addEventListener("click", async e => {
         ${campoFotos("Foto del ticket (obligatoria)")}
         <label>Nota (opcional)</label><input id="cc-n" maxlength="300">`
       : tipo === "Efectivo de cliente" ? `<label>¿Cuánto te dieron?</label><input id="cc-m" type="number" inputmode="decimal" min="1" step="0.01" placeholder="$">
-        <label>¿Quién te lo dio?</label><input id="cc-cl" maxlength="80" placeholder="Nombre del cliente">
-        <label>¿De qué es?</label><select id="cc-cat">${opt(CATS_INGRESO, "Sesión o evento")}</select>
-        <label>Detalle</label><input id="cc-c" maxlength="120" placeholder="Ej. Resto de la sesión del sábado · renta de retro 4 h">
+        <label>¿Qué vendiste o cobraste?</label><select id="cc-cat">${opt(CATS_INGRESO, ccPapel() === "lleva" ? "Venta de pasojo (estiércol)" : "Sesión o evento")}</select>
+        <label>Detalle</label><input id="cc-c" maxlength="120" placeholder="Ej. Un viaje de pasojo · renta de retro 4 h">
+        <label>¿Quién te pagó? (opcional)</label><input id="cc-cl" maxlength="80" placeholder="Nombre">
         <label>¿Qué haces con el dinero?</label><div class="rads"><label class="rad"><input type="radio" name="cc-d" value="caja" checked> <span><b>Lo meto a la caja chica</b><small>Suma a lo que tienes en caja.</small></span></label>
           <label class="rad"><input type="radio" name="cc-d" value="mario"> <span><b>Lo guardo para entregárselo a Mario</b><small>Mario confirma en el portal cuando se lo des.</small></span></label></div>
         ${campoFotos("Foto del recibo (opcional)")}
@@ -927,7 +934,7 @@ document.addEventListener("click", async e => {
         <label>¿Cuánto le das a Olga?</label><input id="cc-m" type="number" inputmode="decimal" min="1" step="0.01">
         <label>Nota (opcional)</label><input id="cc-n" maxlength="300" placeholder="Ej. En efectivo, el lunes">
         <p class="card-m">Olga confirma en el portal cuando le llegue; hasta entonces no suma a la caja.</p>`;
-    const box = dialogo({"Gasto": "Registrar un gasto", "Efectivo de cliente": "Recibí efectivo", "Reposición": "Reposición de caja chica", "Conteo": "Conteo de caja chica"}[tipo], `<div class="frm">${cuerpo}<button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+    const box = dialogo({"Gasto": "Registrar un gasto", "Efectivo de cliente": "Venta o cobro en efectivo", "Reposición": "Reposición de caja chica", "Conteo": "Conteo de caja chica"}[tipo], `<div class="frm">${cuerpo}<button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
     activarFotos(box);
     const selCat = box.querySelector("#cc-cat"), vbox = box.querySelector("#cc-veh");
     if (tipo === "Gasto" && selCat && vbox) selCat.addEventListener("change", async () => { vbox.hidden = selCat.value !== "Servicios de vehículos"; if (!vbox.hidden && !vbox.innerHTML) vbox.innerHTML = await vehCamposCaja(); });
