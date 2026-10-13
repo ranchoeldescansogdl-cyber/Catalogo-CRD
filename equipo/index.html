@@ -199,6 +199,7 @@ details.prov summary::-webkit-details-marker{display:none}
 .vid-aviso{display:flex;align-items:center;gap:14px;width:100%;margin:12px 0 4px;padding:14px 16px;border:1px solid var(--gold,#B8964A);border-radius:16px;background:#1F3A2B;color:#F6F2E8;text-align:left;cursor:pointer;font:inherit}
 .vid-aviso .ico{font-size:1.8rem}.vid-aviso b{display:block}.vid-aviso small{display:block;opacity:.85;margin-top:2px}
 .btn-como{margin:0 0 10px}
+.aviso-cel{margin:12px 0 4px;padding:14px 16px;border:1px solid var(--rule);border-radius:16px;background:#fff}.aviso-cel p{margin:0 0 10px}.aviso-cel small{opacity:.8}
 .menu-tile .n{position:absolute;top:10px;right:10px;background:var(--gold);color:#000;border-radius:999px;min-width:26px;height:26px;display:grid;place-items:center;padding:0 7px;font-size:.85rem;font-weight:700}
 .tab .ico{display:none}
 @media (max-width:899px){
@@ -378,6 +379,7 @@ const CATS_INGRESO = ["Sesión o evento", "Caballos", "Renta de retro", "Fletes"
 const CATS_GASTO = ["Alimento", "Veterinario", "Medicamentos", "Herraje", "Mantenimiento", "Servicios de vehículos", "Jardinería", "Sueldos", "Luz y agua", "Gasolina", "Eventos", "Papelería y trámites", "Otro"];
 const TIPO_PAGO = {sesion: "Sesión", evento: "Evento", caballo: "Caballo", potro: "Potro 2027", saldo_sesion: "Resto de sesión"};
 
+let CAPT = null; // capacitación: quién ya vio (solo admin)
 let COMO = "", COMO_NOM = ""; // "Ver como…" (Mario y Nico): solo lectura
 let FUERA = null, EST = null, COMP = null, SERV = null, CAJA = null, CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
 const st = {agendaFiltro: "todo", busca: "", tFiltro: "pendientes", bArea: "todo", sCaballo: "", mes: "", qFiltro: "abiertas", rTab: "inicio"};
@@ -523,6 +525,7 @@ async function render() {
     if (s === "herrajes") await cargar("servicios");
     if (s === "salud") { await cargar("servicios").catch(() => {}); await cargar("movimientos").catch(() => {}); }
     if (s === "turnos") await cargar("turnos");
+    if (s === "capacitacion" && (YO.usuario.rol === "admin" || (YO.org || {}).revisaTodo) && !CAPT) CAPT = await api("accion=capacitacion").catch(() => null);
     if (s === "vehiculos") await cargar("vehiculos");
     if (s === "compras") await cargar("compras");
     if (s === "estados") await cargar("estados");
@@ -534,7 +537,7 @@ async function render() {
       tareas: vTareas, turnos: vTurnos, vehiculos: vVehiculos, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados, capacitacion: vCapacitacion})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
-function recargar() { FUERA = EST = COMP = SERV = CAJA = REDES = CAMBIOS = TURNOS = MOVS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
+function recargar() { FUERA = EST = COMP = SERV = CAJA = REDES = CAMBIOS = TURNOS = MOVS = CAPT = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
 
 /* ---------- menú de cuadros (celular) ---------- */
 function vMenu() {
@@ -562,7 +565,8 @@ const VIDEOS = [
 ];
 function vidMios() { const O = YO.org || {}, todos = YO.usuario.rol === "admin" || O.revisaTodo; return VIDEOS.filter(v => todos || v.para(O)); }
 function vidVistos() { try { return JSON.parse(localStorage.getItem("crd_vistos") || "{}"); } catch (e) { return {}; } }
-function vidMarcar(id) { const v = vidVistos(); v[id] = new Date().toISOString(); try { localStorage.setItem("crd_vistos", JSON.stringify(v)); } catch (e) {} }
+function vidMarcar(id) { const v = vidVistos(); v[id] = new Date().toISOString(); try { localStorage.setItem("crd_vistos", JSON.stringify(v)); } catch (e) {}
+  if (!COMO) post({accion: "hacer", tipo: "video_visto", video: id}).catch(() => {}); CAPT = null; } // queda registrado en la hoja (pestaña CAPACITACIÓN)
 function vidPendientes() { if (!YO) return []; const v = vidVistos(); return vidMios().filter(x => !v[x.id]); }
 function vidTag(id) { return `<video class="vid" src="/equipo/videos/${esc(id)}.mp4" poster="/equipo/videos/${esc(id)}.jpg" controls playsinline preload="none" data-vid="${esc(id)}"></video>`; }
 function botonComo(id) { return vidMios().some(v => v.id === id) ? `<button class="btn btn-como" type="button" data-video="${esc(id)}">▶ ¿Cómo se usa?</button>` : ""; }
@@ -574,7 +578,13 @@ function vCapacitacion() {
   const L = vidMios(), v = vidVistos();
   return `<h2>Capacitación</h2><p class="sub">Videos cortos de cómo se usa el portal. Velos con sonido; si algo no te queda claro, avísale a tu encargado.</p>
     <div class="vid-grid">${L.map(x => `<article class="card vid-card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(x.titulo)}</p><p class="card-m">${esc(x.desc)} · ${esc(x.dur)}</p></div>
-      ${v[x.id] ? `<span class="badge b-ok">Visto</span>` : `<span class="badge b-warn">Pendiente</span>`}</div>${vidTag(x.id)}</article>`).join("") || `<div class="empty">Por ahora no hay videos para tu puesto.</div>`}</div>`;
+      ${v[x.id] ? `<span class="badge b-ok">Visto</span>` : `<span class="badge b-warn">Pendiente</span>`}</div>${vidTag(x.id)}</article>`).join("") || `<div class="empty">Por ahora no hay videos para tu puesto.</div>`}</div>${vidQuienes()}`;
+}
+function vidQuienes() { // admin: quién ya vio sus videos
+  if (!CAPT || !(CAPT.personas || []).length) return "";
+  const nom = id => (VIDEOS.find(v => v.id === id) || {}).titulo || id, ok = CAPT.personas.filter(p => p.videos.every(x => x.visto)).length;
+  return `<h3>Quién ya los vio</h3><p class="sub">${ok} de ${CAPT.personas.length} personas ya vieron todos sus videos.</p><div class="tbl-wrap"><table><thead><tr><th>Persona</th><th>Videos</th></tr></thead><tbody>
+    ${CAPT.personas.map(p => `<tr><td><b>${esc(p.nombre)}</b></td><td>${p.videos.map(x => x.visto ? `<span class="badge b-ok" title="${esc(x.visto)}">✓ ${esc(nom(x.id))}</span>` : `<span class="badge b-warn">${esc(nom(x.id))}</span>`).join(" ")}</td></tr>`).join("")}</tbody></table></div>`;
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-video]"); if (!b) return;
   const x = VIDEOS.find(v => v.id === b.dataset.video); if (!x) return;
@@ -681,6 +691,7 @@ function vHoy() {
   if (O.turno) h += hoyTurnos(); // 10 oct 2026: el reporte de turno va primero
   const acts = hoyAcciones(); if (acts.length) h += `<div class="hoy-acts">${acts.join("")}</div>`;
   h += vidAvisoHoy();
+  if (!O.turno && !avisosLocal() && !COMO && !(TURNOS && TURNOS.avisoMio)) h += `<div class="aviso-cel"><p>🔔 <b>Activa los avisos en este celular</b><br><small>Te avisamos cuando te asignen una tarea, te la reabran o cuando terminen una que pediste.</small></p>${botonAvisos()}</div>`;
 
   /* 1. espera tu decisión (5 oct 2026: Mario dinero y rancho · Nico ventas y sistemas; lo del otro queda plegado, de respaldo) */
   if (TAREAS) {

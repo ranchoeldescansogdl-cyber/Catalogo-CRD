@@ -116,6 +116,8 @@ const cuentasDe = u => ["Rancho El Descanso", ...Object.keys(REDES_CUENTAS).filt
 const cuentaDeFila = x => x["Cuenta"] || "Rancho El Descanso";
 const OFICINA = ["admin", "direccion", "ventas", "contabilidad"];
 Object.values(PERMISOS).forEach(p => p.secciones.push("capacitacion", "reglamento")); // todos pueden releerlo · capacitación: videos de cómo se usa el portal (12 oct 2026)
+/* Videos de capacitación y a quién le tocan (misma regla que VIDEOS en equipo/index.html) */
+const VIDEOS_CAP = [{id: "00-entrar", para: () => true}, {id: "01-turno", para: x => ORG.esTurno(x)}, {id: "02-eliseo", para: x => ORG.claveDe(x) === "eliseo"}];
 const DIAS_CELULAR = 400; // la liga fija del celular dura ~1 año; se invalida al generar otra o con Activo = NO
 /* Respaldo si la pestaña EQUIPO no responde: solo Nico puede entrar */
 const EQUIPO_RESPALDO = [{nombre: "Nicolás Campero", email: "nicolas@legaius.com", id: "nicolas@legaius.com", rol: "admin", vendedor: "nico", liga: 0}];
@@ -870,6 +872,12 @@ module.exports = async (req, res) => {
         const r = await agendaPost("panel_redes", datos);
         return res.status(r.ok ? 200 : 400).json(r);
       }
+      if (body.tipo === "video_visto") { // capacitación: quién ya vio cada video (12 oct 2026)
+        const video = String(body.video || "");
+        if (!VIDEOS_CAP.some(v => v.id === video)) return res.status(400).json({error: "Video no válido."});
+        const r = await agendaPost("panel_capacitacion", {op: "visto", quien: u.nombre, id: u.id, video, dispositivo: String(req.headers["user-agent"] || "").slice(0, 120)});
+        return res.status(r.ok ? 200 : 400).json(r);
+      }
       if (body.tipo === "turno") return await turnoPost(u, body, req, res);
       if (body.tipo === "caballo") return await caballoPost(u, body, res);
       if (body.tipo === "movimiento") return await movimientoPost(u, body, res);
@@ -961,6 +969,14 @@ module.exports = async (req, res) => {
         material: j.material.filter(x => ofi || mio(x)),
         publicaciones: j.publicaciones.filter(x => aprueba || (ofi ? x["Estatus"] !== "Descartado" : (["Agendado", "Publicado"].includes(x["Estatus"]) || mio(x)))),
         plan: ofi ? j.plan : [], metricas: ofi ? j.metricas : [], caballos: j.caballos, instrucciones: aprueba ? (j.instrucciones || []) : []});
+    }
+    if (q.accion === "capacitacion") { // quién ya vio cada video (solo admin y quien revisa todo)
+      if (u.rol !== "admin" && !ORG.revisaTodo(u)) return res.status(200).json({personas: [], mios: []});
+      const [j, eq] = await Promise.all([agendaPost("panel_capacitacion", {op: "lista"}), equipo()]); if (!j.ok) throw new Error(j.error || "capacitacion");
+      const vistos = {}; (j.vistos || []).forEach(r => { vistos[r["ID"] + "|" + r["Video"]] = vistos[r["ID"] + "|" + r["Video"]] || r["Fecha y hora"]; });
+      const personas = eq.filter(x => PERMISOS[x.rol] && x.rol !== "admin").map(x => ({nombre: x.nombre,
+        videos: VIDEOS_CAP.filter(v => v.para(x)).map(v => ({id: v.id, visto: vistos[x.id + "|" + v.id] || ""}))})).filter(x => x.videos.length);
+      return res.status(200).json({personas});
     }
     if (q.accion === "turnos") {
       if (!puede(u, "turnos")) return res.status(403).json({error: "Sin acceso."});
