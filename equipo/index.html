@@ -1868,7 +1868,7 @@ function vEquipo() {
   return `<h2>Equipo</h2><p class="sub">Quién entra al portal. Para dar de alta o de baja a alguien, edita la pestaña EQUIPO de la Maestra. Quien no use correo entra con su "liga de celular".</p>
     <div class="tbl-wrap"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Área</th><th>Entra con</th><th></th></tr></thead><tbody>${EQUIPO.equipo.map(x =>
       `<tr><td>${esc(x.nombre)}</td><td>${esc(x.rol)}</td><td>${esc(x.area)}</td><td>${x.correo ? esc(x.correo) : "Liga de celular"}${x.liga ? ` <small class="card-m">(liga #${x.liga})</small>` : ""}</td>
-       <td><button class="btn" data-celular="${esc(x.id)}" data-nom="${esc(x.nombre)}">Liga de celular</button></td></tr>`).join("")}</tbody></table></div>`;
+       <td><button class="btn" data-celular="${esc(x.id)}" data-nom="${esc(x.nombre)}" data-tel="${esc(x.telefono || "")}">Liga de celular</button></td></tr>`).join("")}</tbody></table></div>`;
 }
 
 /* ----- Reglamento (texto en api/_reglamento.js; aceptaciones en la pestaña REGLAMENTO) ----- */
@@ -2524,7 +2524,7 @@ document.addEventListener("click", async e => {
     try { const j = await post({accion: "hacer", tipo: "liga_celular", id: b.dataset.celular});
       const msg = `Hola ${b.dataset.nom.split(" ")[0]}, esta es tu entrada al portal del Rancho El Descanso. Ábrela en tu celular y después agrégala a tu pantalla de inicio: ${j.url}`;
       dialogo("Liga de celular · " + b.dataset.nom, `<div class="frm"><p>Mándasela solo a ${esc(b.dataset.nom)}. Sirve un año en su celular; si lo pierde, genera otra y esta deja de servir.</p>
-        <input readonly value="${esc(j.url)}" onclick="this.select()"><a class="btn btn-wa" href="${wa(msg)}" target="_blank" rel="noopener">Mandar por WhatsApp</a></div>`);
+        <input readonly value="${esc(j.url)}" onclick="this.select()"><a class="btn btn-wa" href="${b.dataset.tel ? `https://wa.me/${esc(b.dataset.tel)}?text=${encodeURIComponent(msg)}` : wa(msg)}" target="_blank" rel="noopener">Mandar por WhatsApp${b.dataset.tel ? " a su número" : ""}</a></div>`);
       EQUIPO = null; }
     catch (err) { alert(err.message); } b.disabled = false;
   }

@@ -25,9 +25,15 @@ const ORG = [
   {clave: "alan",    busca: ["alan"], puesto: "Encargado de corrales 1, 2, 3 y 4", area: "Corrales 1, 2, 3 y 4", reportaA: "mario", turno: true, quitar: ["herrajes", "agenda", "salud"]},
   {clave: "jesus",   busca: ["jesus"], puesto: "Encargado de sementales", area: "Sementales", reportaA: "mario", turno: true, quitar: ["herrajes", "agenda", "salud"]},
   {clave: "gabriel", busca: ["gabriel"], puesto: "Encargado de caballerizas principales", area: "Caballerizas principales", reportaA: "mario", turno: true, quitar: ["herrajes", "agenda", "salud"]},
+  /* 13 oct 2026: Alonso y Ángel Vera entran a corrales 1–4 con Alan, mismo esquema de reportes de turno */
+  {clave: "alonso",  busca: ["alonso"], puesto: "Caballerango · corrales 1, 2, 3 y 4", area: "Corrales 1, 2, 3 y 4", reportaA: "mario", turno: true, quitar: ["herrajes", "agenda", "salud"]},
+  {clave: "angel",   busca: ["angel"], puesto: "Caballerango · corrales 1, 2, 3 y 4", area: "Corrales 1, 2, 3 y 4", reportaA: "mario", turno: true, quitar: ["herrajes", "agenda", "salud"]},
   /* 11 oct 2026: Eliseo lleva todo el mantenimiento del rancho y de las demás empresas de CEICA. Agenda solo de lo que pasa en el rancho
      (eventos y bloqueos, sin datos del cliente), sin Salud ni Herrajes. vista = ajustes a los permisos de su rol */
   {clave: "eliseo",  busca: ["eliseo"], puesto: "Mantenimiento (rancho y empresas de CEICA)", area: "Mantenimiento", reportaA: "mario", quitar: ["salud", "herrajes"],
+   vista: {agenda: "rancho", contacto: false, ine: false}},
+  /* 13 oct 2026: Chago, mantenimiento y operador de la retro y el volteo. Mismo portal que Eliseo */
+  {clave: "chago",   busca: ["chago"], puesto: "Mantenimiento y operador de retro y volteo", area: "Mantenimiento", reportaA: "mario", quitar: ["salud", "herrajes"],
    vista: {agenda: "rancho", contacto: false, ine: false}},
   {clave: "olga",    busca: ["olgaespinoza419@gmail.com", "olga"], puesto: "Jardinería y caja chica", area: "Jardinería", reportaA: "mario", caja: true, vehiculos: ["RANCHO", "CARPINTERÍA"], quitar: ["salud", "herrajes"]}
 ];

@@ -1108,7 +1108,7 @@ module.exports = async (req, res) => {
     }
     if (q.accion === "equipo_lista") {
       if (!puede(u, "equipo")) return res.status(403).json({error: "Sin acceso."});
-      return res.status(200).json({equipo: (await equipo()).map(x => ({id: x.id, nombre: x.nombre, rol: ROL_TXT[x.rol] || x.rol, area: x.area || "", correo: x.email || "", liga: x.liga || 0}))});
+      return res.status(200).json({equipo: (await equipo()).map(x => ({id: x.id, nombre: x.nombre, rol: x.puesto || ROL_TXT[x.rol] || x.rol, area: x.area || "", correo: x.email || "", liga: x.liga || 0, telefono: x.telefono || ""}))});
     }
     if (q.accion === "foto") {
       if (!["tareas", "bitacora", "salud", "conta", "caja", "herrajes", "compras"].some(s => puede(u, s))) return res.status(403).json({error: "Sin acceso."});
