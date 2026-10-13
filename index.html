@@ -911,7 +911,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
     </div>
   </div>
 </header>
-<nav class="crumbs" data-view="sementales potros eventos sesiones exfr rancho" aria-label="Ruta"><a href="#inicio">← Inicio</a><span aria-hidden="true">/</span><span id="crumb-now"></span></nav>
+<nav class="crumbs" data-view="sementales potros eventos sesiones exfr rancho cuidados" aria-label="Ruta"><a href="#inicio">← Inicio</a><span aria-hidden="true">/</span><span id="crumb-now"></span></nav>
 
 <section class="band welcome" id="bienvenida" data-view="inicio" aria-labelledby="t-bienvenida">
   <p class="eyebrow">Bienvenidos</p>
@@ -1393,8 +1393,8 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
   </div>
 </section>
 
-<!-- BORRADOR: falta revisión del médico (Joaquín). Para publicar: quitar "hidden", agregar cuidados a VISTAS y al menú. -->
-<section class="band cuidados" id="cuidados" data-view="cuidados" aria-labelledby="t-cuidados" hidden>
+<!-- EN PRUEBA: solo se abre con la liga directa ranchoeldescanso.com/#cuidados (no sale en menú ni en "Sigue explorando"). Para publicar: agregarlo al menú, a OCULTAS_EN_MENU quitarlo y a "¿Qué más buscas?". -->
+<section class="band cuidados" id="cuidados" data-view="cuidados" aria-labelledby="t-cuidados">
   <p class="eyebrow">Dietas, cuidados y recomendaciones</p>
   <h2 class="sec-title" id="t-cuidados">Cómo cuidar a tu Friesian o Gypsy Vanner</h2>
   <p class="sec-lede">Lo básico que recomendamos a quienes se llevan un caballo del rancho. Son recomendaciones generales: cada caballo es distinto, así que siempre apóyate en tu veterinario.</p>
@@ -1414,7 +1414,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
   </div>
 </section>
 
-<section class="band contacto" id="contacto" data-view="inicio sementales potros eventos sesiones rancho" aria-labelledby="t-contacto">
+<section class="band contacto" id="contacto" data-view="inicio sementales potros eventos sesiones rancho cuidados" aria-labelledby="t-contacto">
   <div class="ct-box">
     <div>
       <p class="eyebrow">Contáctanos</p>
@@ -1437,7 +1437,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
   </div></div>
 </section>
 
-<nav class="more-views" id="more-views" data-view="sementales potros eventos sesiones exfr rancho" aria-labelledby="t-more"><h2 id="t-more">Sigue explorando</h2><div class="chips" id="more-chips"></div></nav>
+<nav class="more-views" id="more-views" data-view="sementales potros eventos sesiones exfr rancho cuidados" aria-labelledby="t-more"><h2 id="t-more">Sigue explorando</h2><div class="chips" id="more-chips"></div></nav>
 
 <footer>
   <div class="foot-inner">
@@ -2857,7 +2857,8 @@ function initPixel(){
 /* ================== VISTAS POR TEMA ==================
    Inicio = portada + caballos en venta + accesos. Cada tema se abre solo, con su link (#sementales, #potros…).
    Los hash de fichas (#/id, #/semental/x) y legales (#terminos…) no cambian la vista. */
-const VISTAS={inicio:"Inicio",sementales:"Sementales",potros:"Potros 2027",eventos:"Eventos",sesiones:"Sesiones de fotos",exfr:"Experiencia Friesian",rancho:"El rancho"};
+const VISTAS={inicio:"Inicio",sementales:"Sementales",potros:"Potros 2027",eventos:"Eventos",sesiones:"Sesiones de fotos",exfr:"Experiencia Friesian",rancho:"El rancho",cuidados:"Dietas y cuidados"};
+const OCULTAS_EN_MENU=["cuidados"]; /* en prueba: se abren con su liga pero no salen en "Sigue explorando" */
 const VISTA_ALIAS={catalogo:"inicio",temas:"inicio",comunidad:"inicio",cotizador:"eventos",packs:"sesiones"};
 let vistaActual="inicio", posInicio=0;
 function viewHash(){ return vistaActual==="inicio"?"":"#"+vistaActual; }
@@ -2881,7 +2882,7 @@ function mostrarVista(v,ancla){
   document.querySelectorAll(".site-nav a").forEach(a=>{ const t=a.getAttribute("href").slice(1); const on=v!=="inicio"&&t===v; on?a.setAttribute("aria-current","page"):a.removeAttribute("aria-current"); if(on&&a.parentElement.classList.contains("nav-row")) a.parentElement.scrollLeft=a.offsetLeft-24; });
   const cn=$("#crumb-now"); if(cn) cn.textContent=VISTAS[v];
   const mc=$("#more-chips");
-  if(mc) mc.innerHTML=`<a class="home" href="#catalogo">Caballos en venta</a>`+Object.keys(VISTAS).filter(k=>k!=="inicio"&&k!==v).map(k=>`<a href="#${k}">${VISTAS[k]}</a>`).join("");
+  if(mc) mc.innerHTML=`<a class="home" href="#catalogo">Caballos en venta</a>`+Object.keys(VISTAS).filter(k=>k!=="inicio"&&k!==v&&!OCULTAS_EN_MENU.includes(k)).map(k=>`<a href="#${k}">${VISTAS[k]}</a>`).join("");
   document.title=v==="inicio"?"Rancho El Descanso | Caballos Friesian y Gypsy Vanner, eventos y sesiones de fotos":`${VISTAS[v]} | Rancho El Descanso`;
   requestAnimationFrame(()=>{
     const el=ancla&&document.getElementById(ancla);
