@@ -865,6 +865,22 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
 .ct-actions{display:flex;flex-direction:column;gap:12px;align-items:stretch}
 .ct-actions .btn{justify-content:center}
 @media (max-width:860px){.welcome .wl-points,.ap-grid,.ct-box{grid-template-columns:1fr}.wl-logos img{height:70px}}
+
+.rs-box{display:grid;grid-template-columns:auto 1fr;gap:clamp(24px,5vw,72px);align-items:center;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:clamp(28px,4vw,48px) 0}
+.rs-score{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:140px}
+.rs-num{font-family:var(--display);font-size:clamp(3.4rem,7vw,5rem);line-height:1}
+.rs-stars{color:var(--gold-deep);letter-spacing:.18em;font-size:1.2rem}
+.rs-src{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.rs-box .sec-lede{margin-bottom:22px}
+.rs-actions{display:flex;flex-wrap:wrap;gap:12px}
+.cu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:clamp(18px,2.4vw,28px);margin-top:28px}
+.cu-card{border-top:2px solid var(--gold);background:var(--mist);padding:clamp(20px,2.4vw,28px)}
+.cu-card h3{font-family:var(--display);font-weight:400;font-size:1.4rem;margin:0 0 12px}
+.cu-card ul{margin:0;padding-left:1.1em;color:var(--muted)}
+.cu-card li{margin:0 0 8px}
+.cu-cta{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:28px}
+.cu-cta p{margin:0 12px 0 0;font-family:var(--display);font-size:1.3rem}
+@media (max-width:860px){.rs-box{grid-template-columns:1fr;text-align:left}.rs-score{align-items:flex-start}}
 </style>
 <link rel="stylesheet" href="/lux.css">
 <script src="/ph.js"></script>
@@ -899,7 +915,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
   <p class="eyebrow">Bienvenidos</p>
   <h2 class="sec-title" id="t-bienvenida">Calidad que se busca en Holanda</h2>
   <ol class="wl-points">
-    <li><span class="wl-n">01</span><p><strong>Único criadero en México con mesa reservada</strong> en el evento principal de la KFPS en Holanda, el Stallion Show.</p></li>
+    <li><span class="wl-n">01</span><p><strong>Único criadero en México con mesa reservada</strong> en el evento principal de la KFPS en Holanda: el Keuring Stallion Show.</p></li>
     <li><span class="wl-n">02</span><p><strong>Seleccionamos e importamos</strong> únicamente caballos de gran calidad.</p></li>
     <li><span class="wl-n">03</span><p><strong>Nos apasionan la belleza,</strong> la conformación y la nobleza de ambas razas.</p></li>
   </ol>
@@ -1355,6 +1371,42 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
       <p>Te apoyamos con documentación, registros, chips y trámites de tu Gypsy Vanner ante GVHS México.</p>
       <a class="btn btn-line" data-wa-msg="Hola, necesito apoyo con un trámite ante GVHS México (documentación, registro o chip)." href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Pedir apoyo GVHS México</a>
     </article>
+  </div>
+</section>
+
+<section class="band resenas" id="resenas" data-view="inicio eventos sesiones rancho" aria-labelledby="t-resenas">
+  <div class="rs-box">
+    <div class="rs-score" aria-label="Calificación 5.0 de 5 en Google"><span class="rs-num">5.0</span><span class="rs-stars" aria-hidden="true">★★★★★</span><span class="rs-src">en Google</span></div>
+    <div>
+      <p class="eyebrow">Reseñas</p>
+      <h2 class="sec-title" id="t-resenas">¿Ya nos visitaste?</h2>
+      <p class="sec-lede">Cuéntanos cómo te fue en tu evento, tu sesión o tu compra. Tu reseña ayuda a otras familias a conocer el rancho.</p>
+      <div class="rs-actions">
+        <a class="btn btn-dark" data-resena href="https://search.google.com/local/writereview?placeid=ChIJ9W0cAEJQL4QR_mCh8ApiwNA" target="_blank" rel="noopener">Escribir mi reseña</a>
+        <a class="btn btn-line" href="https://search.google.com/local/reviews?placeid=ChIJ9W0cAEJQL4QR_mCh8ApiwNA" target="_blank" rel="noopener">Ver reseñas en Google</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BORRADOR: falta revisión del médico (Joaquín). Para publicar: quitar "hidden", agregar cuidados a VISTAS y al menú. -->
+<section class="band cuidados" id="cuidados" data-view="cuidados" aria-labelledby="t-cuidados" hidden>
+  <p class="eyebrow">Dietas, cuidados y recomendaciones</p>
+  <h2 class="sec-title" id="t-cuidados">Cómo cuidar a tu Friesian o Gypsy Vanner</h2>
+  <p class="sec-lede">Lo básico que recomendamos a quienes se llevan un caballo del rancho. Son recomendaciones generales: cada caballo es distinto, así que siempre apóyate en tu veterinario.</p>
+  <div class="cu-grid">
+    <article class="cu-card"><h3>Alimentación</h3><ul><li>La base es el forraje: heno o pasto de buena calidad, alrededor de 1.5 a 2.5 % de su peso al día. Un caballo de 600 kg come de 9 a 15 kg de heno.</li><li>Agua limpia y fresca siempre. Un caballo adulto toma de 30 a 50 litros al día, y más con calor o trabajo.</li><li>El concentrado solo complementa, según el trabajo, la edad o si es yegua gestante o lactando. Repártelo en 2 o 3 tomas y nunca más de lo que tu veterinario indique.</li><li>Friesian y Gypsy Vanner engordan con facilidad. Cuida los azúcares y almidones, vigila su condición corporal y evita el sobrepeso, que eleva el riesgo de laminitis.</li><li>Sal y minerales a libre acceso.</li><li>Cualquier cambio de alimento, hazlo poco a poco, en 7 a 14 días, para evitar cólicos.</li></ul></article>
+    <article class="cu-card"><h3>Cascos</h3><ul><li>Límpialos a diario y revisa que no haya piedras, mal olor o calor.</li><li>Recorte o herraje cada 6 a 8 semanas con un herrero de confianza.</li><li>Mantén el piso de la caballeriza seco: la humedad constante debilita el casco.</li></ul></article>
+    <article class="cu-card"><h3>Crin, cola y plumas</h3><ul><li>Las plumas del Gypsy Vanner y del Friesian necesitan estar limpias y, sobre todo, secas. La humedad atrapada causa hongos y dermatitis en las cuartillas.</li><li>No las bañes de más: lávalas cuando haga falta, enjuaga bien y sécalas por completo.</li><li>Revisa la piel debajo de las plumas cada semana: costras, comezón o que el caballo patee o se rasque pueden ser ácaros. Consulta a tu veterinario.</li><li>Desenreda crin y cola con los dedos o un cepillo suave y un acondicionador para caballos, para no romper el pelo.</li></ul></article>
+    <article class="cu-card"><h3>Salud preventiva</h3><ul><li>Vacunas según el calendario que te indique tu veterinario, de acuerdo con la zona y la edad del caballo.</li><li>Desparasitación programada; lo ideal es decidirla con un conteo de huevos en heces.</li><li>Revisión dental al menos una vez al año.</li><li>Sombra y ventilación: el Friesian, por su pelaje negro, resiente mucho el calor.</li></ul></article>
+    <article class="cu-card"><h3>Ejercicio y bienestar</h3><ul><li>Movimiento todos los días: paddock, caminata o trabajo, según su edad y condición.</li><li>Son animales de manada: les hace bien ver y convivir con otros caballos.</li><li>Una rutina estable de horarios de comida y ejercicio les da tranquilidad.</li></ul></article>
+    <article class="cu-card"><h3>Cuándo llamar al veterinario</h3><ul><li>Deja de comer o no hace heces.</li><li>Señales de cólico: se echa y se levanta, se mira o patea la panza, suda sin razón.</li><li>Cojea, tiene un casco caliente o se niega a apoyar una pata.</li><li>Fiebre: la temperatura normal de un caballo adulto va de 37.5 a 38.5 °C.</li><li>Ante la duda, mejor llamar a tiempo.</li></ul></article>
+    <article class="cu-card"><h3>Yeguas gestantes y potros</h3><ul><li>La gestación dura alrededor de 11 meses (unos 340 días).</li><li>Las vacunas y la alimentación en la gestación las define tu veterinario; en el último tercio aumentan sus necesidades.</li><li>Al nacer, el potro debe pararse en la primera hora y mamar en las primeras 2 o 3 horas: el calostro es vital.</li><li>Si algo de esto no ocurre, llama al veterinario de inmediato.</li></ul></article>
+    </div>
+  <div class="cu-cta">
+    <p>¿Tienes una duda sobre tu caballo?</p>
+    <a class="btn btn-wa" data-wa-msg="Hola, tengo una duda sobre el cuidado de mi caballo." href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Pregúntanos</a>
+    <a class="btn btn-line" href="https://chat.whatsapp.com/GK2yv1ScgG9ALHMamZUh75" target="_blank" rel="noopener">Comunidad · Preguntas</a>
   </div>
 </section>
 
@@ -2861,6 +2913,7 @@ $("#mares-more")?.addEventListener("click",()=>{ $("#mares").classList.add("all"
 document.querySelectorAll("[data-wa]").forEach(a=>a.href=waLink("Hola, vi el catálogo de Rancho El Descanso y me gustaría más información."));
 document.querySelectorAll("[data-wa-visit]").forEach(a=>a.href=waLink("Hola, me gustaría agendar una visita a Rancho El Descanso para conocer los caballos en venta."));
 document.querySelectorAll("[data-wa-msg]").forEach(a=>{a.href=waLink(a.dataset.waMsg);a.addEventListener("click",()=>track("Contact",{content_name:"whatsapp_apoyo"}));});
+document.querySelectorAll("[data-resena]").forEach(a=>a.addEventListener("click",()=>track("Resena",{content_name:"google"})));
 document.querySelectorAll("[data-call]").forEach(a=>a.addEventListener("click",()=>track("Contact",{content_name:"llamada"})));
 document.querySelectorAll("[data-go-breed]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();state.raza=a.dataset.goBreed;sync();render();goCatalog();}));
 document.querySelectorAll("[data-phone-label]").forEach(a=>a.textContent=CONFIG.WHATSAPP_LABEL);
