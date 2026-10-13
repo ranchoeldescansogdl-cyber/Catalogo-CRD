@@ -846,6 +846,25 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
 .topline .site-nav a:nth-child(2){animation-delay:.08s}.topline .site-nav a:nth-child(3){animation-delay:.16s}.topline .site-nav a:nth-child(4){animation-delay:.24s}.topline .site-nav a:nth-child(5){animation-delay:.32s}.topline .site-nav a:nth-child(6){animation-delay:.40s}.topline .site-nav a:nth-child(7){animation-delay:.48s}
 @keyframes nrIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.nav-row a,.topline .site-nav a{animation:none}}
+
+.welcome .wl-points{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(18px,2.4vw,32px);border-top:1px solid var(--rule)}
+.wl-points li{padding-top:22px}
+.wl-n{font-family:var(--display);color:var(--gold-deep);font-size:1.4rem;letter-spacing:.06em}
+.wl-points p{margin:8px 0 0;color:var(--muted);max-width:34ch}
+.wl-points strong{color:var(--ink);font-weight:500}
+.wl-logos{list-style:none;margin:clamp(32px,4vw,48px) 0 0;padding:22px 0 0;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;align-items:center;gap:clamp(24px,4vw,56px)}
+.wl-logos img{display:block;height:86px;width:auto}
+.wl-logos img.wl-flag{height:44px;box-shadow:0 0 0 1px var(--rule)}
+.ap-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(18px,2.4vw,32px);margin-top:28px}
+.ap-card{border:1px solid var(--rule);padding:clamp(22px,2.6vw,32px);display:flex;flex-direction:column;gap:14px;background:var(--paper)}
+.ap-card h3{font-family:var(--display);font-weight:400;font-size:1.45rem;line-height:1.15;margin:0}
+.ap-card p{margin:0;color:var(--muted);flex:1}
+.ap-card .btn{align-self:flex-start}
+.ct-box{display:grid;grid-template-columns:1.4fr 1fr;gap:clamp(20px,4vw,56px);align-items:center;background:var(--mist);padding:clamp(28px,4vw,56px);border-top:2px solid var(--gold)}
+.ct-box .sec-lede{margin-bottom:0}
+.ct-actions{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.ct-actions .btn{justify-content:center}
+@media (max-width:860px){.welcome .wl-points,.ap-grid,.ct-box{grid-template-columns:1fr}.wl-logos img{height:70px}}
 </style>
 <link rel="stylesheet" href="/lux.css">
 <script src="/ph.js"></script>
@@ -864,9 +883,9 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
     </div>
     <nav class="site-nav nav-row" aria-label="Secciones"><a href="#catalogo">Caballos en venta</a><a href="#sementales">Sementales</a><a href="#potros">Potros 2027</a><a href="#eventos">Eventos</a><a href="#sesiones">Sesiones de fotos</a><a href="#exfr">Experiencia Friesian</a><a href="#rancho">El rancho</a></nav>
     <div class="hero-body">
-      <p class="hero-kicker">Rancho El Descanso · Desde 2012</p>
+      <p class="hero-kicker">Bienvenidos · Rancho El Descanso</p>
       <h1 class="hero-claim"><span>Salir de la ciudad.</span><span>Volver a la <em>tierra.</em></span></h1>
-      <p class="lede">Seis hectáreas donde primero es la naturaleza. Aquí criamos Friesian con certificación KFPS y Gypsy Vanner: revisa la genealogía y los predicados de cada ejemplar en venta y agenda una visita. Si lo requieres, facturamos la compra de tu caballo.</p>
+      <p class="lede">Criadero e importador con más de 18 años de experiencia. Desde hace 11 años visitamos los Países Bajos para actualizarnos y buscar la mejor calidad.</p>
       <div class="hero-actions">
         <a class="btn btn-mono" href="#catalogo">Ver caballos en venta <span aria-hidden="true">→</span></a>
         <a class="btn btn-ghost" href="rancho/">Conoce el rancho</a>
@@ -876,17 +895,31 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
 </header>
 <nav class="crumbs" data-view="sementales potros eventos sesiones exfr rancho" aria-label="Ruta"><a href="#inicio">← Inicio</a><span aria-hidden="true">/</span><span id="crumb-now"></span></nav>
 
+<section class="band welcome" id="bienvenida" data-view="inicio" aria-labelledby="t-bienvenida">
+  <p class="eyebrow">Bienvenidos</p>
+  <h2 class="sec-title" id="t-bienvenida">Calidad que se busca en Holanda</h2>
+  <ol class="wl-points">
+    <li><span class="wl-n">01</span><p><strong>Único criadero en México con mesa reservada</strong> en el evento principal de la KFPS en Holanda, el Stallion Show.</p></li>
+    <li><span class="wl-n">02</span><p><strong>Seleccionamos e importamos</strong> únicamente caballos de gran calidad.</p></li>
+    <li><span class="wl-n">03</span><p><strong>Nos apasionan la belleza,</strong> la conformación y la nobleza de ambas razas.</p></li>
+  </ol>
+  <ul class="wl-logos" aria-label="Registros y asociaciones">
+    <li><img src="marca/asociaciones/gvhs-mexico.webp" alt="Gypsy Vanner Horse Society México" width="400" height="310" loading="lazy"></li>
+    <li><img src="marca/asociaciones/bandera-mexico.webp" alt="Bandera de México" width="260" height="174" loading="lazy" class="wl-flag"></li>
+  </ul>
+</section>
+
 <section class="band" id="razas" data-view="inicio" aria-labelledby="t-razas">
   <h2 class="sec-title" id="t-razas">Dos razas, una misma exigencia</h2>
-  <p class="sec-lede">Criamos y seleccionamos cada ejemplar en el rancho, cuidando genética, carácter y bienestar.</p>
+  <p class="sec-lede">Rancho El Descanso, criadero de las razas Friesian y Gypsy Vanner. Seleccionamos con esmero y somos un referente a nivel mundial, uno de los criaderos de mejor calidad en el mundo.</p>
   <div class="duo">
     <a class="tile" href="#catalogo" data-go-breed="Friesian">
       <img src="friesian.webp" alt="Friesian negro de melena larga y ondulada" loading="lazy" style="object-position:30% 30%">
-      <div class="tile-body"><p class="tile-name">Friesian</p><p class="tile-text">Elegancia, fuerza y nobleza. Pelaje negro brillante y un andar majestuoso. Criadero con certificación KFPS.</p><span class="tile-link">Ver Friesian en venta <span data-count="Friesian"></span></span></div>
+      <div class="tile-body"><p class="tile-name">Friesian</p><p class="tile-text">Nacidos con nosotros e importados, seleccionados cuidadosamente, de gran calidad y registrados ante la KFPS.</p><span class="tile-link">Ver Friesian en venta <span data-count="Friesian"></span></span></div>
     </a>
     <a class="tile" href="#catalogo" data-go-breed="Gypsy Vanner">
       <img src="gypsy.webp" alt="Gypsy Vanner cremello entre pinos en Rancho El Descanso" loading="lazy" style="object-position:50% 55%">
-      <div class="tile-body"><p class="tile-name">Gypsy Vanner</p><p class="tile-text">Fuerte, dócil y hermoso. Abundante crin y patas con plumas que lo hacen inconfundible.</p><span class="tile-link">Ver Gypsy Vanner en venta <span data-count="Gypsy Vanner"></span></span></div>
+      <div class="tile-body"><p class="tile-name">Gypsy Vanner</p><p class="tile-text">Nacidos con nosotros e importados, especializados en las capas diluidas y silver dapple, las más exclusivas del mundo.</p><span class="tile-link">Ver Gypsy Vanner en venta <span data-count="Gypsy Vanner"></span></span></div>
     </a>
   </div>
 </section>
@@ -1303,6 +1336,42 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
   </div>
 </section>
 
+<section class="band apoyo" id="apoyo" data-view="inicio sementales" aria-labelledby="t-apoyo">
+  <p class="eyebrow">Te acompañamos</p>
+  <h2 class="sec-title" id="t-apoyo">Antes y después de tu compra</h2>
+  <div class="ap-grid">
+    <article class="ap-card">
+      <h3>¿Con qué semental cargo a mi yegua?</h3>
+      <p>Envíanos una foto de los papeles de tu yegua y verificamos la consanguinidad con nuestros sementales, para que tomes la mejor decisión.</p>
+      <a class="btn btn-dark" data-wa-msg="Hola, les mando la foto de los papeles de mi yegua para revisar la consanguinidad con sus sementales." href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Enviar papeles de mi yegua</a>
+    </article>
+    <article class="ap-card">
+      <h3>Trámites ante la KFPS</h3>
+      <p>Te apoyamos con documentación, registros, chips y trámites de tu Friesian ante la KFPS.</p>
+      <a class="btn btn-line" data-wa-msg="Hola, necesito apoyo con un trámite ante la KFPS (documentación, registro o chip)." href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Pedir apoyo KFPS</a>
+    </article>
+    <article class="ap-card">
+      <h3>Trámites ante GVHS México</h3>
+      <p>Te apoyamos con documentación, registros, chips y trámites de tu Gypsy Vanner ante GVHS México.</p>
+      <a class="btn btn-line" data-wa-msg="Hola, necesito apoyo con un trámite ante GVHS México (documentación, registro o chip)." href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Pedir apoyo GVHS México</a>
+    </article>
+  </div>
+</section>
+
+<section class="band contacto" id="contacto" data-view="inicio sementales potros eventos sesiones rancho" aria-labelledby="t-contacto">
+  <div class="ct-box">
+    <div>
+      <p class="eyebrow">Contáctanos</p>
+      <h2 class="sec-title" id="t-contacto">Nos encantaría saber qué necesitas</h2>
+      <p class="sec-lede">No dudes en llamar o enviar un mensaje.</p>
+    </div>
+    <div class="ct-actions">
+      <a class="btn btn-wa" data-wa href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.2L4 20z" stroke-linejoin="round"/></svg>Enviar mensaje</a>
+      <a class="btn btn-line" href="tel:+523316045548" data-call><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" stroke-linejoin="round"/></svg>Llamar · 33 1604 5548</a>
+    </div>
+  </div>
+</section>
+
 <section class="visit" data-view="inicio rancho" aria-labelledby="t-visita">
   <img src="galope.webp" alt="Caballo galopando en la pista del rancho" loading="lazy">
   <div class="visit-inner"><figure class="visit-reel"><video autoplay muted loop playsinline preload="metadata" poster="fotos/manada.jpg" aria-label="Friesian del rancho galopando en la pista"><source src="fotos/manada.mp4" type="video/mp4"></video><figcaption>Nuestros Friesian en la pista</figcaption></figure><div class="visit-box">
@@ -1327,7 +1396,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
     </div>
     <div class="team" aria-label="Equipo">
       <div class="person"><p class="person-name">Nicolás Campero</p><p class="person-role">Director Comercial y de Ventas</p><p><a data-wa href="#" target="_blank" rel="noopener">WhatsApp <span data-phone-label></span></a></p></div>
-      <div class="person"><p class="person-name">Mónica Valle</p><p class="person-role">Directora General y Ventas</p><p><a href="https://wa.me/523311471212" target="_blank" rel="noopener">WhatsApp +52 33 1147 1212</a></p></div>
+      <div class="person"><p class="person-name">Mónica Valle</p><p class="person-role">Ventas, eventos y sesiones</p><p><a href="https://wa.me/523311471212" target="_blank" rel="noopener">WhatsApp +52 33 1147 1212</a></p></div>
       <div class="person"><p class="person-name">Yuliana Garibay</p><p class="person-role">Ventas</p><p><a href="https://wa.me/523351287636" target="_blank" rel="noopener">WhatsApp +52 33 5128 7636</a></p></div>
     </div>
   </div>
@@ -2791,6 +2860,8 @@ $("#mares-more")?.addEventListener("click",()=>{ $("#mares").classList.add("all"
 /* ================== ARRANQUE ================== */
 document.querySelectorAll("[data-wa]").forEach(a=>a.href=waLink("Hola, vi el catálogo de Rancho El Descanso y me gustaría más información."));
 document.querySelectorAll("[data-wa-visit]").forEach(a=>a.href=waLink("Hola, me gustaría agendar una visita a Rancho El Descanso para conocer los caballos en venta."));
+document.querySelectorAll("[data-wa-msg]").forEach(a=>{a.href=waLink(a.dataset.waMsg);a.addEventListener("click",()=>track("Contact",{content_name:"whatsapp_apoyo"}));});
+document.querySelectorAll("[data-call]").forEach(a=>a.addEventListener("click",()=>track("Contact",{content_name:"llamada"})));
 document.querySelectorAll("[data-go-breed]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();state.raza=a.dataset.goBreed;sync();render();goCatalog();}));
 document.querySelectorAll("[data-phone-label]").forEach(a=>a.textContent=CONFIG.WHATSAPP_LABEL);
 document.querySelectorAll("#f-raza button").forEach(b=>b.onclick=()=>{state.raza=b.dataset.v;sync();render();});
