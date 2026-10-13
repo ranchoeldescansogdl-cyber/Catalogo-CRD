@@ -379,6 +379,7 @@ const CATS_INGRESO = ["Sesión o evento", "Caballos", "Renta de retro", "Fletes"
 const CATS_GASTO = ["Alimento", "Veterinario", "Medicamentos", "Herraje", "Mantenimiento", "Servicios de vehículos", "Jardinería", "Sueldos", "Luz y agua", "Gasolina", "Eventos", "Papelería y trámites", "Otro"];
 const TIPO_PAGO = {sesion: "Sesión", evento: "Evento", caballo: "Caballo", potro: "Potro 2027", saldo_sesion: "Resto de sesión"};
 
+let GFIJOS = null; // gastos fijos y suscripciones (Contabilidad)
 let CAPT = null; // capacitación: quién ya vio (solo admin)
 let COMO = "", COMO_NOM = ""; // "Ver como…" (Mario y Nico): solo lectura
 let FUERA = null, EST = null, COMP = null, SERV = null, CAJA = null, CAMBIOS = null, REDES = null, REG = null, YO = null, AGENDA = null, PAGOS = null, CABALLOS = null, ACTUAL = "hoy", TAREAS = null, REPORTES = null, CONTA = null, EQUIPO = null, COTIZ = null;
@@ -518,6 +519,7 @@ async function render() {
     if (s === "tareas") await cargar("tareas");
     if (s === "salud" || s === "bitacora") await cargar("reportes");
     if (s === "proveedores" || s === "conta") await cargar("conta");
+    if (s === "conta" && ["admin", "contabilidad"].includes(YO.usuario.rol) && !GFIJOS) GFIJOS = await api("accion=gastos_fijos").catch(e => ({error: e.message}));
     if (s === "equipo") await cargar("equipo");
     if (s === "reglamento") await cargar("reglamento");
     if (s === "redes") await cargar("redes");
@@ -534,10 +536,10 @@ async function render() {
     if (s !== ACTUAL) return;
     pintarContador();
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
-      tareas: vTareas, turnos: vTurnos, vehiculos: vVehiculos, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados, capacitacion: vCapacitacion})[s]();
+      tareas: vTareas, turnos: vTurnos, vehiculos: vVehiculos, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: () => vConta() + vGastosFijos(), equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados, capacitacion: vCapacitacion})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
-function recargar() { FUERA = EST = COMP = SERV = CAJA = REDES = CAMBIOS = TURNOS = MOVS = CAPT = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
+function recargar() { FUERA = EST = COMP = SERV = CAJA = REDES = CAMBIOS = TURNOS = MOVS = CAPT = GFIJOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
 
 /* ---------- menú de cuadros (celular) ---------- */
 function vMenu() {
@@ -555,6 +557,31 @@ function vMenu() {
     <div class="menu-grid">${YO.permisos.secciones.filter(s => s !== "reglamento").map(s => `<button class="menu-tile" type="button" data-ir="${s}"><span class="ico" aria-hidden="true">${ICONOS[s] || "•"}</span>${esc(SECCIONES[s])}${n[s] ? `<span class="n">${n[s]}</span>` : ""}</button>`).join("")}</div>`;
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-ir]"); if (b) ir(b.dataset.ir); });
+
+/* ---------- gastos fijos y suscripciones (12 oct 2026) ----------
+   Fuente: pestaña GASTOS FIJOS de la Maestra, que edita Judith. Total al mes: mensuales + anuales/12 (solo "Activo"), por moneda. */
+const MAESTRA_URL = "https://docs.google.com/spreadsheets/d/1dPqZKjli2IuUSfjTw_31yxJCH6k1F32W4uPE5sax1ac/edit";
+function vGastosFijos() {
+  if (!GFIJOS) return "";
+  if (GFIJOS.error) return `<h3>Gastos fijos y suscripciones</h3><div class="err">${esc(GFIJOS.error)}</div>`;
+  const L = GFIJOS.gastos || [], hoy = hoyISO(), en7 = masDias(hoy, 7);
+  const mes = x => { const m = numv(x["Monto"]), c = String(x["Cada cuánto"] || "").toLowerCase(); return /anual/.test(c) ? m / 12 : /trimestr/.test(c) ? m / 3 : /semestr/.test(c) ? m / 6 : m; };
+  const act = L.filter(x => /^activo/i.test(x["Estatus"] || "")), tot = {};
+  act.forEach(x => { const mo = String(x["Moneda"] || "MXN").toUpperCase(); tot[mo] = (tot[mo] || 0) + mes(x); });
+  const fmt = (n, mo) => mo === "MXN" ? money(n) : "US$" + n.toLocaleString("es-MX", {maximumFractionDigits: 2});
+  const prox = L.filter(x => isoDe(x["Próximo cobro"]) && isoDe(x["Próximo cobro"]) >= hoy && isoDe(x["Próximo cobro"]) <= en7);
+  const porConf = L.filter(x => /confirmar/i.test(x["Estatus"] || "")).length;
+  return `<h3>Gastos fijos y suscripciones</h3><p class="sub">Lo que se cobra solo cada mes o cada año. Judith lo mantiene en la Maestra, pestaña <a href="${MAESTRA_URL}" target="_blank" rel="noopener">GASTOS FIJOS</a>.</p>
+    <div class="grid-kpi">${Object.keys(tot).length ? Object.entries(tot).map(([mo, n]) => `<div class="kpi"><span>Al mes (${esc(mo)})</span><b>${fmt(n, mo)}</b></div>`).join("") : `<div class="kpi"><span>Al mes</span><b>${money(0)}</b></div>`}
+      <div class="kpi"><span>Activos</span><b>${act.length}</b></div>${porConf ? `<div class="kpi"><span>Por confirmar</span><b>${porConf}</b></div>` : ""}</div>
+    ${prox.length ? `<p class="lbl rojo">Se cobra en los próximos 7 días: ${prox.map(x => esc(x["Servicio"]) + " (" + esc(fDia(isoDe(x["Próximo cobro"])).split(",")[0] + " " + isoDe(x["Próximo cobro"]).slice(8)) + ")").join(" · ")}</p>` : ""}
+    <div class="tbl-wrap"><table><thead><tr><th>Servicio</th><th class="num">Monto</th><th>Cada cuánto</th><th>Próximo cobro</th><th>Tarjeta</th><th>Estatus</th></tr></thead><tbody>
+    ${L.map(x => `<tr><td><b>${esc(x["Servicio"])}</b><br><span class="card-m">${esc(x["Para qué"] || "")}${x["Compartido con"] ? " · Compartido con " + esc(x["Compartido con"]) : ""}</span>${x["Notas"] ? `<br><span class="card-m">${esc(x["Notas"])}</span>` : ""}</td>
+      <td class="num">${String(x["Monto"] || "").trim() === "" ? "—" : fmt(numv(x["Monto"]), String(x["Moneda"] || "MXN").toUpperCase())}</td><td>${esc(x["Cada cuánto"] || "")}</td>
+      <td>${x["Próximo cobro"] ? esc(fFecha(isoDe(x["Próximo cobro"]) + "T12:00:00")) : "—"}</td><td>${x["Tarjeta (últimos 4)"] ? "•" + esc(String(x["Tarjeta (últimos 4)"]).slice(-4)) : "—"}</td>
+      <td>${/^activo/i.test(x["Estatus"] || "") ? `<span class="badge b-ok">Activo</span>` : /confirmar/i.test(x["Estatus"] || "") ? `<span class="badge b-warn">Por confirmar</span>` : `<span class="badge b-info">${esc(x["Estatus"] || "—")}</span>`}</td></tr>`).join("") || `<tr><td colspan="6">Todavía no hay gastos fijos registrados.</td></tr>`}
+    </tbody></table></div>`;
+}
 
 /* ---------- capacitación: videos de cómo se usa el portal (12 oct 2026) ----------
    Cada quien ve el general y los de su puesto; admin ve todos. "Visto" se guarda en este celular (localStorage). */

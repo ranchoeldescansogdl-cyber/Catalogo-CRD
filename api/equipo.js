@@ -970,6 +970,11 @@ module.exports = async (req, res) => {
         publicaciones: j.publicaciones.filter(x => aprueba || (ofi ? x["Estatus"] !== "Descartado" : (["Agendado", "Publicado"].includes(x["Estatus"]) || mio(x)))),
         plan: ofi ? j.plan : [], metricas: ofi ? j.metricas : [], caballos: j.caballos, instrucciones: aprueba ? (j.instrucciones || []) : []});
     }
+    if (q.accion === "gastos_fijos") { // gastos fijos y suscripciones (12 oct 2026): Mario, Nico y Judith; Judith los edita en la pestaña GASTOS FIJOS
+      if (!["admin", "contabilidad"].includes(u.rol)) return res.status(403).json({error: "Sin acceso."});
+      const j = await agendaPost("panel_gastos_fijos", {}); if (!j.ok) throw new Error(j.error || "gastos fijos");
+      return res.status(200).json({gastos: j.gastos || []});
+    }
     if (q.accion === "capacitacion") { // quién ya vio cada video (solo admin y quien revisa todo)
       if (u.rol !== "admin" && !ORG.revisaTodo(u)) return res.status(200).json({personas: [], mios: []});
       const [j, eq] = await Promise.all([agendaPost("panel_capacitacion", {op: "lista"}), equipo()]); if (!j.ok) throw new Error(j.error || "capacitacion");
