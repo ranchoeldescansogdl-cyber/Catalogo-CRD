@@ -853,8 +853,10 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
 .wl-points p{margin:8px 0 0;color:var(--muted);max-width:34ch}
 .wl-points strong{color:var(--ink);font-weight:500}
 .wl-logos{list-style:none;margin:clamp(32px,4vw,48px) 0 0;padding:22px 0 0;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;align-items:center;gap:clamp(24px,4vw,56px)}
-.wl-logos img{display:block;height:86px;width:auto}
+.wl-logos li{display:flex;align-items:center;height:104px}
+.wl-logos img{display:block;height:100px;width:auto}
 .wl-logos img.wl-flag{height:44px;box-shadow:0 0 0 1px var(--rule)}
+.wl-logos img.wl-kfps{height:72px}
 .ap-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(18px,2.4vw,32px);margin-top:28px}
 .ap-card{border:1px solid var(--rule);padding:clamp(22px,2.6vw,32px);display:flex;flex-direction:column;gap:14px;background:var(--paper)}
 .ap-card h3{font-family:var(--display);font-weight:400;font-size:1.45rem;line-height:1.15;margin:0}
@@ -864,7 +866,7 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
 .ct-box .sec-lede{margin-bottom:0}
 .ct-actions{display:flex;flex-direction:column;gap:12px;align-items:stretch}
 .ct-actions .btn{justify-content:center}
-@media (max-width:860px){.welcome .wl-points,.ap-grid,.ct-box{grid-template-columns:1fr}.wl-logos img{height:70px}}
+@media (max-width:860px){.welcome .wl-points,.ap-grid,.ct-box{grid-template-columns:1fr}.wl-logos{gap:16px 28px}.wl-logos li{height:76px}.wl-logos img{height:72px}.wl-logos img.wl-kfps{height:52px}.wl-logos img.wl-flag{height:36px}}
 
 .rs-box{display:grid;grid-template-columns:auto 1fr;gap:clamp(24px,5vw,72px);align-items:center;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:clamp(28px,4vw,48px) 0}
 .rs-score{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:140px}
@@ -920,7 +922,9 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
     <li><span class="wl-n">03</span><p><strong>Nos apasionan la belleza,</strong> la conformación y la nobleza de ambas razas.</p></li>
   </ol>
   <ul class="wl-logos" aria-label="Registros y asociaciones">
-    <li><img src="marca/asociaciones/gvhs-mexico.webp" alt="Gypsy Vanner Horse Society México" width="400" height="310" loading="lazy"></li>
+    <li><img src="marca/asociaciones/kfps.webp" alt="KFPS Royal Friesian" width="900" height="329" loading="lazy" class="wl-kfps"></li>
+    <li><img src="marca/asociaciones/gvhs.webp" alt="Gypsy Vanner Horse Society" width="640" height="416" loading="lazy"></li>
+    <li><img src="marca/asociaciones/gvhs-mexico.webp" alt="Gypsy Vanner Horse Society México" width="500" height="411" loading="lazy"></li>
     <li><img src="marca/asociaciones/bandera-mexico.webp" alt="Bandera de México" width="260" height="174" loading="lazy" class="wl-flag"></li>
   </ul>
 </section>
