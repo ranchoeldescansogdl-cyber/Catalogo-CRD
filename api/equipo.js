@@ -398,6 +398,18 @@ async function tareaPost(u, body, archivos, res) {
         asignada: (ORG.SOLI + (sug ? sug.nombre : "Por definir")).slice(0, 60)}}, false));
     }
     if (!ORG.asignaAlguien(u)) return no("Tú no asignas tareas: usa \"Pedir tarea\" y le llega a Mario.");
+    /* 13 oct 2026: varias personas = una tarea igual para cada quien (cada uno la marca por su lado) */
+    if (Array.isArray(t.asignadas) && t.asignadas.length > 1) {
+      const lista = [...new Set(t.asignadas.map(x => String(x || "").trim()).filter(Boolean))].slice(0, 15);
+      const ds = lista.map(n => destinoValido(u, eq, n)), mal = ds.find(x => x.error); if (mal) return no(mal.error, 400);
+      const hechas = [];
+      for (const x of ds) {
+        const r = await mandar({tipo: "tarea_crear", tarea: {tarea: titulo, detalle, area: areaValida(u, t.area), limite: t.limite, prioridad: t.prioridad, asignada: x.ok}}, true);
+        if (!r.ok) return res.status(400).json({error: (r.error || "No se pudo crear") + (hechas.length ? ". Sí quedó para: " + hechas.join(", ") : "")});
+        hechas.push(x.ok);
+      }
+      return res.status(200).json({ok: true, asignadas: hechas});
+    }
     const d = destinoValido(u, eq, t.asignada); if (d.error) return no(d.error, 400);
     return fin(await mandar({tipo: "tarea_crear", tarea: {tarea: titulo, detalle, area: areaValida(u, t.area), limite: t.limite, prioridad: t.prioridad, asignada: d.ok}}, true));
   }

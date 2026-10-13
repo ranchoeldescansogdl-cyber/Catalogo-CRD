@@ -2396,8 +2396,8 @@ document.addEventListener("click", async e => {
     const t = modo === "aprobar" ? TAREAS.tareas.find(x => x.ID === b.dataset.aprobar) : null; if (modo === "aprobar" && !t) return;
     const box = dialogo({nueva: "Nueva tarea", pedir: "Pedir tarea", aprobar: "Aprobar y asignar"}[modo], formTarea(modo, t));
     activarFotos(box);
-    const dest = box.querySelector("#d-a"), disp = box.querySelector("#d-disp");
-    if (dest && disp) dest.onchange = () => { disp.hidden = dest.value !== "__disp"; };
+    const dest = box.querySelector("#d-a"), disp = box.querySelector("#d-disp"), varios = box.querySelector("#d-varios");
+    if (dest && (disp || varios)) dest.onchange = () => { if (disp) disp.hidden = dest.value !== "__disp"; if (varios) varios.hidden = dest.value !== "__varios"; };
     if (t && dest) { const sug = t["Asignada a"].replace(/^Solicitud · /, ""); if ([...dest.options].some(o => o.value === sug)) dest.value = sug; }
     box.querySelector("#d-ok").onclick = () => {
       const v = id => (box.querySelector(id) || {}).value || "";
@@ -2407,16 +2407,22 @@ document.addEventListener("click", async e => {
         if (!todos && !quienes.length) return alert("Elige quién puede tomarla.");
         asignada = "Disponible · " + (todos ? "Todos" : quienes.join(", "));
       }
+      let asignadas = null;
+      if (asignada === "__varios") {
+        asignadas = [...box.querySelectorAll("[data-dv]:checked")].map(x => x.dataset.dv);
+        if (asignadas.length < 2) return alert("Elige al menos a dos personas (para una sola, elígela arriba).");
+        asignada = asignadas.join(", ");
+      }
       const datos = {tarea: v("#d-t").trim(), detalle: v("#d-d").trim(), asignada, area: v("#d-ar"), limite: v("#d-l"), prioridad: v("#d-p") || "Normal",
-        pideFoto: !!(box.querySelector("#d-foto") && box.querySelector("#d-foto").checked)};
+        pideFoto: !!(box.querySelector("#d-foto") && box.querySelector("#d-foto").checked), ...(asignadas ? {asignadas} : {})};
       if (modo !== "aprobar" && datos.tarea.length < 3) return alert("Escribe qué hay que hacer.");
       if (modo !== "pedir" && !datos.asignada) return alert("Elige a quién se la asignas.");
-      const avisar = j => { if (datos.asignada.startsWith("Disponible") || modo === "pedir") return;
+      const avisar = j => { if (datos.asignada.startsWith("Disponible") || datos.asignadas || modo === "pedir") return;
         const titulo = datos.tarea || (t && t["Tarea"]) || "";
         if (confirm("¿Le avisas por WhatsApp a " + datos.asignada + "?")) window.open(wa(`Hola ${datos.asignada.split(" ")[0]}, te asigné una tarea en el portal del rancho: ${titulo}${datos.limite ? " (para el " + fDia(datos.limite) + ")" : ""}. Entra aquí para verla: ${PORTAL}#hoy`), "_blank", "noopener"); };
       if (modo === "aprobar") enviar(box, {tipo: "tarea_aprobar", id: t.ID, cambios: {asignada: datos.asignada, limite: datos.limite, prioridad: datos.prioridad, pideFoto: datos.pideFoto, detalle: datos.detalle}}, "Solicitud aprobada y asignada", avisar);
       else if (modo === "pedir") enviar(box, {tipo: "tarea_pedir", tarea: datos}, "Listo, se la pediste a Mario");
-      else enviar(box, {tipo: "tarea_crear", tarea: datos}, datos.asignada.startsWith("Disponible") ? "Tarea disponible: el primero que la tome se la queda" : "Tarea asignada", avisar);
+      else enviar(box, {tipo: "tarea_crear", tarea: datos}, datos.asignada.startsWith("Disponible") ? "Tarea disponible: el primero que la tome se la queda" : datos.asignadas ? "Tarea asignada a " + datos.asignadas.length + " personas (una para cada quien)" : "Tarea asignada", avisar);
     };
   }
   if (b.dataset.rechazar) {
@@ -2533,7 +2539,9 @@ function formTarea(modo, t) {
   const O = YO.org || {}, per = (TAREAS && TAREAS.personas) || [], areas = O.areas && O.areas.length && modo === "nueva" ? O.areas : AREAS;
   const area0 = t ? t["Área"] : areas.includes(O.area) ? O.area : areas[0];
   const opcPer = per.map(x => `<option value="${esc(x.nombre)}">${esc(x.nombre)}${x.area ? " · " + esc(x.area) : ""}</option>`).join("");
-  const destino = `<label>¿Para quién?</label><select id="d-a"><option value="">Elige a una persona</option>${opcPer}${per.length > 1 ? `<option value="__disp">Disponible: que la tome alguien que yo elija</option>` : ""}</select>
+  const destino = `<label>¿Para quién?</label><select id="d-a"><option value="">Elige a una persona</option>${opcPer}${per.length > 1 && modo === "nueva" ? `<option value="__varios">Varias personas: cada una recibe su propia tarea</option>` : ""}${per.length > 1 ? `<option value="__disp">Disponible: que la tome alguien que yo elija</option>` : ""}</select>
+    <div id="d-varios" hidden><label>¿A quiénes? Cada uno la ve en sus pendientes y la marca por su lado.</label><div class="chkgrid">
+      ${per.map(x => `<label class="chk"><input type="checkbox" data-dv="${esc(x.nombre)}"> ${esc(x.corto || x.nombre)}</label>`).join("")}</div></div>
     <div id="d-disp" hidden><label>¿Quién puede tomarla? El primero que la tome se la queda.</label><div class="chkgrid">
       ${(YO.org && O.revisaTodo) || (TAREAS && TAREAS.personas.length >= ((TAREAS.todos || []).length)) ? `<label class="chk"><input type="checkbox" id="d-todos"> Todos</label>` : ""}
       ${per.map(x => `<label class="chk"><input type="checkbox" data-dp="${esc(x.corto)}"> ${esc(x.corto)}</label>`).join("")}</div></div>`;
