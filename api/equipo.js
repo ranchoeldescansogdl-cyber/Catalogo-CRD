@@ -115,7 +115,7 @@ const REDES_CUENTAS = {"Wellington Q": ["nicolas@legaius.com"]}; // 10 oct 2026:
 const cuentasDe = u => ["Rancho El Descanso", ...Object.keys(REDES_CUENTAS).filter(k => REDES_CUENTAS[k].includes(String(u.email || "").toLowerCase()))];
 const cuentaDeFila = x => x["Cuenta"] || "Rancho El Descanso";
 const OFICINA = ["admin", "direccion", "ventas", "contabilidad"];
-Object.values(PERMISOS).forEach(p => p.secciones.push("reglamento")); // todos pueden releerlo
+Object.values(PERMISOS).forEach(p => p.secciones.push("capacitacion", "reglamento")); // todos pueden releerlo · capacitación: videos de cómo se usa el portal (12 oct 2026)
 const DIAS_CELULAR = 400; // la liga fija del celular dura ~1 año; se invalida al generar otra o con Activo = NO
 /* Respaldo si la pestaña EQUIPO no responde: solo Nico puede entrar */
 const EQUIPO_RESPALDO = [{nombre: "Nicolás Campero", email: "nicolas@legaius.com", id: "nicolas@legaius.com", rol: "admin", vendedor: "nico", liga: 0}];
@@ -357,7 +357,7 @@ const puede = (u, s) => u.permisos.secciones.includes(s);
 /* ---------- tareas y organigrama (4 oct 2026) ---------- */
 function orgDe(u, eq) {
   const o = ORG.puestoDe(u) || {}, jefe = o.reportaA ? eq.find(x => ORG.claveDe(x) === o.reportaA) : null;
-  return {puesto: o.puesto || "", area: o.area || u.area || "", reportaA: jefe ? jefe.nombre : "", asigna: ORG.asignaAlguien(u), revisaTodo: ORG.revisaTodo(u),
+  return {clave: ORG.claveDe(u) || "", puesto: o.puesto || "", area: o.area || u.area || "", reportaA: jefe ? jefe.nombre : "", asigna: ORG.asignaAlguien(u), revisaTodo: ORG.revisaTodo(u),
     pide: ORG.puedePedir(u), areas: ORG.areasDe(u), general: !!o.general, caja: papelCaja(u), decide: ORG.decideDe(u), turno: ORG.esTurno(u), vehiculos: ORG.vehiculosDe(u),
     otros: o.revisaTodo ? eq.filter(x => x.id !== u.id && ORG.revisaTodo(x)).map(x => ({nombre: x.nombre, decide: ORG.decideDe(x)})) : []};
 }

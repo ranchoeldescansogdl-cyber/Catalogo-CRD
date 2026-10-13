@@ -194,6 +194,11 @@ details.prov summary::-webkit-details-marker{display:none}
 .menu-tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:120px;padding:18px 10px;background:#fff;border:1px solid var(--rule);border-radius:16px;cursor:pointer;font-weight:600;font-size:1.05rem;line-height:1.2;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.04)}
 .menu-tile .ico{font-size:2.1rem;line-height:1}
 .menu-tile:active{transform:scale(.98);background:#faf8f2}
+.vid{display:block;height:min(64vh,620px);aspect-ratio:9/16;max-width:100%;margin:12px auto 0;border-radius:14px;background:#0A0A0A}
+.vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.vid-aviso{display:flex;align-items:center;gap:14px;width:100%;margin:12px 0 4px;padding:14px 16px;border:1px solid var(--gold,#B8964A);border-radius:16px;background:#1F3A2B;color:#F6F2E8;text-align:left;cursor:pointer;font:inherit}
+.vid-aviso .ico{font-size:1.8rem}.vid-aviso b{display:block}.vid-aviso small{display:block;opacity:.85;margin-top:2px}
+.btn-como{margin:0 0 10px}
 .menu-tile .n{position:absolute;top:10px;right:10px;background:var(--gold);color:#000;border-radius:999px;min-width:26px;height:26px;display:grid;place-items:center;padding:0 7px;font-size:.85rem;font-weight:700}
 .tab .ico{display:none}
 @media (max-width:899px){
@@ -362,9 +367,9 @@ const fDia = iso => { const t = new Date(iso + "T12:00:00Z").toLocaleDateString(
 const fHora = iso => new Date(iso).toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ});
 const fFecha = iso => new Date(iso).toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "2-digit", timeZone: TZ});
 const ROLES = {admin: "Administración", direccion: "Ventas y eventos", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
-const SECCIONES = {hoy: "Inicio", tareas: "Tareas", turnos: "Reportes de turno", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", estados: "Estados de cuenta", caballos: "Caballos y ventas",
+const SECCIONES = {capacitacion: "Capacitación", hoy: "Inicio", tareas: "Tareas", turnos: "Reportes de turno", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", estados: "Estados de cuenta", caballos: "Caballos y ventas",
   comisiones: "Comisiones", caja: "Caja chica", vehiculos: "Vehículos", herrajes: "Herrajes", compras: "Alimento y compras", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
-const ICONOS = {hoy: "🏠", tareas: "✅", turnos: "🕒", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", estados: "🧾", caballos: "🐴", comisiones: "💰", caja: "💵", vehiculos: "🚜", herrajes: "🔨", compras: "📦", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
+const ICONOS = {capacitacion: "🎬", hoy: "🏠", tareas: "✅", turnos: "🕒", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", estados: "🧾", caballos: "🐴", comisiones: "💰", caja: "💵", vehiculos: "🚜", herrajes: "🔨", compras: "📦", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
 const esCel = () => window.matchMedia("(max-width:899px)").matches;
 const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Mantenimiento · empresas CEICA", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Administración", "Otro"];
 const TIPOS_SALUD = ["Revisión", "Vacuna", "Desparasitación", "Herraje / cascos", "Dental", "Tratamiento", "Lesión o cólico", "Monta / inseminación", "Palpación / ecografía", "Parto", "Destete", "Trámite KFPS / GVHS", "Otro"];
@@ -526,7 +531,7 @@ async function render() {
     if (s !== ACTUAL) return;
     pintarContador();
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
-      tareas: vTareas, turnos: vTurnos, vehiculos: vVehiculos, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados})[s]();
+      tareas: vTareas, turnos: vTurnos, vehiculos: vVehiculos, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: vConta, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados, capacitacion: vCapacitacion})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
 function recargar() { FUERA = EST = COMP = SERV = CAJA = REDES = CAMBIOS = TURNOS = MOVS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
@@ -541,11 +546,44 @@ function vMenu() {
   if (REDES && YO.permisos.acciones.includes("redes_aprobar")) n.redes = rPorAprobar().length;
   if (TURNOS && (YO.org || {}).turno) n.turnos = tSlots(YO.usuario.nombre, hoyISO()).filter(x => x.estado === "pend").length;
   if (MOVS) n.salud = (n.salud || 0) + mvFuera().length + mvCapturar().length;
+  n.capacitacion = vidPendientes().length;
   const nombre = String(YO.usuario.nombre || "").split(" ")[0];
   return `<p class="menu-hola">Hola, ${esc(nombre)}</p><p class="sub" style="margin:0">${esc(fDia(hoyISO()))} · Todas las secciones</p>
     <div class="menu-grid">${YO.permisos.secciones.filter(s => s !== "reglamento").map(s => `<button class="menu-tile" type="button" data-ir="${s}"><span class="ico" aria-hidden="true">${ICONOS[s] || "•"}</span>${esc(SECCIONES[s])}${n[s] ? `<span class="n">${n[s]}</span>` : ""}</button>`).join("")}</div>`;
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-ir]"); if (b) ir(b.dataset.ir); });
+
+/* ---------- capacitación: videos de cómo se usa el portal (12 oct 2026) ----------
+   Cada quien ve el general y los de su puesto; admin ve todos. "Visto" se guarda en este celular (localStorage). */
+const VIDEOS = [
+  {id: "00-entrar", titulo: "Entrar al portal", dur: "1 min", desc: "Tu liga personal, agregarlo a tu pantalla de inicio y los botones de abajo.", para: () => true},
+  {id: "01-turno", titulo: "Reporte de turno", dur: "1 min", desc: "Cómo mandar tu reporte cada 3 horas, con foto.", para: O => !!O.turno},
+  {id: "02-eliseo", titulo: "Tus trabajos de mantenimiento", dur: "1 min", desc: "Empezar, avanzar y terminar tus tareas; pedir material y revisar la agenda.", para: O => O.clave === "eliseo"}
+];
+function vidMios() { const O = YO.org || {}, todos = YO.usuario.rol === "admin" || O.revisaTodo; return VIDEOS.filter(v => todos || v.para(O)); }
+function vidVistos() { try { return JSON.parse(localStorage.getItem("crd_vistos") || "{}"); } catch (e) { return {}; } }
+function vidMarcar(id) { const v = vidVistos(); v[id] = new Date().toISOString(); try { localStorage.setItem("crd_vistos", JSON.stringify(v)); } catch (e) {} }
+function vidPendientes() { if (!YO) return []; const v = vidVistos(); return vidMios().filter(x => !v[x.id]); }
+function vidTag(id) { return `<video class="vid" src="/equipo/videos/${esc(id)}.mp4" poster="/equipo/videos/${esc(id)}.jpg" controls playsinline preload="none" data-vid="${esc(id)}"></video>`; }
+function botonComo(id) { return vidMios().some(v => v.id === id) ? `<button class="btn btn-como" type="button" data-video="${esc(id)}">▶ ¿Cómo se usa?</button>` : ""; }
+function vidAvisoHoy() {
+  const p = vidPendientes(); if (!p.length || !tiene("capacitacion")) return "";
+  return `<button class="vid-aviso" type="button" onclick="ir('capacitacion')"><span class="ico" aria-hidden="true">🎬</span><span><b>Mira cómo se usa el portal</b><small>${p.length === 1 ? "Tienes 1 video pendiente" : "Tienes " + p.length + " videos pendientes"} · 1 minuto cada uno</small></span></button>`;
+}
+function vCapacitacion() {
+  const L = vidMios(), v = vidVistos();
+  return `<h2>Capacitación</h2><p class="sub">Videos cortos de cómo se usa el portal. Velos con sonido; si algo no te queda claro, avísale a tu encargado.</p>
+    <div class="vid-grid">${L.map(x => `<article class="card vid-card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(x.titulo)}</p><p class="card-m">${esc(x.desc)} · ${esc(x.dur)}</p></div>
+      ${v[x.id] ? `<span class="badge b-ok">Visto</span>` : `<span class="badge b-warn">Pendiente</span>`}</div>${vidTag(x.id)}</article>`).join("") || `<div class="empty">Por ahora no hay videos para tu puesto.</div>`}</div>`;
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-video]"); if (!b) return;
+  const x = VIDEOS.find(v => v.id === b.dataset.video); if (!x) return;
+  dialogo(x.titulo, `<div class="frm">${vidTag(x.id)}<p class="ctx">${esc(x.desc)}</p></div>`);
+  const el = $("#dlg-b video"); if (el) el.play().catch(() => {});
+});
+document.addEventListener("timeupdate", e => { const el = e.target; if (!el.matches || !el.matches("video[data-vid]") || !el.duration) return;
+  if (el.currentTime / el.duration > 0.85 && !vidVistos()[el.dataset.vid]) { vidMarcar(el.dataset.vid); pintarContador(); }
+}, true);
 
 /* ---------- piezas ---------- */
 const eventosReales = () => (AGENDA ? AGENDA.eventos : []).filter(e => !e.prueba && e.estado !== "reservando");
@@ -642,6 +680,7 @@ function vHoy() {
   let h = `<p class="menu-hola">Hola, ${esc(nombre)}</p><p class="sub" style="margin:0">${esc(fDia(hoy))}${O.reportaA ? " · Tu encargado: " + esc(O.reportaA) : ""}</p>${verComoSelect()}`;
   if (O.turno) h += hoyTurnos(); // 10 oct 2026: el reporte de turno va primero
   const acts = hoyAcciones(); if (acts.length) h += `<div class="hoy-acts">${acts.join("")}</div>`;
+  h += vidAvisoHoy();
 
   /* 1. espera tu decisión (5 oct 2026: Mario dinero y rancho · Nico ventas y sistemas; lo del otro queda plegado, de respaldo) */
   if (TAREAS) {
@@ -1668,7 +1707,7 @@ function vTareas() {
   const sub = O.revisaTodo ? "Asigna tareas, aprueba lo que pide el equipo y revisa lo terminado con sus fotos."
     : O.asigna ? "Asigna tareas a tu gente, revisa lo que terminaron y toma trabajo disponible."
     : "Lo que te toca hacer. Cuando termines, márcala como hecha y sube la foto. Si hace falta algo, pídelo con \"Pedir tarea\".";
-  return `<h2>Tareas</h2><p class="sub">${sub}</p>${botones ? `<div class="big-actions">${botones}</div>` : ""}
+  return `<h2>Tareas</h2>${botonComo("02-eliseo")}<p class="sub">${sub}</p>${botones ? `<div class="big-actions">${botones}</div>` : ""}
     <div class="bar">${chips}</div>${L.length ? L.map(cardTarea).join("") : `<div class="empty">No hay tareas aquí.</div>`}`;
 }
 
@@ -2604,7 +2643,7 @@ function vTurnos() {
   const T = TURNOS, O = YO.org || {}, hoy = hoyISO();
   if (O.turno) {
     const mios = T.reportes.slice().reverse();
-    return `<h2>Mis reportes de turno</h2><p class="sub">Cada 3 horas (${(T.horas || []).map(h => h + ":00").join(", ")}, de lunes a sábado) toma foto o video de tu área y escribe qué hiciste.</p>
+    return `<h2>Mis reportes de turno</h2>${botonComo("01-turno")}<p class="sub">Cada 3 horas (${(T.horas || []).map(h => h + ":00").join(", ")}, de lunes a sábado) toma foto o video de tu área y escribe qué hiciste.</p>
       ${hoyTurnos()}<h3>Lo que has reportado</h3>${mios.length ? mios.slice(0, 60).map(r => cardTurno(r)).join("") : `<div class="empty">Todavía no has mandado reportes.</div>`}`;
   }
   const fecha = st.tDia || hoy, G = T.gente || [], quien = st.tQuien || "";
