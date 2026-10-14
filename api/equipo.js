@@ -81,7 +81,7 @@
    - Movimientos de caballos: tipo:"movimiento" op: nuevo|regreso (quien tiene Salud) | capturar (oficina). GET accion=movimientos.
    - Redes: op instruccion|instruccion_quitar (indicaciones generales para el agente; solo quien aprueba).
    13 oct 2026 (decidido por Nico):
-   - Rentas CEICA (sección "rentas"): Mario, Nico, la cuenta del rancho (admin) y Judith. Datos en la hoja RENTAS CEICA
+   - Rentas CEICA (sección "rentas"), CONFIDENCIAL: solo nicolas@legaius.com, mcampero@ceica.com.mx y contabilidad1@ceica.com.mx (RENTAS_CORREOS). Datos en la hoja RENTAS CEICA
      (pestañas INMUEBLES, PAGOS, LUZ Y MTTO, VENTAS A PLAZOS). GET accion=rentas · POST hacer tipo:"renta" op: pago|cancelar_pago|cargo|cobrado|inmueble.
      Aviso diario a Judith (Apps Script rentasAviso): rentas atrasadas y contratos por vencer.
    - Judith (contabilidad) también ve los reportes de turno. */
@@ -120,8 +120,9 @@ const REDES_CUENTAS = {"Wellington Q": ["nicolas@legaius.com"]}; // 10 oct 2026:
 const cuentasDe = u => ["Rancho El Descanso", ...Object.keys(REDES_CUENTAS).filter(k => REDES_CUENTAS[k].includes(String(u.email || "").toLowerCase()))];
 const cuentaDeFila = x => x["Cuenta"] || "Rancho El Descanso";
 const OFICINA = ["admin", "direccion", "ventas", "contabilidad"];
-/* Rentas CEICA (13 oct 2026): admin (Nico, Mario y la cuenta del rancho, que por ahora ve todo como Nico) y Judith. */
-const RENTAS_VEN = u => ["admin", "contabilidad"].includes(u.rol);
+/* Rentas CEICA (13 oct 2026): CONFIDENCIAL. Solo Nico, Mario y Judith, por correo (ni la cuenta del rancho ni nadie más, aunque sea admin). */
+const RENTAS_CORREOS = ["nicolas@legaius.com", "mcampero@ceica.com.mx", "contabilidad1@ceica.com.mx"];
+const RENTAS_VEN = u => RENTAS_CORREOS.includes(String(u.email || "").toLowerCase().trim());
 Object.values(PERMISOS).forEach(p => p.secciones.push("capacitacion", "reglamento")); // todos pueden releerlo · capacitación: videos de cómo se usa el portal (12 oct 2026)
 /* Videos de capacitación y a quién le tocan (misma regla que VIDEOS en equipo/index.html) */
 const VIDEOS_CAP = [{id: "00-entrar", para: () => true}, {id: "01-turno", para: x => ORG.esTurno(x)}, {id: "02-eliseo", para: x => ORG.claveDe(x) === "eliseo"}];
@@ -730,8 +731,8 @@ async function vehiculosVista(u) {
 /* ---------- 13 oct 2026: rentas CEICA ---------- */
 async function rentaPost(u, body, res) {
   const no = (m, c = 403) => res.status(c).json({error: m});
-  if (!puede(u, "rentas")) return no("Las rentas las manejan Mario, Nico y Judith (oficina).");
-  const op = String(body.op || ""); if (!["pago", "cancelar_pago", "cargo", "cobrado", "inmueble"].includes(op)) return no("Acción no válida.", 400);
+  if (!puede(u, "rentas") || !RENTAS_VEN(u)) return no("Las rentas solo las manejan Mario, Nico y Judith.");
+  const op = String(body.op || ""); if (!["pago", "cancelar_pago", "mes", "cargo", "cobrado", "inmueble"].includes(op)) return no("Acción no válida.", 400);
   const archivos = Array.isArray(body.archivos) ? body.archivos.slice(0, 4) : [];
   if (archivos.reduce((a, x) => a + String(x && x.datos || "").length, 0) > 5.5e6) return no("Los archivos pesan demasiado. Manda menos a la vez.", 413);
   const s = (x, n) => String(x == null ? "" : x).slice(0, n), f = x => /^\d{4}-\d{2}-\d{2}$/.test(String(x || "")) ? x : "", m = x => /^\d{4}-\d{2}$/.test(String(x || "")) ? x : "";
@@ -743,8 +744,9 @@ async function rentaPost(u, body, res) {
   if (op === "cargo") { const g = body.cargo || {};
     payload.cargo = {id: s(g.id, 10), tipo: s(g.tipo, 20), periodo: s(g.periodo, 40), lectura: s(g.lectura, 40), monto: Number(g.monto) || 0, cobra: s(g.cobra, 30), notas: s(g.notas, 300)}; }
   if (op === "cobrado") { payload.idCargo = s(body.idCargo, 40); payload.fecha = f(body.fecha); payload.forma = s(body.forma, 30); }
+  if (op === "mes") { payload.id = s(body.id, 10); payload.mes = m(body.mes); payload.estado = s(body.estado, 20); payload.fecha = f(body.fecha); payload.nota = s(body.nota, 150); }
   if (op === "inmueble") { const g = body.inmueble || {}, o = {id: s(g.id, 10)};
-    ["Inmueble", "Grupo", "Arrendador", "Arrendatario", "Aumento", "Hoja historial", "m²", "Renta base", "IVA renta", "Mantenimiento", "Total mensual", "Depósito", "Día de pago", "Días de gracia", "Vencimiento", "Pagado hasta", "Estatus", "Notas"]
+    ["Inmueble", "Tipo", "Grupo", "Arrendador", "Arrendatario", "Aumento", "Hoja historial", "m²", "Renta base", "IVA renta", "Mantenimiento", "Total mensual", "Mtto que pagamos", "Comisión a", "Comisión %", "Depósito", "Día de pago", "Días de gracia", "Vencimiento", "Pagado hasta", "Estatus", "Notas"]
       .forEach(k => { if (g[k] !== undefined) o[k] = s(g[k], k === "Notas" ? 500 : 120); });
     payload.inmueble = o; }
   const r = await agendaPost("panel_rentas", payload);
@@ -991,7 +993,7 @@ module.exports = async (req, res) => {
     }
     let u = await usuarioDe(req);
     if (!u) return res.status(401).json({error: "sin sesión", google: process.env.GOOGLE_CLIENT_ID || ""});
-    let comoDe = "";
+    let comoDe = ""; const real = u; // quien inició sesión (para lo confidencial, aunque esté en "Ver como")
     if (q.como && ORG.revisaTodo(u)) { // "Ver como…": solo lectura (los POST siempre actúan como quien inició sesión)
       const x = (await equipo()).find(y => y.id === String(q.como));
       if (!x || !PERMISOS[x.rol]) return res.status(404).json({error: "No encontré a esa persona."});
@@ -1035,7 +1037,8 @@ module.exports = async (req, res) => {
         reportes: j.reportes.filter(r => todos || r["Quién"] === u.nombre), avisoMio: av.has(u.id)});
     }
     if (q.accion === "rentas") { // rentas CEICA (13 oct 2026)
-      if (!puede(u, "rentas")) return res.status(403).json({error: "Sin acceso."});
+      if (!puede(u, "rentas") || !RENTAS_VEN(real)) return res.status(403).json({error: "Sin acceso."});
+      res.setHeader("Cache-Control", "no-store, private");
       const j = await agendaPost("panel_rentas", {op: "lista"}); if (!j.ok) throw new Error(j.error || "rentas");
       return res.status(200).json(j);
     }
