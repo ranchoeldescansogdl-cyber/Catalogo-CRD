@@ -439,9 +439,9 @@ const fDia = iso => { const t = new Date(iso + "T12:00:00Z").toLocaleDateString(
 const fHora = iso => new Date(iso).toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ});
 const fFecha = iso => new Date(iso).toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "2-digit", timeZone: TZ});
 const ROLES = {admin: "Administración", direccion: "Ventas y eventos", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
-const SECCIONES = {capacitacion: "Capacitación", hoy: "Inicio", tareas: "Tareas", turnos: "Reportes de turno", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", estados: "Estados de cuenta", caballos: "Caballos y ventas",
+const SECCIONES = {capacitacion: "Capacitación", hoy: "Inicio", asistencia: "Asistencia", tareas: "Tareas", turnos: "Reportes de turno", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", estados: "Estados de cuenta", caballos: "Caballos y ventas",
   comisiones: "Comisiones", caja: "Caja chica", vehiculos: "Vehículos", herrajes: "Herrajes", compras: "Alimento y compras", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", rentas: "Rentas CEICA", equipo: "Equipo", reglamento: "Reglamento"};
-const ICONOS = {capacitacion: "🎬", hoy: "🏠", tareas: "✅", turnos: "🕒", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", estados: "🧾", caballos: "🐴", comisiones: "💰", caja: "💵", vehiculos: "🚜", herrajes: "🔨", compras: "📦", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", rentas: "🏢", equipo: "👤", reglamento: "📖"};
+const ICONOS = {capacitacion: "🎬", hoy: "🏠", asistencia: "🕘", tareas: "✅", turnos: "🕒", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", estados: "🧾", caballos: "🐴", comisiones: "💰", caja: "💵", vehiculos: "🚜", herrajes: "🔨", compras: "📦", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", rentas: "🏢", equipo: "👤", reglamento: "📖"};
 const esCel = () => window.matchMedia("(max-width:899px)").matches;
 const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Mantenimiento · empresas CEICA", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Administración", "Otro"];
 const TIPOS_SALUD = ["Revisión", "Vacuna", "Desparasitación", "Herraje / cascos", "Dental", "Tratamiento", "Lesión o cólico", "Monta / inseminación", "Palpación / ecografía", "Parto", "Destete", "Trámite KFPS / GVHS", "Otro"];
@@ -558,6 +558,7 @@ async function cargar(qué) {
   if (qué === "compras" && !COMP) COMP = await api("accion=compras");
   if (qué === "fuera" && !FUERA) FUERA = await api("accion=fuera");
   if (qué === "turnos" && !TURNOS) TURNOS = await api("accion=turnos");
+  if (qué === "asistencia" && !ASIS) ASIS = await api("accion=asistencia");
   if (qué === "movimientos" && !MOVS) MOVS = await api("accion=movimientos");
   if (qué === "vehiculos" && !VEHS) VEHS = await api("accion=vehiculos");
   if (qué === "estados" && (!EST || EST.mes !== (st.estMes || EST.mes))) EST = await api("accion=estados" + (st.estMes ? "&mes=" + st.estMes : ""));
@@ -576,7 +577,7 @@ async function render() {
       const todo = Promise.all([q(tiene("agenda"), "agenda"), q(tiene("tareas"), "tareas"), q(tiene("salud") || tiene("bitacora"), "reportes"), q(tiene("caja"), "caja"),
         q((tiene("herrajes") || tiene("salud")) && d, "servicios"), q(tiene("compras"), "compras"), q(tiene("cotizaciones"), "cotizaciones"),
         q(d && (YO.permisos.acciones.includes("agendar") || d), "fuera"), q(tiene("redes") && YO.permisos.acciones.includes("redes_aprobar"), "redes"),
-        q(tiene("turnos"), "turnos"), q(tiene("salud") || (d && tiene("caballos")), "movimientos")]);
+        q(tiene("turnos"), "turnos"), q(tiene("asistencia") && YO.permisos.acciones.includes("asistencia"), "asistencia"), q(tiene("salud") || (d && tiene("caballos")), "movimientos")]);
       const listo = await Promise.race([todo.then(() => true), new Promise(r => setTimeout(() => r(false), 8000))]);
       if (ACTUAL !== "hoy") return;
       pintarContador(); m.innerHTML = vHoy() + (listo ? "" : `<p class="load" id="hoy-mas">Cargando lo demás…</p>`);
@@ -598,6 +599,7 @@ async function render() {
     if (s === "herrajes") await cargar("servicios");
     if (s === "salud") { await cargar("servicios").catch(() => {}); await cargar("movimientos").catch(() => {}); }
     if (s === "turnos") await cargar("turnos");
+    if (s === "asistencia") await cargar("asistencia");
     if (s === "capacitacion" && (YO.usuario.rol === "admin" || (YO.org || {}).revisaTodo) && !CAPT) CAPT = await api("accion=capacitacion").catch(() => null);
     if (s === "vehiculos") await cargar("vehiculos");
     if (s === "rentas" && !RENTAS) RENTAS = await api("accion=rentas").catch(e => ({error: e.message}));
@@ -608,7 +610,7 @@ async function render() {
     if (s !== ACTUAL) return;
     pintarContador();
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
-      tareas: vTareas, turnos: vTurnos, vehiculos: vVehiculos, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: () => vConta() + vGastosFijos(), rentas: vRentas, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados, capacitacion: vCapacitacion})[s]();
+      tareas: vTareas, turnos: vTurnos, asistencia: vAsistencia, vehiculos: vVehiculos, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: () => vConta() + vGastosFijos(), rentas: vRentas, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados, capacitacion: vCapacitacion})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
 function recargar() { FUERA = EST = COMP = SERV = CAJA = REDES = CAMBIOS = TURNOS = MOVS = CAPT = GFIJOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
@@ -751,6 +753,7 @@ function plegado(titulo, html) { return html ? `<details class="mas"><summary>${
 function hoyAcciones(enMenu) { // 5 oct 2026: en orden de lo que más se usa en cada puesto
   const A = YO.permisos.acciones, O = YO.org || {}, b = [], campo = ["campo", "medico"].includes(YO.usuario.rol);
   const conteo = tiene("compras") && YO.usuario.rol === "campo" && (YO.org || {}).area === "Caballos" && COMP && COMP.tocaContar; // lo cuenta Chito
+  if (tiene("asistencia") && YO.permisos.acciones.includes("asistencia")) { const ab = asBotonHoy(); if (ab) b.push(ab); } // 14 oct 2026
   if (O.turno && tiene("turnos") && enMenu) b.push(`<button class="qa qa-ya" type="button" data-turno-rep="1"><span class="ico">📷</span><span>Reportar mi turno<small>foto o video y qué hiciste</small></span></button>`);
   if (conteo) b.push(`<button class="qa qa-ya" type="button" data-cp-conteo="1"><span class="ico">🌾</span><span>Contar alimento<small>Toca esta semana</small></span></button>`);
   if (A.includes("caja") && O.caja === "lleva") b.push(`<button class="qa" type="button" data-caja-nuevo="Gasto"><span class="ico">🧾</span><span>Registrar un gasto<small>efectivo o tarjeta</small></span></button>`, `<button class="qa" type="button" data-caja-nuevo="Efectivo de cliente"><span class="ico">💵</span>Recibí efectivo</button>`);
@@ -2445,7 +2448,7 @@ function activarFotos(box) {
 async function archivosDe(box) { const inp = box.querySelector("#d-fotos"); if (!inp || !inp.files.length) return []; const out = []; for (const f of [...inp.files].slice(0, 6)) out.push(await comprimir(f)); return out; }
 async function enviar(box, body, ok, despues) {
   const b = box.querySelector("#d-ok"); b.disabled = true; b.textContent = "Guardando…";
-  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = SERV = COMP = EST = FUERA = TURNOS = MOVS = VEHS = null; if (despues) despues(j); render(); }
+  try { const archivos = await archivosDe(box); const j = await post({accion: "hacer", ...body, archivos}); $("#dlg").close(); toast(ok); TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = CAJA = SERV = COMP = EST = FUERA = TURNOS = MOVS = VEHS = ASIS = null; if (despues) despues(j); render(); }
   catch (e) { alert(e.message); b.disabled = false; b.textContent = "Intentar de nuevo"; }
 }
 const opt = (l, sel) => l.map(x => `<option${x === sel ? " selected" : ""}>${esc(x)}</option>`).join("");
@@ -3331,6 +3334,98 @@ document.addEventListener("click", async e => {
       enviar(box, {tipo: "caja", op: "forma", id: x.ID, forma: f}, "Listo: quedó como " + CC_FP_TXT[f]); };
   }
 });
+/* ---------- 14 oct 2026: Asistencia del personal del rancho (decidido por Nico) ----------
+   Todos los de campo (no médicos ni oficina) marcan entrada y salida con una foto tomada en vivo aquí mismo (no se puede subir de la galería),
+   con la ubicación del celular (obligatoria) y la "huella" de la foto para detectar fotos repetidas. La hora la pone el servidor.
+   Retardo: entrada después de su hora + 10 min (8:00; Olga 7:00). Si marcan fuera del rancho o con una foto repetida, les llega aviso a Mario y Nico.
+   Mario, Nico y Judith ven a todos por día. */
+let ASIS = null;
+const asMarcaHoy = (tipo, id) => ASIS && (ASIS.filas || []).find(r => r["Fecha"] === (ASIS.hoy || hoyISO()) && r["Tipo"] === tipo && (!id || r["ID"] === id));
+const asFotoId = u => (String(u || "").match(/[-\w]{25,}/) || [""])[0];
+function asBadges(r) {
+  if (!r) return "";
+  return [numv(r["Retardo (min)"]) ? `<span class="badge b-warn">Retardo ${numv(r["Retardo (min)"])} min</span>` : "", r["En el rancho"] === "No" ? `<span class="badge b-bad">Fuera del rancho (${numv(r["Distancia (m)"]) >= 1000 ? (numv(r["Distancia (m)"]) / 1000).toFixed(1) + " km" : numv(r["Distancia (m)"]) + " m"})</span>` : "",
+    r["Repetida"] ? `<span class="badge b-bad" title="${esc(r["Repetida"])}">Foto repetida</span>` : ""].join(" ");
+}
+function asBotonHoy() { // botón grande de Inicio para los muchachos
+  if (!YO.permisos.acciones.includes("asistencia")) return "";
+  const e = asMarcaHoy("Entrada", YO.usuario.id), s = asMarcaHoy("Salida", YO.usuario.id);
+  if (e && s) return `<button class="qa qa-ya" type="button" data-ir="asistencia"><span class="ico">✅</span><span>Asistencia de hoy lista<small>entrada ${esc(e["Hora"])} · salida ${esc(s["Hora"])}</small></span></button>`;
+  return `<button class="qa qa-ya" type="button" data-as-marcar="${e ? "Salida" : "Entrada"}"><span class="ico">🕘</span><span>Marcar mi ${e ? "salida" : "entrada"}<small>${e ? "entraste a las " + esc(e["Hora"]) : "foto en vivo y ubicación"}</small></span></button>`;
+}
+function vAsistencia() {
+  if (!ASIS) return `<p class="load">Cargando…</p>`;
+  if (!ASIS.todos) { // el muchacho: sus botones y sus últimos días
+    const e = asMarcaHoy("Entrada"), s = asMarcaHoy("Salida"), dias = {};
+    (ASIS.filas || []).forEach(r => { (dias[r["Fecha"]] = dias[r["Fecha"]] || {})[r["Tipo"]] = r; });
+    return `<h2>Mi asistencia</h2><p class="sub">Al llegar y al irte, marca aquí con una foto tuya en el rancho. Tu entrada es a las ${esc(ASIS.entrada || "8:00")}; después de 10 minutos cuenta como retardo. Si vas a faltar o llegar tarde, avisa en el chat y por mensaje a Mario y a tu encargado.</p>
+      <div class="hoy-acts">${e ? `<button class="qa qa-ya" type="button" disabled><span class="ico">✅</span><span>Entrada marcada<small>${esc(e["Hora"])} ${numv(e["Retardo (min)"]) ? "· retardo " + numv(e["Retardo (min)"]) + " min" : ""}</small></span></button>` : `<button class="qa qa-ya" type="button" data-as-marcar="Entrada"><span class="ico">🕘</span><span>Marcar mi entrada<small>foto en vivo y ubicación</small></span></button>`}
+      ${s ? `<button class="qa qa-ya" type="button" disabled><span class="ico">✅</span><span>Salida marcada<small>${esc(s["Hora"])}</small></span></button>` : `<button class="qa" type="button" data-as-marcar="Salida"${e ? "" : " disabled"}><span class="ico">🏁</span><span>Marcar mi salida<small>${e ? "al terminar tu día" : "primero marca tu entrada"}</small></span></button>`}</div>
+      <h3>Mis últimos días</h3>${Object.keys(dias).sort().reverse().map(f => `<article class="card"><p class="card-t">${esc(fDia(f))}</p><p class="card-m">Entrada ${esc((dias[f].Entrada || {})["Hora"] || "—")} · salida ${esc((dias[f].Salida || {})["Hora"] || "—")}</p><p class="card-m">${asBadges(dias[f].Entrada)} ${asBadges(dias[f].Salida)}</p></article>`).join("") || `<div class="empty">Todavía no has marcado asistencia.</div>`}`;
+  }
+  const hoy = ASIS.hoy || hoyISO(), f = st.asFecha || hoy, dow = new Date(f + "T12:00:00Z").getUTCDay(), domingo = dow === 0;
+  const del = (ASIS.filas || []).filter(r => r["Fecha"] === f), gente = ASIS.gente || [];
+  const ids = [...new Set([...gente.map(g => g.id), ...del.map(r => r["ID"])])];
+  const reng = ids.map(id => { const g = gente.find(x => x.id === id) || {nombre: (del.find(r => r["ID"] === id) || {})["Persona"] || id, area: ""}; const e = del.find(r => r["ID"] === id && r["Tipo"] === "Entrada"), s = del.find(r => r["ID"] === id && r["Tipo"] === "Salida");
+    return {g, e, s}; }).sort((a, b) => (a.e ? 1 : 0) - (b.e ? 1 : 0) || String(a.g.nombre).localeCompare(b.g.nombre));
+  const ahoraMin = (() => { const t = new Intl.DateTimeFormat("en-GB", {timeZone: TZ, hour: "2-digit", minute: "2-digit"}).format(new Date()).split(":"); return Number(t[0]) * 60 + Number(t[1]); })();
+  const faltaYa = g => { if (domingo) return false; if (f < hoy) return true; const m = String(g.entrada || "08:00").split(":"); return ahoraMin > Number(m[0]) * 60 + Number(m[1]) + 10; };
+  const presentes = reng.filter(x => x.e), retardos = reng.filter(x => x.e && numv(x.e["Retardo (min)"])), faltan = reng.filter(x => !x.e && faltaYa(x.g)), alertas = del.filter(r => r["En el rancho"] === "No" || r["Repetida"]);
+  const celda = r => r ? `<b>${esc(r["Hora"])}</b> ${asBadges(r)}` : "—";
+  const fotos = (e, s) => [e, s].filter(Boolean).map(r => asFotoId(r["Foto"])).filter(Boolean).join(",");
+  // últimos 30 días: retardos y faltas por persona (lunes a sábado)
+  const dias30 = []; for (let i = 1; i <= 30; i++) { const d = masDias(hoy, -i); if (new Date(d + "T12:00:00Z").getUTCDay() !== 0) dias30.push(d); }
+  const inicio = {}; (ASIS.filas || []).forEach(r => { if (!inicio[r["ID"]] || r["Fecha"] < inicio[r["ID"]]) inicio[r["ID"]] = r["Fecha"]; }); // solo cuenta faltas desde que empezó a marcar
+  const res = gente.map(g => { const F = (ASIS.filas || []).filter(r => r["ID"] === g.id && r["Tipo"] === "Entrada");
+    return {g, ret: F.filter(r => r["Fecha"] >= dias30[dias30.length - 1] && numv(r["Retardo (min)"])).length, faltas: inicio[g.id] ? dias30.filter(d => d >= inicio[g.id] && !F.some(r => r["Fecha"] === d)).length : null,
+      al: (ASIS.filas || []).filter(r => r["ID"] === g.id && r["Fecha"] >= dias30[dias30.length - 1] && (r["En el rancho"] === "No" || r["Repetida"])).length}; });
+  return `<h2>Asistencia</h2><p class="sub">Entrada y salida del personal del rancho con foto en vivo y ubicación. Retardo después de su hora + 10 min (8:00; Olga 7:00).</p>
+    <div class="rn-f"><button type="button" class="chip" data-as-dia="${masDias(f, -1)}">‹ Día anterior</button><button type="button" class="chip" data-as-dia="${hoy}"${f === hoy ? ' aria-pressed="true"' : ""}>Hoy</button>${f < hoy ? `<button type="button" class="chip" data-as-dia="${masDias(f, 1)}">Día siguiente ›</button>` : ""}<span class="card-m" style="align-self:center">${esc(fDia(f))}</span></div>
+    <div class="rn-kpis"><div class="kpi"><span>Marcaron entrada</span><b>${presentes.length} de ${gente.length}</b></div><div class="kpi${retardos.length ? " bajo" : ""}"><span>Retardos</span><b>${retardos.length}</b></div>
+      <div class="kpi${faltan.length ? " bajo" : ""}"><span>${domingo ? "Domingo" : "Sin entrada"}</span><b>${domingo ? "—" : faltan.length}</b></div><div class="kpi${alertas.length ? " bajo" : ""}"><span>Fuera del rancho o foto repetida</span><b>${alertas.length}</b></div></div>
+    <div class="tbl-wrap"><table class="rn-t" data-pl="1"><thead><tr><th>Persona</th><th>Entrada</th><th>Salida</th><th></th></tr></thead><tbody>
+    ${reng.map(x => `<tr><td><b>${esc(x.g.nombre)}</b><br><span class="card-m">${esc(x.g.area || "")}</span></td><td>${x.e ? celda(x.e) : faltaYa(x.g) ? `<span class="badge b-bad">Sin entrada</span>` : "—"}</td><td>${celda(x.s)}</td>
+      <td>${fotos(x.e, x.s) ? `<button class="btn" type="button" data-fotos="${esc(fotos(x.e, x.s))}">Fotos</button>` : ""}${[x.e, x.s].filter(r => r && r["Lat"]).map(r => ` <a class="btn" href="https://www.google.com/maps?q=${encodeURIComponent(r["Lat"] + "," + r["Lng"])}" target="_blank" rel="noopener">Mapa ${esc(r["Tipo"].toLowerCase())}</a>`).join("")}</td></tr>`).join("") || `<tr><td colspan="4">Nadie del rancho tiene asistencia.</td></tr>`}</tbody></table></div>
+    <h3>Últimos 30 días (lunes a sábado)</h3><div class="tbl-wrap"><table class="rn-t" data-pl="1"><thead><tr><th>Persona</th><th class="num">Retardos</th><th class="num">Faltas</th><th class="num">Alertas</th></tr></thead><tbody>
+    ${res.map(x => `<tr><td><b>${esc(x.g.nombre)}</b></td><td class="num">${x.ret}</td><td class="num">${x.faltas === null ? "aún no marca" : x.faltas}</td><td class="num">${x.al}</td></tr>`).join("")}</tbody></table></div>
+    <p class="card-m">Las faltas cuentan desde el primer día que cada quien marcó en el portal.</p>`;
+}
+/* cámara: foto en vivo (sin galería), ubicación y huella (dHash de 64 bits) */
+function asHuella(src) { const c = document.createElement("canvas"); c.width = 9; c.height = 8; const x = c.getContext("2d"); x.drawImage(src, 0, 0, 9, 8);
+  const d = x.getImageData(0, 0, 9, 8).data, g = i => d[i * 4] * .299 + d[i * 4 + 1] * .587 + d[i * 4 + 2] * .114; let bits = "";
+  for (let y = 0; y < 8; y++) for (let k = 0; k < 8; k++) bits += g(y * 9 + k) > g(y * 9 + k + 1) ? "1" : "0";
+  let h = ""; for (let i = 0; i < 64; i += 4) h += parseInt(bits.slice(i, i + 4), 2).toString(16); return h; }
+function dialogoAsistencia(tipo) {
+  if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
+  const box = dialogo("Marcar mi " + tipo.toLowerCase(), `<div class="frm"><video id="as-v" autoplay playsinline muted style="width:100%;max-height:52vh;background:#000;border-radius:12px;transform:scaleX(-1)"></video>
+    <p class="ctx" id="as-st">Activando la cámara y la ubicación…</p><button class="btn btn-dark" id="as-ok" type="button" disabled>Tomar foto y marcar ${esc(tipo.toLowerCase())}</button>
+    <p class="card-m">La foto se toma aquí, en vivo. Necesitas permitir la cámara y la ubicación. La hora la pone el sistema.</p></div>`);
+  const v = box.querySelector("#as-v"), stt = box.querySelector("#as-st"), ok = box.querySelector("#as-ok"); let stream = null, pos = null, geo = null;
+  const listo = () => { ok.disabled = !(stream && pos); stt.textContent = !stream ? "Permite la cámara para continuar." : !pos ? "Esperando tu ubicación… (actívala si te la pide)" : "Listo. Ponte de frente y toca el botón."; };
+  const parar = () => { if (stream) stream.getTracks().forEach(t => t.stop()); if (geo !== null) navigator.geolocation.clearWatch(geo); };
+  $("#dlg").addEventListener("close", parar, {once: true});
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { stt.textContent = "Este celular no deja usar la cámara desde el portal."; return; }
+  navigator.mediaDevices.getUserMedia({video: {facingMode: "user", width: {ideal: 960}}, audio: false}).then(s => { stream = s; v.srcObject = s; listo(); }).catch(() => { stt.textContent = "No se pudo abrir la cámara. Permite la cámara para el portal en tu celular e inténtalo de nuevo."; });
+  if (!navigator.geolocation) stt.textContent = "Este celular no comparte la ubicación.";
+  else geo = navigator.geolocation.watchPosition(p => { pos = p.coords; listo(); }, () => { stt.textContent = "Activa la ubicación del celular para marcar tu asistencia."; }, {enableHighAccuracy: true, maximumAge: 0, timeout: 20000});
+  ok.onclick = async () => {
+    if (!v.videoWidth) return alert("La cámara todavía no está lista.");
+    ok.disabled = true; ok.textContent = "Guardando…";
+    const w = Math.min(960, v.videoWidth), h = Math.round(v.videoHeight * w / v.videoWidth), c = document.createElement("canvas"); c.width = w; c.height = h;
+    const x = c.getContext("2d"); x.drawImage(v, 0, 0, w, h);
+    const huella = asHuella(c), stamp = YO.usuario.nombre + " · " + new Intl.DateTimeFormat("es-MX", {timeZone: TZ, dateStyle: "short", timeStyle: "short"}).format(new Date()) + " · " + tipo;
+    x.fillStyle = "rgba(0,0,0,.55)"; x.fillRect(0, h - 36, w, 36); x.fillStyle = "#fff"; x.font = "bold 18px sans-serif"; x.fillText(stamp, 12, h - 12);
+    const datos = c.toDataURL("image/jpeg", .8).split(",")[1];
+    try { const j = await post({accion: "hacer", tipo: "asistencia", marca: tipo, foto: {tipo: "image/jpeg", datos}, lat: pos.latitude, lng: pos.longitude, acc: pos.accuracy, huella});
+      parar(); $("#dlg").close(); ASIS = null; toast(tipo + " marcada a las " + j.hora + (j.retardo ? " · retardo de " + j.retardo + " min" : "") + (j.enRancho ? "" : " · fuera del rancho")); render(); }
+    catch (e) { alert(e.message); ok.disabled = false; ok.textContent = "Intentar de nuevo"; }
+  };
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.asMarcar) return dialogoAsistencia(b.dataset.asMarcar);
+  if (b.dataset.asDia) { st.asFecha = b.dataset.asDia; render(); }
+});
 /* ---------- 13 oct 2026: Rentas CEICA · tablero administrativo (CONFIDENCIAL: solo Nico, Mario y Judith) ----------
    Hoja RENTAS CEICA (carpeta privada): INMUEBLES (todo: Santa Anita, Cube 2, PVR, PVR Select, Turín, PVR Gris, PVRS Blanca, Chapala, Calzada Central),
    HISTORIAL (cobro mes por mes desde 2023), PAGOS, LUZ Y MTTO, VENTAS A PLAZOS. Atrasada = pasó el día de pago + días de gracia sin "Pagado hasta" del mes. */
@@ -3414,6 +3509,7 @@ function rvResumen(I) {
   atr.forEach(r => al.push(`<p class="r"><b>${esc(rNom(r))}</b> · ${esc(r["Arrendatario"])} debe ${E[r["ID"]].debe} ${E[r["ID"]].debe === 1 ? "mes" : "meses"} (${money(E[r["ID"]].debe * E[r["ID"]].total)}). Pagado hasta ${esc(rMesTxt(E[r["ID"]].ph))}.</p>`));
   ven.forEach(r => al.push(`<p class="v"><b>${esc(rNom(r))}</b> · contrato ${E[r["ID"]].dias < 0 ? "vencido el " : "vence el "}${esc(fFecha(E[r["ID"]].venc + "T12:00:00"))} (${E[r["ID"]].dias < 0 ? "hace " + (-E[r["ID"]].dias) : "en " + E[r["ID"]].dias} días).</p>`));
   sinDato.forEach(r => al.push(`<p><b>${esc(rNom(r))}</b> · falta poner hasta qué mes está pagado.</p>`));
+  I.filter(r => /REVISAR/.test(r["Revisión"] || "")).forEach(r => al.push(`<p><b>${esc(rNom(r))}</b> · ${esc(String(r["Revisión"]).replace(/^.*?REVISAR:\s*/, ""))} (revisión ${esc(String(r["Revisión"]).split(":")[0])}).</p>`));
   deposito.forEach(r => al.push(`<p><b>${esc(rNom(r))}</b> · falta completar el depósito en garantía (${money(numv(r["Depósito"]))} registrado).</p>`));
   if (aclarar.length) al.push(`<p><b>${aclarar.length} meses de 2026 sin registro</b> en inmuebles rentados: ${[...new Set(aclarar.map(x => x[0]["Inmueble"]))].slice(0, 8).map(esc).join(", ")}${new Set(aclarar.map(x => x[0]["Inmueble"])).size > 8 ? "…" : ""}. Revísalos en "Cobranza mes a mes" (cuadros con ?).</p>`);
   h += `<h3>Pendientes y alertas (${al.length})</h3>${al.length ? `<div class="rn-al">${al.join("")}</div>` : `<div class="empty">Todo al corriente.</div>`}`;
@@ -3471,7 +3567,7 @@ function rCard(r) {
     <div style="text-align:right">${R_RENTA(r) ? `<div class="cc-monto">${money(numv(r["Total mensual"]))}</div>${rBadge(e)}` : `<span class="badge ${r["Estatus"] === "Libre" ? "b-warn" : "b-info"}">${esc(r["Estatus"])}</span>`}</div></div>
     <p class="card-m">${R_RENTA(r) ? `Pagado hasta <b>${esc(rMesTxt(e.ph))}</b> · este mes: ${esc(R_CT[c.c] || "—")} · paga el día ${esc(r["Día de pago"] || "1")}` : ""}${r["Vencimiento"] ? " · contrato al " + esc(fFecha(e.venc + "T12:00:00")) : ""} ${rVenceTxt(e)}</p>
     <p class="card-m">${[r["m²"] ? numv(r["m²"]) + " m²" : "", numv(r["Renta base"]) ? "renta " + money(numv(r["Renta base"])) : "", rIva(r) ? "IVA " + money(rIva(r)) : "", numv(r["Mantenimiento"]) ? "mtto " + money(numv(r["Mantenimiento"])) : "", numv(r["Mtto que pagamos"]) ? "mtto que pagamos " + money(numv(r["Mtto que pagamos"])) : "", rCom(r) ? "comisión " + esc(r["Comisión a"]) + " " + numv(r["Comisión %"]) + "% (" + money(rCom(r)) + ")" : "", r["Aumento"] ? "aumento " + esc(r["Aumento"]) : "", numv(r["Depósito"]) ? "depósito " + money(numv(r["Depósito"])) : ""].filter(Boolean).join(" · ")}</p>
-    ${r["Notas"] ? `<p class="card-m">${esc(r["Notas"])}</p>` : ""}
+    ${r["Revisión"] ? `<p class="card-m">${/REVISAR/.test(r["Revisión"]) ? `<span class="badge b-warn">Revisar</span> ` : ""}Revisión: ${esc(r["Revisión"])}</p>` : ""}${r["Notas"] ? `<p class="card-m">${esc(r["Notas"])}</p>` : ""}
     <div class="acts">${R_RENTA(r) ? `<button class="btn btn-dark" type="button" data-r-pago="${esc(r["ID"])}">Registrar pago</button>` : ""}<button class="btn" type="button" data-r-cargo="${esc(r["ID"])}">Luz o mtto</button><button class="btn" type="button" data-r-hist="${esc(r["ID"])}">Historial</button><button class="btn" type="button" data-r-edit="${esc(r["ID"])}">Editar</button></div></article>`;
 }
 function rvInmuebles(I) {
@@ -3599,6 +3695,7 @@ function dialogoREditar(id) {
     <div class="dos">${campo("Vencimiento", "date", "", "Vence el contrato")}<div><label>Pagado hasta (mes)</label><input data-ri="Pagado hasta" type="month" value="${v("Pagado hasta")}"></div></div>
     <div class="dos">${campo("Depósito", "number", 'step="0.01"', "Depósito en garantía")}${campo("Aumento")}</div>
     <label>Notas</label><input data-ri="Notas" maxlength="500" value="${v("Notas")}">
+    <label>Revisión física (fecha y cómo está)</label><input data-ri="Revisión" maxlength="200" value="${v("Revisión")}" placeholder="Ej. 14 oct 2026: con cosas, sin foco">
     <datalist id="rn-tipos">${["Bodega", "Bodeguita", "Cajón", "Terreno", "Oficina", "Departamento", "Local", "Casa"].map(x => `<option value="${x}">`).join("")}</datalist>
     <datalist id="rn-grupos">${grupos.map(x => `<option value="${esc(x)}">`).join("")}</datalist><datalist id="rn-arr">${arr.map(x => `<option value="${esc(x)}">`).join("")}</datalist>
     <button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);

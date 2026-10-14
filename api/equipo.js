@@ -185,6 +185,8 @@ function permisosDe(u) {
   if (p.secciones.includes("salud") && !p.acciones.includes("movimiento")) p.acciones.push("movimiento"); // salidas, regresos y trámites (10 oct 2026)
   if (ORG.esTurno(u)) { p.secciones.splice(1, 0, "turnos"); p.acciones.push("turno", "reporte"); } // reportes de turno (10 oct 2026)
   if (ORG.vehiculosDe(u) && !p.secciones.includes("vehiculos")) p.secciones.splice(p.secciones.indexOf("tareas") + 1, 0, "vehiculos"); // control vehicular (10 oct 2026)
+  if (u.rol === "campo") { p.secciones.splice(1, 0, "asistencia"); p.acciones.push("asistencia"); } // asistencia con foto y ubicación (14 oct 2026)
+  else if (["admin", "contabilidad"].includes(u.rol)) p.secciones.splice(p.secciones.indexOf("tareas") + 1, 0, "asistencia");
   if (RENTAS_VEN(u)) p.secciones.splice(p.secciones.includes("conta") ? p.secciones.indexOf("conta") + 1 : p.secciones.length, 0, "rentas"); // rentas CEICA (13 oct 2026)
   if (ORG.llevaCaja(u)) { if (!p.secciones.includes("caja")) p.secciones.splice(p.secciones.indexOf("tareas") + 1, 0, "caja"); if (!p.acciones.includes("caja")) p.acciones.push("caja"); }
   return p;
@@ -746,8 +748,8 @@ async function rentaPost(u, body, res) {
   if (op === "cobrado") { payload.idCargo = s(body.idCargo, 40); payload.fecha = f(body.fecha); payload.forma = s(body.forma, 30); }
   if (op === "mes") { payload.id = s(body.id, 10); payload.mes = m(body.mes); payload.estado = s(body.estado, 20); payload.fecha = f(body.fecha); payload.nota = s(body.nota, 150); }
   if (op === "inmueble") { const g = body.inmueble || {}, o = {id: s(g.id, 10)};
-    ["Inmueble", "Tipo", "Grupo", "Arrendador", "Arrendatario", "Aumento", "Hoja historial", "m²", "Renta base", "IVA renta", "Mantenimiento", "Total mensual", "Mtto que pagamos", "Comisión a", "Comisión %", "Depósito", "Día de pago", "Días de gracia", "Vencimiento", "Pagado hasta", "Estatus", "Notas"]
-      .forEach(k => { if (g[k] !== undefined) o[k] = s(g[k], k === "Notas" ? 500 : 120); });
+    ["Inmueble", "Tipo", "Grupo", "Arrendador", "Arrendatario", "Aumento", "Hoja historial", "m²", "Renta base", "IVA renta", "Mantenimiento", "Total mensual", "Mtto que pagamos", "Comisión a", "Comisión %", "Depósito", "Día de pago", "Días de gracia", "Vencimiento", "Pagado hasta", "Estatus", "Notas", "Revisión"]
+      .forEach(k => { if (g[k] !== undefined) o[k] = s(g[k], k === "Notas" ? 500 : k === "Revisión" ? 200 : 120); });
     payload.inmueble = o; }
   const r = await agendaPost("panel_rentas", payload);
   return res.status(r.ok ? 200 : 400).json(r);
@@ -924,6 +926,14 @@ module.exports = async (req, res) => {
         return res.status(r.ok ? 200 : 400).json(r);
       }
       if (body.tipo === "turno") return await turnoPost(u, body, req, res);
+      if (body.tipo === "asistencia") { // 14 oct 2026: entrada o salida con foto en vivo, ubicación y huella de la foto
+        if (!u.permisos.acciones.includes("asistencia")) return res.status(403).json({error: "La asistencia la marca el personal del rancho."});
+        const fo = body.foto || {}; if (fo.tipo !== "image/jpeg" || String(fo.datos || "").length > 3e6) return res.status(400).json({error: "La foto no es válida. Vuelve a tomarla."});
+        const r = await agendaPost("panel_asistencia", {op: "marcar", quien: u.nombre, id: u.id, tipo: String(body.marca || ""), foto: {tipo: "image/jpeg", datos: String(fo.datos)},
+          lat: Number(body.lat), lng: Number(body.lng), acc: Number(body.acc) || 0, huella: String(body.huella || "").slice(0, 16), entrada: ORG.entradaDe(u),
+          dispositivo: String(req.headers["user-agent"] || "").slice(0, 120), notas: String(body.notas || "").slice(0, 200)});
+        return res.status(r.ok ? 200 : 400).json(r);
+      }
       if (body.tipo === "caballo") return await caballoPost(u, body, res);
       if (body.tipo === "movimiento") return await movimientoPost(u, body, res);
       if (body.tipo === "vehiculo") return await vehiculoPost(u, body, res);
@@ -1028,6 +1038,14 @@ module.exports = async (req, res) => {
       const personas = eq.filter(x => PERMISOS[x.rol] && x.rol !== "admin").map(x => ({nombre: x.nombre,
         videos: VIDEOS_CAP.filter(v => v.para(x)).map(v => ({id: v.id, visto: vistos[x.id + "|" + v.id] || ""}))})).filter(x => x.videos.length);
       return res.status(200).json({personas});
+    }
+    if (q.accion === "asistencia") { // 14 oct 2026: cada quien ve lo suyo; Mario, Nico y Judith ven a todos
+      if (!puede(u, "asistencia")) return res.status(403).json({error: "Sin acceso."});
+      const todos = ["admin", "contabilidad"].includes(u.rol);
+      const [j, eq] = await Promise.all([agendaPost("panel_asistencia", {op: "lista", id: todos ? "" : u.id, dias: todos ? 45 : 31}), todos ? equipo() : Promise.resolve([])]);
+      if (!j.ok) throw new Error(j.error || "asistencia");
+      return res.status(200).json({hoy: j.hoy, filas: j.filas, todos, entrada: ORG.entradaDe(u),
+        gente: todos ? eq.filter(x => x.rol === "campo").map(x => ({id: x.id, nombre: x.nombre, area: x.area || "", entrada: ORG.entradaDe(x)})) : []});
     }
     if (q.accion === "turnos") {
       if (!puede(u, "turnos")) return res.status(403).json({error: "Sin acceso."});
@@ -1151,7 +1169,7 @@ module.exports = async (req, res) => {
       return res.status(200).json({equipo: (await equipo()).map(x => ({id: x.id, nombre: x.nombre, rol: x.puesto || ROL_TXT[x.rol] || x.rol, area: x.area || "", correo: x.email || "", liga: x.liga || 0, telefono: x.telefono || ""}))});
     }
     if (q.accion === "foto") {
-      if (!["tareas", "bitacora", "salud", "conta", "caja", "herrajes", "compras"].some(s => puede(u, s))) return res.status(403).json({error: "Sin acceso."});
+      if (!["tareas", "bitacora", "salud", "conta", "caja", "herrajes", "compras", "asistencia"].some(s => puede(u, s))) return res.status(403).json({error: "Sin acceso."});
       if (!/^[A-Za-z0-9_-]{20,}$/.test(String(q.id || ""))) return res.status(400).json({error: "archivo"});
       const j = await agendaPost("panel_foto", {id: String(q.id)});
       return res.status(j.ok ? 200 : 404).json(j);

@@ -35,7 +35,7 @@ const ORG = [
   /* 13 oct 2026: Chago, mantenimiento y operador de la retro y el volteo. Mismo portal que Eliseo */
   {clave: "chago",   busca: ["chago"], puesto: "Mantenimiento y operador de retro y volteo", area: "Mantenimiento", reportaA: "mario", quitar: ["salud", "herrajes"],
    vista: {agenda: "rancho", contacto: false, ine: false}},
-  {clave: "olga",    busca: ["olgaespinoza419@gmail.com", "olga"], puesto: "Jardinería y caja chica", area: "Jardinería", reportaA: "mario", caja: true, vehiculos: ["RANCHO", "CARPINTERÍA"], quitar: ["salud", "herrajes"]}
+  {clave: "olga",    busca: ["olgaespinoza419@gmail.com", "olga"], puesto: "Jardinería y caja chica", area: "Jardinería", reportaA: "mario", caja: true, entrada: "07:00", vehiculos: ["RANCHO", "CARPINTERÍA"], quitar: ["salud", "herrajes"]}
 ];
 const CUENTAS_GENERALES = ["ranchoeldescansogdl@gmail.com"]; // no es una persona: fuera del organigrama, no asigna ni pide
 
@@ -65,6 +65,8 @@ const llevaCaja = p => { const o = puestoDe(p); return !!o && !!o.caja; };
 const seccionesQuitadas = p => (puestoDe(p) || {}).quitar || [];
 
 const esTurno = p => { const o = puestoDe(p); return !!o && !!o.turno; };
+/* 14 oct 2026: asistencia. Hora de entrada para el retardo (8:00 por omisión; Olga 7:00 según el reglamento) */
+const entradaDe = p => (puestoDe(p) || {}).entrada || "08:00";
 const vehiculosDe = p => (puestoDe(p) || {}).vehiculos || null; // 10 oct 2026: áreas del control vehicular que ve y captura
 const vistaDe = p => (puestoDe(p) || {}).vista || null; // 11 oct 2026: ajustes a los permisos del rol (Eliseo)
 const decideDe = p => (puestoDe(p) || {}).decide || [];
@@ -100,5 +102,5 @@ function puedeRevisar(p, t, equipo) {
   return !!dest && puedeAsignarA(p, dest);
 }
 
-module.exports = {ORG, esTurno, vehiculosDe, vistaDe, puestoDe, claveDe, revisaTodo, decideDe, responsableTarea, asignaAlguien, puedePedir, puedeAsignarA, areasDe, llevaCaja, seccionesQuitadas, DISP, SOLI,
+module.exports = {ORG, esTurno, entradaDe, vehiculosDe, vistaDe, puestoDe, claveDe, revisaTodo, decideDe, responsableTarea, asignaAlguien, puedePedir, puedeAsignarA, areasDe, llevaCaja, seccionesQuitadas, DISP, SOLI,
   esDisponible, esSolicitud, candidatos, FOTO, APROBO, pideFoto, puedeTomar, puedeRevisar, primerNombre, norm};
