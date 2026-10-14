@@ -79,7 +79,12 @@
    - Caballos: tipo:"caballo" op: alta | pago (venta, compra o gasto). Nico, Mario y Judith (acciones caballo_alta y caballo_pago). GET accion=caballo_ficha&id=
    - Redes: cuentas en el calendario (REDES_CUENTAS). "Wellington Q" solo la ve y la maneja Nico; sus filas de REDES llevan Cuenta = "Wellington Q".
    - Movimientos de caballos: tipo:"movimiento" op: nuevo|regreso (quien tiene Salud) | capturar (oficina). GET accion=movimientos.
-   - Redes: op instruccion|instruccion_quitar (indicaciones generales para el agente; solo quien aprueba). */
+   - Redes: op instruccion|instruccion_quitar (indicaciones generales para el agente; solo quien aprueba).
+   13 oct 2026 (decidido por Nico):
+   - Rentas CEICA (sección "rentas"): Mario, Nico, la cuenta del rancho (admin) y Judith. Datos en la hoja RENTAS CEICA
+     (pestañas INMUEBLES, PAGOS, LUZ Y MTTO, VENTAS A PLAZOS). GET accion=rentas · POST hacer tipo:"renta" op: pago|cancelar_pago|cargo|cobrado|inmueble.
+     Aviso diario a Judith (Apps Script rentasAviso): rentas atrasadas y contratos por vencer.
+   - Judith (contabilidad) también ve los reportes de turno. */
 const crypto = require("crypto");
 const AG = require("./_agenda");
 const REG = require("./_reglamento");
@@ -101,7 +106,7 @@ const PERMISOS = {
   direccion:    {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones", "bitacora"], dinero: "propio", contacto: true, ine: true, jefe: false,
                  acciones: ["saldo_pagado", "confirmar_evento", "bloquear", "nota", "liga", "tarea", "reporte", "prospecto", "agendar"]},
   ventas:       {secciones: ["hoy", "tareas", "cotizaciones", "agenda", "clientes", "eventos", "pagos", "caballos", "comisiones"], dinero: "propio", contacto: true, ine: true, jefe: false, acciones: ["nota", "liga", "tarea", "prospecto", "agendar"]},
-  contabilidad: {secciones: ["hoy", "tareas", "agenda", "cambios", "pagos", "estados", "caballos", "comisiones", "caja", "vehiculos", "herrajes", "salud", "compras", "proveedores", "conta", "bitacora"], dinero: "todo", contacto: true, ine: false, jefe: true,
+  contabilidad: {secciones: ["hoy", "tareas", "turnos", "agenda", "cambios", "pagos", "estados", "caballos", "comisiones", "caja", "vehiculos", "herrajes", "salud", "compras", "proveedores", "conta", "bitacora"], dinero: "todo", contacto: true, ine: false, jefe: true,
                  acciones: ["saldo_pagado", "nota", "tarea", "reporte", "registro", "caja", "agendar", "caballo_alta", "caballo_pago"]},
   /* campo: contacto del cliente y notas de la cita (sin montos) por si hay que llamarle el día de la sesión o evento */
   campo:        {secciones: ["hoy", "tareas", "salud", "herrajes", "compras", "bitacora", "agenda"], dinero: "nada", contacto: true, ine: true, jefe: false, acciones: ["nota", "tarea", "reporte", "servicio", "insumo"]},
@@ -115,6 +120,8 @@ const REDES_CUENTAS = {"Wellington Q": ["nicolas@legaius.com"]}; // 10 oct 2026:
 const cuentasDe = u => ["Rancho El Descanso", ...Object.keys(REDES_CUENTAS).filter(k => REDES_CUENTAS[k].includes(String(u.email || "").toLowerCase()))];
 const cuentaDeFila = x => x["Cuenta"] || "Rancho El Descanso";
 const OFICINA = ["admin", "direccion", "ventas", "contabilidad"];
+/* Rentas CEICA (13 oct 2026): admin (Nico, Mario y la cuenta del rancho, que por ahora ve todo como Nico) y Judith. */
+const RENTAS_VEN = u => ["admin", "contabilidad"].includes(u.rol);
 Object.values(PERMISOS).forEach(p => p.secciones.push("capacitacion", "reglamento")); // todos pueden releerlo · capacitación: videos de cómo se usa el portal (12 oct 2026)
 /* Videos de capacitación y a quién le tocan (misma regla que VIDEOS en equipo/index.html) */
 const VIDEOS_CAP = [{id: "00-entrar", para: () => true}, {id: "01-turno", para: x => ORG.esTurno(x)}, {id: "02-eliseo", para: x => ORG.claveDe(x) === "eliseo"}];
@@ -177,6 +184,7 @@ function permisosDe(u) {
   if (p.secciones.includes("salud") && !p.acciones.includes("movimiento")) p.acciones.push("movimiento"); // salidas, regresos y trámites (10 oct 2026)
   if (ORG.esTurno(u)) { p.secciones.splice(1, 0, "turnos"); p.acciones.push("turno", "reporte"); } // reportes de turno (10 oct 2026)
   if (ORG.vehiculosDe(u) && !p.secciones.includes("vehiculos")) p.secciones.splice(p.secciones.indexOf("tareas") + 1, 0, "vehiculos"); // control vehicular (10 oct 2026)
+  if (RENTAS_VEN(u)) p.secciones.splice(p.secciones.includes("conta") ? p.secciones.indexOf("conta") + 1 : p.secciones.length, 0, "rentas"); // rentas CEICA (13 oct 2026)
   if (ORG.llevaCaja(u)) { if (!p.secciones.includes("caja")) p.secciones.splice(p.secciones.indexOf("tareas") + 1, 0, "caja"); if (!p.acciones.includes("caja")) p.acciones.push("caja"); }
   return p;
 }
@@ -719,6 +727,29 @@ async function vehiculosVista(u) {
   return {vehiculos: veh, mantenimiento: de(j.mantenimiento), seguros: acc.papeles ? de(j.seguros) : [], refrendo: acc.papeles ? de(j.refrendo) : [],
     bitacora: de(j.bitacora).slice(-300), papeles: acc.papeles, todas: acc.todas, tipos: VEH_TIPOS};
 }
+/* ---------- 13 oct 2026: rentas CEICA ---------- */
+async function rentaPost(u, body, res) {
+  const no = (m, c = 403) => res.status(c).json({error: m});
+  if (!puede(u, "rentas")) return no("Las rentas las manejan Mario, Nico y Judith (oficina).");
+  const op = String(body.op || ""); if (!["pago", "cancelar_pago", "cargo", "cobrado", "inmueble"].includes(op)) return no("Acción no válida.", 400);
+  const archivos = Array.isArray(body.archivos) ? body.archivos.slice(0, 4) : [];
+  if (archivos.reduce((a, x) => a + String(x && x.datos || "").length, 0) > 5.5e6) return no("Los archivos pesan demasiado. Manda menos a la vez.", 413);
+  const s = (x, n) => String(x == null ? "" : x).slice(0, n), f = x => /^\d{4}-\d{2}-\d{2}$/.test(String(x || "")) ? x : "", m = x => /^\d{4}-\d{2}$/.test(String(x || "")) ? x : "";
+  const payload = {op, quien: u.nombre, archivos};
+  if (op === "pago") { const g = body.pago || {};
+    payload.pago = {id: s(g.id, 10), concepto: s(g.concepto, 20), mes: m(g.mes), meses: Number(g.meses) || 1, monto: Number(g.monto) || 0, fecha: f(g.fecha), forma: s(g.forma, 30),
+      cuenta: s(g.cuenta, 60), factura: s(g.factura, 60), paga: s(g.paga, 80), notas: s(g.notas, 300)}; }
+  if (op === "cancelar_pago") { payload.idPago = s(body.idPago, 40); payload.motivo = s(body.motivo, 150); }
+  if (op === "cargo") { const g = body.cargo || {};
+    payload.cargo = {id: s(g.id, 10), tipo: s(g.tipo, 20), periodo: s(g.periodo, 40), lectura: s(g.lectura, 40), monto: Number(g.monto) || 0, cobra: s(g.cobra, 30), notas: s(g.notas, 300)}; }
+  if (op === "cobrado") { payload.idCargo = s(body.idCargo, 40); payload.fecha = f(body.fecha); payload.forma = s(body.forma, 30); }
+  if (op === "inmueble") { const g = body.inmueble || {}, o = {id: s(g.id, 10)};
+    ["Inmueble", "Grupo", "Arrendador", "Arrendatario", "Aumento", "Hoja historial", "m²", "Renta base", "IVA renta", "Mantenimiento", "Total mensual", "Depósito", "Día de pago", "Días de gracia", "Vencimiento", "Pagado hasta", "Estatus", "Notas"]
+      .forEach(k => { if (g[k] !== undefined) o[k] = s(g[k], k === "Notas" ? 500 : 120); });
+    payload.inmueble = o; }
+  const r = await agendaPost("panel_rentas", payload);
+  return res.status(r.ok ? 200 : 400).json(r);
+}
 async function vehiculoPost(u, body, res) {
   const no = (m, c = 403) => res.status(c).json({error: m}), acc = vehAcceso(u);
   if (!acc) return no("No tienes acceso al control vehicular.");
@@ -894,6 +925,7 @@ module.exports = async (req, res) => {
       if (body.tipo === "caballo") return await caballoPost(u, body, res);
       if (body.tipo === "movimiento") return await movimientoPost(u, body, res);
       if (body.tipo === "vehiculo") return await vehiculoPost(u, body, res);
+      if (body.tipo === "renta") return await rentaPost(u, body, res);
       if (body.tipo === "cambio") return await cambio(u, body, res);
       if (body.tipo === "caja") return await cajaPost(u, body, res);
       if (body.tipo === "servicio") return await servicioPost(u, body, res);
@@ -1001,6 +1033,11 @@ module.exports = async (req, res) => {
       const todos = ORG.revisaTodo(u) || u.rol === "admin", av = new Set(j.avisos || []);
       return res.status(200).json({horas: j.horas, dias: j.dias, todos, gente: todos ? j.gente.map(g => ({...g, avisos: av.has(g.id)})) : j.gente.filter(g => g.id === u.id).map(g => ({...g, avisos: av.has(g.id)})),
         reportes: j.reportes.filter(r => todos || r["Quién"] === u.nombre), avisoMio: av.has(u.id)});
+    }
+    if (q.accion === "rentas") { // rentas CEICA (13 oct 2026)
+      if (!puede(u, "rentas")) return res.status(403).json({error: "Sin acceso."});
+      const j = await agendaPost("panel_rentas", {op: "lista"}); if (!j.ok) throw new Error(j.error || "rentas");
+      return res.status(200).json(j);
     }
     if (q.accion === "vehiculos") {
       const v = await vehiculosVista(u); if (!v) return res.status(403).json({error: "Sin acceso."});

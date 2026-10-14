@@ -369,8 +369,8 @@ const fHora = iso => new Date(iso).toLocaleTimeString("es-MX", {hour: "2-digit",
 const fFecha = iso => new Date(iso).toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "2-digit", timeZone: TZ});
 const ROLES = {admin: "Administración", direccion: "Ventas y eventos", ventas: "Ventas", contabilidad: "Contabilidad", campo: "Rancho", medico: "Médico"};
 const SECCIONES = {capacitacion: "Capacitación", hoy: "Inicio", tareas: "Tareas", turnos: "Reportes de turno", cotizaciones: "Cotizaciones", agenda: "Agenda", clientes: "Reservas y clientes", eventos: "Eventos por confirmar", cambios: "Cancelar y reagendar", pagos: "Pagos y saldos", estados: "Estados de cuenta", caballos: "Caballos y ventas",
-  comisiones: "Comisiones", caja: "Caja chica", vehiculos: "Vehículos", herrajes: "Herrajes", compras: "Alimento y compras", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", equipo: "Equipo", reglamento: "Reglamento"};
-const ICONOS = {capacitacion: "🎬", hoy: "🏠", tareas: "✅", turnos: "🕒", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", estados: "🧾", caballos: "🐴", comisiones: "💰", caja: "💵", vehiculos: "🚜", herrajes: "🔨", compras: "📦", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", equipo: "👤", reglamento: "📖"};
+  comisiones: "Comisiones", caja: "Caja chica", vehiculos: "Vehículos", herrajes: "Herrajes", compras: "Alimento y compras", redes: "Redes", salud: "Salud de caballos", bitacora: "Bitácora", proveedores: "Proveedores", conta: "Contabilidad", rentas: "Rentas CEICA", equipo: "Equipo", reglamento: "Reglamento"};
+const ICONOS = {capacitacion: "🎬", hoy: "🏠", tareas: "✅", turnos: "🕒", cotizaciones: "💬", agenda: "🗓️", clientes: "👥", eventos: "⏳", cambios: "🔁", pagos: "💳", estados: "🧾", caballos: "🐴", comisiones: "💰", caja: "💵", vehiculos: "🚜", herrajes: "🔨", compras: "📦", redes: "📷", salud: "🩺", bitacora: "📝", proveedores: "🚚", conta: "📊", rentas: "🏢", equipo: "👤", reglamento: "📖"};
 const esCel = () => window.matchMedia("(max-width:899px)").matches;
 const AREAS = ["Caballos", "Salud", "Reproducción", "Jardinería", "Mantenimiento", "Mantenimiento · empresas CEICA", "Alimentación", "Instalaciones", "Eventos y sesiones", "Ventas", "Contabilidad", "Administración", "Otro"];
 const TIPOS_SALUD = ["Revisión", "Vacuna", "Desparasitación", "Herraje / cascos", "Dental", "Tratamiento", "Lesión o cólico", "Monta / inseminación", "Palpación / ecografía", "Parto", "Destete", "Trámite KFPS / GVHS", "Otro"];
@@ -529,6 +529,7 @@ async function render() {
     if (s === "turnos") await cargar("turnos");
     if (s === "capacitacion" && (YO.usuario.rol === "admin" || (YO.org || {}).revisaTodo) && !CAPT) CAPT = await api("accion=capacitacion").catch(() => null);
     if (s === "vehiculos") await cargar("vehiculos");
+    if (s === "rentas" && !RENTAS) RENTAS = await api("accion=rentas").catch(e => ({error: e.message}));
     if (s === "compras") await cargar("compras");
     if (s === "estados") await cargar("estados");
     if (s === "cambios") { await cargar("agenda"); await cargar("cotizaciones").catch(() => {}); await cargar("cambios"); }
@@ -536,7 +537,7 @@ async function render() {
     if (s !== ACTUAL) return;
     pintarContador();
     m.innerHTML = ({hoy: vHoy, agenda: vAgenda, clientes: vClientes, eventos: vEventos, pagos: vPagos, caballos: vCaballos, comisiones: vComisiones,
-      tareas: vTareas, turnos: vTurnos, vehiculos: vVehiculos, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: () => vConta() + vGastosFijos(), equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados, capacitacion: vCapacitacion})[s]();
+      tareas: vTareas, turnos: vTurnos, vehiculos: vVehiculos, cotizaciones: vCotizaciones, cambios: vCambios, salud: vSalud, bitacora: vBitacora, proveedores: vProveedores, conta: () => vConta() + vGastosFijos(), rentas: vRentas, equipo: vEquipo, reglamento: vReglamento, redes: vRedes, caja: vCaja, herrajes: () => vServicios("herraje"), compras: vCompras, estados: vEstados, capacitacion: vCapacitacion})[s]();
   } catch (e) { if (e.message !== "sin sesión") m.innerHTML = `<div class="err">${esc(e.message)}</div><button class="btn" onclick="recargar()">Reintentar</button>`; }
 }
 function recargar() { FUERA = EST = COMP = SERV = CAJA = REDES = CAMBIOS = TURNOS = MOVS = CAPT = GFIJOS = null; AGENDA = PAGOS = CABALLOS = TAREAS = REPORTES = CONTA = EQUIPO = COTIZ = REG = null; render(); }
@@ -3258,6 +3259,180 @@ document.addEventListener("click", async e => {
     box.querySelector("#d-ok").onclick = () => { const f = (box.querySelector("input[name=cf]:checked") || {}).value; if (!f || f === actual) return $("#dlg").close();
       enviar(box, {tipo: "caja", op: "forma", id: x.ID, forma: f}, "Listo: quedó como " + CC_FP_TXT[f]); };
   }
+});
+/* ---------- 13 oct 2026: Rentas CEICA (Mario, Nico y Judith) ----------
+   Hoja RENTAS CEICA (Drive, carpeta CEICA): INMUEBLES, PAGOS, LUZ Y MTTO, VENTAS A PLAZOS. "Pagado hasta" = último mes de renta cubierto.
+   Atrasada = pasó el día de pago + días de gracia y el mes no está pagado. El mismo cálculo manda el aviso diario a Judith (Apps Script). */
+let RENTAS = null;
+const R_MES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+const rMesTxt = m => /^\d{4}-\d{2}$/.test(m || "") ? R_MES[Number(m.slice(5)) - 1] + " " + m.slice(0, 4) : "—";
+const rMesMas = (m, n) => { const a = Number(m.slice(0, 4)), b = Number(m.slice(5, 7)) - 1 + n; return (a + Math.floor(b / 12)) + "-" + String((b % 12 + 12) % 12 + 1).padStart(2, "0"); };
+const rMesesEntre = (a, b) => (Number(b.slice(0, 4)) - Number(a.slice(0, 4))) * 12 + Number(b.slice(5, 7)) - Number(a.slice(5, 7));
+function rEstado(r) {
+  const hoy = RENTAS.hoy || hoyISO(), mesHoy = hoy.slice(0, 7), dia = Number(hoy.slice(8, 10)), ph = /^\d{4}-\d{2}$/.test(r["Pagado hasta"] || "") ? r["Pagado hasta"] : "";
+  const lim = (numv(r["Día de pago"]) || 1) + (String(r["Días de gracia"] || "").trim() === "" ? 10 : numv(r["Días de gracia"]));
+  let debe = null; if (ph) { debe = rMesesEntre(ph, mesHoy); if (debe > 0 && dia <= lim) debe--; debe = Math.max(0, debe); }
+  const venc = isoDe(r["Vencimiento"]), dias = venc ? Math.round((new Date(venc + "T12:00:00Z") - new Date(hoy + "T12:00:00Z")) / 864e5) : null;
+  const porPagar = ph ? rMesesEntre(ph, mesHoy) >= 0 && dia <= lim && rMesesEntre(ph, mesHoy) === 1 : false; // el mes en curso aún está en plazo
+  return {ph, debe, venc, dias, total: numv(r["Total mensual"]), porPagar, adelantado: ph && rMesesEntre(mesHoy, ph) > 0 ? rMesesEntre(mesHoy, ph) : 0};
+}
+const rBadge = e => e.debe === null ? `<span class="badge b-warn">Falta "pagado hasta"</span>` : e.debe > 0 ? `<span class="badge b-bad">Debe ${e.debe} ${e.debe === 1 ? "mes" : "meses"}</span>`
+  : e.porPagar ? `<span class="badge b-info">Mes en plazo</span>` : e.adelantado ? `<span class="badge b-ok">Adelantado ${e.adelantado} ${e.adelantado === 1 ? "mes" : "meses"}</span>` : `<span class="badge b-ok">Al corriente</span>`;
+const rVenceTxt = e => e.dias === null ? "" : e.dias < 0 ? `<span class="badge b-bad">Contrato vencido</span>` : e.dias <= 90 ? `<span class="badge b-warn">Vence en ${e.dias} días</span>` : "";
+const rPagosDe = id => (RENTAS.pagos || []).filter(p => p["ID"] === id && p["Estatus"] !== "Cancelado");
+const rSaldoPlazo = p => numv(p["Saldo al iniciar"]) - rPagosDe(p["ID"]).reduce((a, x) => a + numv(x["Monto"]), 0);
+const rLinks = t => esc(t || "").replace(/(https:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">archivo</a>');
+function vRentas() {
+  if (RENTAS.error) return `<h2>Rentas CEICA</h2><div class="err">${esc(RENTAS.error)}</div>`;
+  const I = RENTAS.inmuebles || [], act = I.filter(r => r["Estatus"] === "Activo"), E = {}; act.forEach(r => E[r["ID"]] = rEstado(r));
+  const mes = (RENTAS.hoy || hoyISO()).slice(0, 7), tab = st.rTab || "inmuebles";
+  const atr = act.filter(r => E[r["ID"]].debe > 0), sinDato = act.filter(r => E[r["ID"]].debe === null), ven = act.filter(r => E[r["ID"]].dias !== null && E[r["ID"]].dias <= 90);
+  const cobMes = (RENTAS.pagos || []).filter(p => p["Estatus"] !== "Cancelado" && String(p["Fecha de pago"]).slice(0, 7) === mes && /^R/.test(p["ID"]));
+  const porCobrarLuz = (RENTAS.cargos || []).filter(c => c["Se cobra a"] !== "Lo paga el arrendador" && !c["Cobrado el"]);
+  const plz = (RENTAS.plazos || []).filter(p => p["Estatus"] !== "Liquidado");
+  let h = `<h2>Rentas CEICA</h2><p class="sub">Bodegas, terrenos, Cube y departamentos. Lo que captures aquí se escribe en <a href="${esc(RENTAS.url)}" target="_blank" rel="noopener">RENTAS CEICA</a> (Drive); las hojas de cada inmueble quedan como historial.</p>
+    <div class="grid-kpi"><div class="kpi"><span>Renta mensual (${act.length} activos)</span><b>${money(act.reduce((a, r) => a + E[r["ID"]].total, 0))}</b></div>
+      <div class="kpi"><span>Cobrado en ${esc(rMesTxt(mes))}</span><b>${money(cobMes.reduce((a, p) => a + numv(p["Monto"]), 0))}</b></div>
+      <div class="kpi${atr.length ? " bajo" : ""}"><span>Rentas atrasadas</span><b>${atr.length}${atr.length ? " · " + money(atr.reduce((a, r) => a + E[r["ID"]].debe * E[r["ID"]].total, 0)) : ""}</b></div>
+      <div class="kpi"><span>Contratos que vencen en 90 días</span><b>${ven.length}</b></div></div>
+    <div class="acts" style="margin:8px 0 4px"><button class="btn btn-dark" type="button" data-r-pago="">Registrar pago</button><button class="btn" type="button" data-r-cargo="">Luz o mantenimiento</button><button class="btn" type="button" data-r-edit="nuevo">Agregar inmueble</button></div>
+    <div class="sv-chips" style="margin-top:10px">${[["inmuebles", "Inmuebles"], ["pagos", "Pagos"], ["luz", "Luz y mantenimiento" + (porCobrarLuz.length ? " (" + porCobrarLuz.length + ")" : "")], ["plazos", "Ventas a plazos"]]
+      .map(([k, t]) => `<button type="button" class="chip" data-r-tab="${k}" aria-pressed="${tab === k}">${esc(t)}</button>`).join("")}</div>`;
+  if (tab === "inmuebles") {
+    const card = r => { const e = E[r["ID"]] || rEstado(r);
+      return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">🏢 ${esc(r["Inmueble"])}</p><p class="card-m">${esc(r["Arrendatario"] || "Sin arrendatario")}${r["Arrendador"] ? " · " + esc(r["Arrendador"]) : ""}</p></div>
+        <div style="text-align:right"><div class="cc-monto">${money(e.total)}</div>${r["Estatus"] === "Activo" ? rBadge(e) : `<span class="badge b-info">${esc(r["Estatus"])}</span>`}</div></div>
+        <p class="card-m">Pagado hasta <b>${esc(rMesTxt(e.ph))}</b> · paga el día ${esc(r["Día de pago"] || "1")}${r["Vencimiento"] ? " · contrato al " + esc(fFecha(e.venc + "T12:00:00")) : ""} ${rVenceTxt(e)}${r["Aumento"] ? " · aumento " + esc(r["Aumento"]) : ""}</p>
+        ${r["Notas"] ? `<p class="card-m">${esc(r["Notas"])}</p>` : ""}
+        <div class="acts"><button class="btn btn-dark" type="button" data-r-pago="${esc(r["ID"])}">Registrar pago</button><button class="btn" type="button" data-r-cargo="${esc(r["ID"])}">Luz o mtto</button><button class="btn" type="button" data-r-hist="${esc(r["ID"])}">Historial</button><button class="btn" type="button" data-r-edit="${esc(r["ID"])}">Editar</button></div></article>`; };
+    const orden = (a, b) => ((E[b["ID"]] || {}).debe || 0) - ((E[a["ID"]] || {}).debe || 0);
+    if (atr.length) h += `<p class="lbl rojo">Atrasadas</p>` + atr.slice().sort(orden).map(card).join("");
+    if (sinDato.length) h += `<p class="lbl oro">Falta poner hasta qué mes están pagadas</p>` + sinDato.map(card).join("");
+    const resto = act.filter(r => !atr.includes(r) && !sinDato.includes(r)), grupos = [...new Set(resto.map(r => r["Grupo"] || "Otros"))];
+    grupos.forEach(g => { h += `<p class="lbl gris">${esc(g)}</p>` + resto.filter(r => (r["Grupo"] || "Otros") === g).map(card).join(""); });
+    const otros = I.filter(r => r["Estatus"] !== "Activo"); if (otros.length) h += `<details class="prov"><summary><span>Desocupados y bajas (${otros.length})</span></summary>${otros.map(card).join("")}</details>`;
+    if (!I.length) h += `<div class="empty">Todavía no hay inmuebles.</div>`;
+  }
+  if (tab === "pagos") {
+    const L = (RENTAS.pagos || []).slice().reverse().slice(0, 120);
+    h += L.map(p => `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(p["Inmueble"])} · ${esc(p["Concepto"])}${p["Mes que cubre"] ? " " + esc(rMesTxt(p["Mes que cubre"])) + (numv(p["Meses"]) > 1 ? " (+" + (numv(p["Meses"]) - 1) + ")" : "") : ""}</p>
+      <p class="card-m">${[p["Fecha de pago"] ? fFecha(isoDe(p["Fecha de pago"]) + "T12:00:00") : "", p["Forma de pago"], p["Cuenta"], p["Factura"] ? "factura " + p["Factura"] : "", p["Quién paga"], p["Registró"] ? "anotó " + p["Registró"] : ""].filter(Boolean).map(esc).join(" · ")}${p["Comprobante"] ? " · " + rLinks(p["Comprobante"]) : ""}${p["Notas"] ? `<br>${esc(p["Notas"])}` : ""}</p></div>
+      <div style="text-align:right"><div class="cc-monto">${money(numv(p["Monto"]))}</div>${p["Estatus"] === "Cancelado" ? `<span class="badge b-bad">Cancelado</span>` : `<button class="btn" type="button" data-r-cancel="${esc(p["ID pago"])}" style="margin-top:6px">Cancelar</button>`}</div></div></article>`).join("") || `<div class="empty">Todavía no hay pagos registrados en el portal.</div>`;
+  }
+  if (tab === "luz") {
+    const L = (RENTAS.cargos || []).slice().reverse().slice(0, 150);
+    h += `<p class="sub">Recibos de luz, agua y mantenimiento por inmueble. Los que se le cobran al arrendatario quedan pendientes hasta que marques "Cobrado".</p>` + (L.map(c => `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(c["Inmueble"])} · ${esc(c["Tipo"])}${c["Periodo"] ? " · " + esc(c["Periodo"]) : ""}</p>
+      <p class="card-m">${[c["Lectura"] ? "lectura " + c["Lectura"] : "", c["Se cobra a"] === "Lo paga el arrendador" ? "lo paga el arrendador" : "se cobra al arrendatario", c["Cobrado el"] ? "cobrado el " + c["Cobrado el"] + (c["Forma de cobro"] ? " (" + c["Forma de cobro"] + ")" : "") : "", c["Registró"] ? "anotó " + c["Registró"] : ""].filter(Boolean).map(esc).join(" · ")}${c["Comprobante"] ? " · " + rLinks(c["Comprobante"]) : ""}${c["Notas"] ? `<br>${esc(c["Notas"])}` : ""}</p></div>
+      <div style="text-align:right"><div class="cc-monto">${money(numv(c["Monto"]))}</div>${c["Se cobra a"] !== "Lo paga el arrendador" && !c["Cobrado el"] ? `<button class="btn btn-dark" type="button" data-r-cobrado="${esc(c["ID cargo"])}" style="margin-top:6px">Cobrado</button>` : c["Cobrado el"] ? `<span class="badge b-ok">Cobrado</span>` : ""}</div></div></article>`).join("") || `<div class="empty">Todavía no hay recibos registrados.</div>`);
+  }
+  if (tab === "plazos") {
+    const L = RENTAS.plazos || [], card = p => { const s = rSaldoPlazo(p), ab = rPagosDe(p["ID"]);
+      return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(p["Unidad"])} · ${esc(p["Comprador"])}</p>
+        <p class="card-m">${[p["Precio"] ? "precio " + money(numv(p["Precio"])) : "", p["Mensualidad"] ? "mensualidad " + money(numv(p["Mensualidad"])) : "", p["Día de pago"], p["Cómo liquida"]].filter(Boolean).map(esc).join(" · ")}${ab.length ? `<br>Último abono: ${esc(ab[ab.length - 1]["Fecha de pago"])} · ${money(numv(ab[ab.length - 1]["Monto"]))}` : ""}${p["Notas"] ? `<br>${esc(p["Notas"])}` : ""}</p></div>
+        <div style="text-align:right"><div class="cc-monto">${money(Math.max(0, s))}</div><span class="badge ${s <= 1 ? "b-ok" : "b-warn"}">${s <= 1 ? "Liquidado" : "Saldo"}</span></div></div>
+        ${s > 1 ? `<div class="acts"><button class="btn btn-dark" type="button" data-r-pago="${esc(p["ID"])}">Registrar abono</button></div>` : ""}</article>`; };
+    h += `<div class="grid-kpi"><div class="kpi"><span>Por cobrar en ventas a plazos</span><b>${money(plz.reduce((a, p) => a + Math.max(0, rSaldoPlazo(p)), 0))}</b></div><div class="kpi"><span>Con saldo</span><b>${plz.length}</b></div></div>
+      <p class="sub">Tomado de "cobros CÄMPER" del Excel de Judith: confirmen los saldos.</p>` + plz.map(card).join("") + (L.length > plz.length ? `<details class="prov"><summary><span>Liquidadas (${L.length - plz.length})</span></summary>${L.filter(p => p["Estatus"] === "Liquidado").map(card).join("")}</details>` : "");
+  }
+  return h;
+}
+function rOpciones(sel) {
+  const act = (RENTAS.inmuebles || []).filter(r => r["Estatus"] === "Activo"), plz = (RENTAS.plazos || []).filter(p => p["Estatus"] !== "Liquidado");
+  return `<option value="">Elige…</option><optgroup label="Rentas">${act.map(r => `<option value="${esc(r["ID"])}"${r["ID"] === sel ? " selected" : ""}>${esc(r["Inmueble"])} · ${esc(r["Arrendatario"])}</option>`).join("")}</optgroup>
+    <optgroup label="Ventas a plazos">${plz.map(p => `<option value="${esc(p["ID"])}"${p["ID"] === sel ? " selected" : ""}>${esc(p["Unidad"])} · ${esc(p["Comprador"])}</option>`).join("")}</optgroup>`;
+}
+const rEnviar = (box, body, ok) => enviar(box, body, ok, () => { RENTAS = null; });
+function dialogoRPago(id) {
+  const box = dialogo("Registrar pago", `<div class="frm"><label>¿De qué inmueble o venta?</label><select id="rp-id">${rOpciones(id)}</select><div id="rp-campos"></div></div>`);
+  const pintar = () => {
+    const v = box.querySelector("#rp-id").value, r = (RENTAS.inmuebles || []).find(x => x["ID"] === v), p = (RENTAS.plazos || []).find(x => x["ID"] === v), c = box.querySelector("#rp-campos");
+    if (!r && !p) { c.innerHTML = ""; return; }
+    const e = r ? rEstado(r) : null, mes = e ? (e.ph ? rMesMas(e.ph, 1) : (RENTAS.hoy || hoyISO()).slice(0, 7)) : "";
+    const conceptos = r ? ["Renta", "Mantenimiento", "Luz", "Agua", "Depósito", "Otro"] : ["Abono", "Otro"];
+    c.innerHTML = `${r ? `<p class="ctx">${esc(r["Arrendatario"])} · ${money(e.total)} al mes · pagado hasta ${esc(rMesTxt(e.ph))}</p>` : `<p class="ctx">${esc(p["Comprador"])} · saldo ${money(Math.max(0, rSaldoPlazo(p)))}</p>`}
+      <label>¿Qué se pagó?</label><div class="sv-chips">${conceptos.map((t, i) => `<button type="button" class="chip" data-rp-c="${t}" aria-pressed="${i === 0}">${t}</button>`).join("")}</div>
+      ${r ? `<div class="dos" id="rp-mesbox"><div><label>Mes que cubre</label><input id="rp-mes" type="month" value="${mes}"></div><div><label>¿Cuántos meses?</label><input id="rp-n" type="number" min="1" max="24" value="1" inputmode="numeric"></div></div>` : ""}
+      <div class="dos"><div><label>Monto</label><input id="rp-m" type="number" inputmode="decimal" min="0" step="0.01" value="${r ? (Math.round(e.total * 100) / 100) : numv(p["Mensualidad"]) || ""}"></div><div><label>Fecha del pago</label><input id="rp-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div></div>
+      <div class="dos"><div><label>Forma de pago</label><select id="rp-fp">${opt(RENTAS.formas || ["Transferencia", "Efectivo", "Cheque", "Depósito en banco", "Otro"], "Transferencia")}</select></div><div><label>Cuenta donde entró</label><input id="rp-cta" maxlength="60" placeholder="Ej. BBVA CEICA"></div></div>
+      <div class="dos"><div><label>Factura (folio)</label><input id="rp-fac" maxlength="60"></div><div><label>¿Quién pagó?</label><input id="rp-q" maxlength="80" value="${esc(r ? r["Arrendatario"] : p["Comprador"])}"></div></div>
+      <label>Nota (opcional)</label><input id="rp-no" maxlength="300">
+      ${campoFotos("Comprobante (foto o PDF, opcional)", true)}
+      <button class="btn btn-dark" id="d-ok" type="button">Guardar pago</button>`;
+    activarFotos(box);
+    const conc = () => (box.querySelector("[data-rp-c][aria-pressed=true]") || {}).dataset?.rpC || conceptos[0];
+    box.querySelectorAll("[data-rp-c]").forEach(x => x.addEventListener("click", () => { box.querySelectorAll("[data-rp-c]").forEach(y => y.setAttribute("aria-pressed", y === x));
+      const mb = box.querySelector("#rp-mesbox"); if (mb) mb.style.display = ["Renta", "Mantenimiento"].includes(conc()) ? "" : "none"; }));
+    const n = box.querySelector("#rp-n"); if (n) n.addEventListener("input", () => { if (conc() === "Renta") box.querySelector("#rp-m").value = Math.round(e.total * (Number(n.value) || 1) * 100) / 100; });
+    box.querySelector("#d-ok").onclick = () => { const g = s => ((box.querySelector(s) || {}).value || "").trim();
+      if (!(Number(g("#rp-m")) > 0)) return alert("Escribe el monto.");
+      if (r && ["Renta", "Mantenimiento"].includes(conc()) && !g("#rp-mes")) return alert("¿Qué mes cubre?");
+      rEnviar(box, {tipo: "renta", op: "pago", pago: {id: v, concepto: conc(), mes: g("#rp-mes"), meses: g("#rp-n") || 1, monto: g("#rp-m"), fecha: g("#rp-f"), forma: g("#rp-fp"), cuenta: g("#rp-cta"), factura: g("#rp-fac"), paga: g("#rp-q"), notas: g("#rp-no")}}, "Pago guardado en RENTAS CEICA"); };
+  };
+  box.querySelector("#rp-id").addEventListener("change", pintar); pintar();
+}
+function dialogoRCargo(id) {
+  const act = (RENTAS.inmuebles || []).filter(r => r["Estatus"] === "Activo");
+  const box = dialogo("Luz o mantenimiento", `<div class="frm"><label>Inmueble</label><select id="rc-id"><option value="">Elige…</option>${act.map(r => `<option value="${esc(r["ID"])}"${r["ID"] === id ? " selected" : ""}>${esc(r["Inmueble"])} · ${esc(r["Arrendatario"])}</option>`).join("")}</select>
+    <label>¿Qué es?</label><div class="sv-chips">${["Luz", "Mantenimiento", "Agua", "Otro"].map((t, i) => `<button type="button" class="chip" data-rc-t="${t}" aria-pressed="${i === 0}">${t}</button>`).join("")}</div>
+    <div class="dos"><div><label>Periodo</label><input id="rc-p" maxlength="40" placeholder="Ej. 21 ago – 20 sep"></div><div><label>Lectura del medidor</label><input id="rc-l" maxlength="40"></div></div>
+    <label>Monto</label><input id="rc-m" type="number" inputmode="decimal" min="0" step="0.01">
+    <div class="rads"><label class="rad"><input type="radio" name="rc-c" value="Arrendatario" checked> <span><b>Se le cobra al arrendatario</b></span></label><label class="rad"><input type="radio" name="rc-c" value="Lo paga el arrendador"> <span><b>Lo paga el arrendador</b></span></label></div>
+    <label>Nota (opcional)</label><input id="rc-n" maxlength="300">${campoFotos("Recibo (foto o PDF, opcional)", true)}
+    <button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+  activarFotos(box);
+  box.querySelectorAll("[data-rc-t]").forEach(x => x.addEventListener("click", () => box.querySelectorAll("[data-rc-t]").forEach(y => y.setAttribute("aria-pressed", y === x))));
+  box.querySelector("#d-ok").onclick = () => { const g = s => ((box.querySelector(s) || {}).value || "").trim();
+    if (!g("#rc-id")) return alert("Elige el inmueble."); if (!(Number(g("#rc-m")) > 0)) return alert("Escribe el monto.");
+    rEnviar(box, {tipo: "renta", op: "cargo", cargo: {id: g("#rc-id"), tipo: (box.querySelector("[data-rc-t][aria-pressed=true]") || {}).dataset?.rcT || "Luz", periodo: g("#rc-p"), lectura: g("#rc-l"), monto: g("#rc-m"),
+      cobra: (box.querySelector("input[name=rc-c]:checked") || {}).value, notas: g("#rc-n")}}, "Guardado en Luz y mantenimiento"); };
+}
+function dialogoREditar(id) {
+  const r = (RENTAS.inmuebles || []).find(x => x["ID"] === id) || {}, nuevo = !r["ID"], v = k => esc(r[k] || "");
+  const campo = (k, t = "text", extra = "") => `<div><label>${esc(k)}</label><input data-ri="${esc(k)}" type="${t}" value="${t === "number" ? numv(r[k]) || "" : t === "date" ? isoDe(r[k]) : v(k)}" ${extra}></div>`;
+  const box = dialogo(nuevo ? "Agregar inmueble" : "Editar · " + r["Inmueble"], `<div class="frm">${nuevo ? "" : `<p class="ctx">Para renovar: cambia el vencimiento, la renta y el total. Si cambia el arrendatario, pon el nuevo nombre y el mes desde el que está pagado.</p>`}
+    <div class="dos">${campo("Inmueble")}${campo("Grupo")}</div><div class="dos">${campo("Arrendatario")}${campo("Arrendador")}</div>
+    <div class="dos">${campo("Renta base", "number", 'step="0.01"')}${campo("IVA renta", "number", 'step="0.01"')}</div><div class="dos">${campo("Mantenimiento", "number", 'step="0.01"')}${campo("Total mensual", "number", 'step="0.01"')}</div>
+    <div class="dos">${campo("Día de pago", "number", 'min="1" max="28"')}${campo("Días de gracia", "number", 'min="0" max="40"')}</div>
+    <div class="dos">${campo("Vencimiento", "date")}<div><label>Pagado hasta (mes)</label><input data-ri="Pagado hasta" type="month" value="${v("Pagado hasta")}"></div></div>
+    <div class="dos">${campo("Depósito", "number", 'step="0.01"')}${campo("Aumento")}</div>
+    <div class="dos">${campo("m²", "number", 'step="0.01"')}<div><label>Estatus</label><select data-ri="Estatus">${opt(["Activo", "Desocupado", "Baja"], r["Estatus"] || "Activo")}</select></div></div>
+    <label>Notas</label><input data-ri="Notas" maxlength="500" value="${v("Notas")}">
+    <button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+  box.querySelector("#d-ok").onclick = () => { const o = {id: nuevo ? "" : r["ID"]};
+    box.querySelectorAll("[data-ri]").forEach(x => { const k = x.dataset.ri, val = x.value.trim(), antes = x.type === "number" ? String(numv(r[k]) || "") : x.type === "date" ? isoDe(r[k]) : String(r[k] || "");
+      if (nuevo ? val : val !== antes) o[k] = val; });
+    if (nuevo && !o["Inmueble"]) return alert("Escribe el nombre del inmueble.");
+    if (Object.keys(o).length === 1) return $("#dlg").close();
+    rEnviar(box, {tipo: "renta", op: "inmueble", inmueble: o}, nuevo ? "Inmueble agregado" : "Cambios guardados"); };
+}
+function rHistorial(id) {
+  const r = (RENTAS.inmuebles || []).find(x => x["ID"] === id); if (!r) return;
+  const P = (RENTAS.pagos || []).filter(p => p["ID"] === id).slice().reverse(), C = (RENTAS.cargos || []).filter(c => c["ID"] === id).slice().reverse();
+  dialogo("Historial · " + r["Inmueble"], `<div class="frm"><p class="card-m">${[["Arrendatario", r["Arrendatario"]], ["Arrendador", r["Arrendador"]], ["m²", r["m²"]], ["Renta base", r["Renta base"]], ["IVA", r["IVA renta"]], ["Mantenimiento", r["Mantenimiento"]], ["Total mensual", r["Total mensual"]], ["Depósito", r["Depósito"]], ["Aumento", r["Aumento"]], ["Vence", r["Vencimiento"]], ["Historial en el Excel", r["Hoja historial"]]].filter(x => x[1]).map(([k, x]) => `<b>${esc(k)}:</b> ${esc(x)}`).join("<br>")}</p>
+    <h3>Pagos registrados en el portal</h3>${P.map(p => `<p class="card-m">${esc(p["Fecha de pago"])} · ${esc(p["Concepto"])} ${esc(rMesTxt(p["Mes que cubre"]))} · <b>${money(numv(p["Monto"]))}</b> · ${esc(p["Forma de pago"])}${p["Estatus"] === "Cancelado" ? ` <span class="badge b-bad">Cancelado</span>` : ""}</p>`).join("") || `<p class="card-m">Aún no hay. Lo anterior está en la hoja "${esc(r["Hoja historial"] || "")}" del archivo.</p>`}
+    <h3>Luz y mantenimiento</h3>${C.map(c => `<p class="card-m">${esc(c["Registrado"].slice(0, 10))} · ${esc(c["Tipo"])} ${esc(c["Periodo"] || "")} · <b>${money(numv(c["Monto"]))}</b>${c["Cobrado el"] ? " · cobrado " + esc(c["Cobrado el"]) : ""}</p>`).join("") || `<p class="card-m">Sin recibos registrados.</p>`}
+    <p class="card-m"><a href="${esc(RENTAS.url)}" target="_blank" rel="noopener">Abrir RENTAS CEICA</a></p></div>`);
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const d = b.dataset;
+  if (d.rTab) { st.rTab = d.rTab; render(); return; }
+  if (d.rPago === undefined && d.rCargo === undefined && !d.rEdit && !d.rHist && !d.rCancel && !d.rCobrado) return;
+  if (!d.rHist && COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
+  try { if (!RENTAS) RENTAS = await api("accion=rentas"); } catch (err) { return alert(err.message); }
+  if (d.rPago !== undefined) return dialogoRPago(d.rPago);
+  if (d.rCargo !== undefined) return dialogoRCargo(d.rCargo);
+  if (d.rEdit) return dialogoREditar(d.rEdit === "nuevo" ? "" : d.rEdit);
+  if (d.rHist) return rHistorial(d.rHist);
+  if (d.rCancel) { const p = (RENTAS.pagos || []).find(x => x["ID pago"] === d.rCancel); if (!p) return;
+    const box = dialogo("Cancelar pago", `<div class="frm"><p class="ctx">${esc(p["Inmueble"])} · ${esc(p["Concepto"])} ${esc(rMesTxt(p["Mes que cubre"]))} · ${money(numv(p["Monto"]))}. Queda en el archivo como "Cancelado"${p["Concepto"] === "Renta" ? " y el \"pagado hasta\" regresa a como estaba" : ""}.</p>
+      <label>¿Por qué?</label><input id="rx-m" maxlength="150" placeholder="Ej. Se capturó dos veces"><button class="btn btn-dark" id="d-ok" type="button">Cancelar el pago</button></div>`);
+    box.querySelector("#d-ok").onclick = () => rEnviar(box, {tipo: "renta", op: "cancelar_pago", idPago: p["ID pago"], motivo: box.querySelector("#rx-m").value.trim()}, "Pago cancelado"); return; }
+  if (d.rCobrado) { const c = (RENTAS.cargos || []).find(x => x["ID cargo"] === d.rCobrado); if (!c) return;
+    const box = dialogo("Cobrado · " + c["Inmueble"], `<div class="frm"><p class="ctx">${esc(c["Tipo"])} ${esc(c["Periodo"] || "")} · ${money(numv(c["Monto"]))}</p>
+      <div class="dos"><div><label>Fecha</label><input id="ry-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div><div><label>Forma</label><select id="ry-fp">${opt(RENTAS.formas || ["Transferencia", "Efectivo"], "Transferencia")}</select></div></div>
+      <button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+    box.querySelector("#d-ok").onclick = () => rEnviar(box, {tipo: "renta", op: "cobrado", idCargo: c["ID cargo"], fecha: box.querySelector("#ry-f").value, forma: box.querySelector("#ry-fp").value}, "Marcado como cobrado"); }
 });
 window.addEventListener("hashchange", () => { const h = location.hash.slice(1) || "hoy"; if (YO && h !== ACTUAL && (YO.permisos.secciones.includes(h) || h === "menu")) ir(h); });
 iniciar();
