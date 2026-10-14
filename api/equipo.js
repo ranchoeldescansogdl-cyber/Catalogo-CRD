@@ -734,7 +734,7 @@ async function vehiculosVista(u) {
 async function rentaPost(u, body, res) {
   const no = (m, c = 403) => res.status(c).json({error: m});
   if (!puede(u, "rentas") || !RENTAS_VEN(u)) return no("Las rentas solo las manejan Mario, Nico y Judith.");
-  const op = String(body.op || ""); if (!["pago", "cancelar_pago", "mes", "cargo", "cobrado", "inmueble"].includes(op)) return no("Acción no válida.", 400);
+  const op = String(body.op || ""); if (!["pago", "cancelar_pago", "mes", "cargo", "cobrado", "inmueble", "factura", "duda", "facturas_import"].includes(op)) return no("Acción no válida.", 400);
   const archivos = Array.isArray(body.archivos) ? body.archivos.slice(0, 4) : [];
   if (archivos.reduce((a, x) => a + String(x && x.datos || "").length, 0) > 5.5e6) return no("Los archivos pesan demasiado. Manda menos a la vez.", 413);
   const s = (x, n) => String(x == null ? "" : x).slice(0, n), f = x => /^\d{4}-\d{2}-\d{2}$/.test(String(x || "")) ? x : "", m = x => /^\d{4}-\d{2}$/.test(String(x || "")) ? x : "";
@@ -751,6 +751,14 @@ async function rentaPost(u, body, res) {
     ["Inmueble", "Tipo", "Grupo", "Arrendador", "Arrendatario", "Aumento", "Hoja historial", "m²", "Renta base", "IVA renta", "Mantenimiento", "Total mensual", "Mtto que pagamos", "Comisión a", "Comisión %", "Depósito", "Día de pago", "Días de gracia", "Vencimiento", "Pagado hasta", "Estatus", "Notas", "Revisión"]
       .forEach(k => { if (g[k] !== undefined) o[k] = s(g[k], k === "Notas" ? 500 : k === "Revisión" ? 200 : 120); });
     payload.inmueble = o; }
+  if (op === "factura") { const g = body.factura || {}; // 14 oct 2026 (V26): facturas CCI / GOJ
+    payload.factura = {accion: s(g.accion, 12), empresa: s(g.empresa, 4), folio: s(g.folio, 20), fecha: f(g.fecha), cliente: s(g.cliente, 120), rfc: s(g.rfc, 20), concepto: s(g.concepto, 200), tipo: s(g.tipo, 30),
+      mes: m(g.mes), importe: Number(g.importe) || 0, iva: Number(g.iva) || 0, total: Number(g.total) || 0, forma: s(g.forma, 30), notas: s(g.notas, 200)};
+    if (g.id !== undefined) payload.factura.id = s(g.id, 10); }
+  if (op === "duda") { payload.idDuda = s(body.idDuda, 40); payload.respuesta = s(body.respuesta, 600); payload.abierta = !!body.abierta; }
+  if (op === "facturas_import") { // carga inicial desde los Excel de Judith: solo Nico
+    if (String(u.email || "").toLowerCase() !== "nicolas@legaius.com") return no("Solo Nico puede cargar el historial de facturas.");
+    payload.filas = (Array.isArray(body.filas) ? body.filas : []).slice(0, 800); payload.dudas = (Array.isArray(body.dudas) ? body.dudas : []).slice(0, 60); }
   const r = await agendaPost("panel_rentas", payload);
   return res.status(r.ok ? 200 : 400).json(r);
 }

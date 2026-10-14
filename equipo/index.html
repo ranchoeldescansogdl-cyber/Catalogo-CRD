@@ -3507,11 +3507,11 @@ function rCobradoMes(I, mes) { // renta cobrada en ese mes (por mes que cubre), 
 function vRentas() {
   if (RENTAS.error) return `<h2>Rentas CEICA</h2><div class="err">${esc(RENTAS.error)}</div>`;
   const I = RENTAS.inmuebles || [], tab = st.rnTab || "resumen";
-  const tabs = [["resumen", "Resumen"], ["cobranza", "Cobranza mes a mes"], ["inmuebles", "Inmuebles"], ["pagos", "Pagos"], ["luz", "Luz y mantenimiento"], ["plazos", "Ventas a plazos"], ["archivo", "Archivo"]];
+  const tabs = [["resumen", "Resumen"], ["cobranza", "Cobranza mes a mes"], ["inmuebles", "Inmuebles"], ["pagos", "Pagos"], ["luz", "Luz y mantenimiento"], ["plazos", "Ventas a plazos"], ["facturas", "Facturas"], ["archivo", "Archivo"]];
   return `<h2>Rentas CEICA <span class="rn-conf">Confidencial</span></h2><p class="sub">Solo Nico, Mario y Judith. Todo se guarda en <a href="${esc(RENTAS.url)}" target="_blank" rel="noopener">RENTAS CEICA</a> (carpeta privada de Drive).</p>
     <div class="acts" style="margin:4px 0 2px"><button class="btn btn-dark" type="button" data-r-pago="">Registrar pago</button><button class="btn" type="button" data-r-cargo="">Luz o mantenimiento</button><button class="btn" type="button" data-r-edit="nuevo">Agregar inmueble</button></div>
     <div class="rn-tabs" role="tablist">${tabs.map(([k, t]) => `<button type="button" class="chip" data-r-tab="${k}" aria-pressed="${tab === k}">${esc(t)}</button>`).join("")}</div>` +
-    ({resumen: rvResumen, cobranza: rvCobranza, inmuebles: rvInmuebles, pagos: rvPagos, luz: rvLuz, plazos: rvPlazos, archivo: rvArchivo}[tab] || rvResumen)(I);
+    ({resumen: rvResumen, cobranza: rvCobranza, inmuebles: rvInmuebles, pagos: rvPagos, luz: rvLuz, plazos: rvPlazos, facturas: rvFacturas, archivo: rvArchivo}[tab] || rvResumen)(I);
 }
 function rvResumen(I) {
   const mh = rMesHoy(), act = I.filter(R_RENTA), E = {}; act.forEach(r => E[r["ID"]] = rEstado(r));
@@ -3539,6 +3539,8 @@ function rvResumen(I) {
   I.filter(r => /REVISAR/.test(r["Revisión"] || "")).forEach(r => al.push(`<p><b>${esc(rNom(r))}</b> · ${esc(String(r["Revisión"]).replace(/^.*?REVISAR:\s*/, ""))} (revisión ${esc(String(r["Revisión"]).split(":")[0])}).</p>`));
   deposito.forEach(r => al.push(`<p><b>${esc(rNom(r))}</b> · falta completar el depósito en garantía (${money(numv(r["Depósito"]))} registrado).</p>`));
   if (aclarar.length) al.push(`<p><b>${aclarar.length} meses de 2026 sin registro</b> en inmuebles rentados: ${[...new Set(aclarar.map(x => x[0]["Inmueble"]))].slice(0, 8).map(esc).join(", ")}${new Set(aclarar.map(x => x[0]["Inmueble"])).size > 8 ? "…" : ""}. Revísalos en "Cobranza mes a mes" (cuadros con ?).</p>`);
+  const SD = rSinDep(); if (SD.length) al.unshift(`<p class="r"><b>${SD.length} ${SD.length === 1 ? "factura" : "facturas"} sin depósito</b> por ${money(SD.reduce((a, f) => a + f.total, 0))}: ${SD.slice(0, 6).map(f => esc((rInmNom(f.id) || f.cliente) + " (" + f.tipo.toLowerCase() + ")")).join(", ")}${SD.length > 6 ? "…" : ""}. Regístralas en la pestaña Facturas.</p>`);
+  h += rvDudas();
   h += `<h3>Pendientes y alertas (${al.length})</h3>${al.length ? `<div class="rn-al">${al.join("")}</div>` : `<div class="empty">Todo al corriente.</div>`}`;
   // pendientes del mes
   h += `<h3>Por cobrar en ${esc(rMesTxt(mh))} (${pendMes.length})</h3>${pendMes.length ? `<div class="tbl-wrap"><table class="rn-t" data-pl="1"><thead><tr><th>Inmueble</th><th>Arrendatario</th><th class="num">Monto</th><th>Estado</th></tr></thead><tbody>
@@ -3608,6 +3610,82 @@ function rvInmuebles(I) {
   grupos.forEach(g => { const rs = L.filter(r => (r["Grupo"] || "Otros") === g); h += `<p class="lbl gris">${esc(g)} (${rs.length})</p>` + rs.map(rCard).join(""); });
   return h + (L.length ? "" : `<div class="empty">No hay inmuebles en esta vista.</div>`);
 }
+/* 14 oct 2026 (V26): FACTURAS de CEICA (CCI) y Grupo Ojanguren (GOJ) y DUDAS que resuelve Judith */
+const R_MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+const rFac = () => (RENTAS.facturas || []).map(a => ({emp: a[0], folio: a[1], fecha: a[2], cliente: a[3], concepto: a[4], tipo: a[5], id: a[6], mes: a[7], importe: a[8], iva: a[9], total: a[10], dep: a[11], notas: a[12]}));
+const rSinDep = () => rFac().filter(f => f.fecha >= "2026" && !f.dep && f.tipo !== "Cancelada" && f.total > 0).sort((a, b) => a.fecha < b.fecha ? -1 : 1);
+const rDudas = () => (RENTAS.dudas || []).filter(d => d["Estatus"] !== "Resuelta");
+const rInmNom = id => { const r = (RENTAS.inmuebles || []).find(x => x["ID"] === id); return r ? rNom(r) : ""; };
+const rMesFac = () => { const h = rHoy(); return Number(h.slice(8, 10)) >= 20 ? rMesMas(h.slice(0, 7), 1) : h.slice(0, 7); };
+function rPorFacturar(mes) { // misma factura que el mes anterior, con el mes nuevo en el concepto
+  const F = rFac(), sig = {}; F.forEach(f => { const n = parseInt(f.folio, 10); if (f.fecha && n > (sig[f.emp] || 0)) sig[f.emp] = n; });
+  const out = [], act = (RENTAS.inmuebles || []).filter(R_RENTA).map(r => r["ID"]);
+  act.forEach(id => {
+    const L = F.filter(f => f.id === id && ["Renta", "Mantenimiento", "Renta y mantenimiento"].includes(f.tipo) && f.mes && f.mes < mes && f.fecha >= "2026-06"); if (!L.length) return;
+    const ult = L.reduce((a, f) => f.mes > a ? f.mes : a, ""), base = L.filter(f => f.mes === ult);
+    [...new Set(base.map(f => f.tipo))].forEach(t => { const b = base.find(f => f.tipo === t);
+      if (F.some(f => f.id === id && f.tipo === t && f.mes === mes && f.tipo !== "Cancelada")) return out.push({ya: true, id, t, b});
+      const mt = R_MESES[Number(mes.slice(5)) - 1] + " " + mes.slice(0, 4);
+      const concepto = b.concepto.replace(/\b(ene|feb|mzo|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)[a-zé]*\.?\s*\.?\s*20\d\d/i, mt);
+      sig[b.emp] = (sig[b.emp] || 0) + 1; out.push({ya: false, id, t, b, concepto, folio: String(sig[b.emp]), mes}); });
+  });
+  return out;
+}
+function rvFacturas(I) {
+  const mes = st.rnFacMes || rMesFac(), P = rPorFacturar(mes), pend = P.filter(x => !x.ya), S = rSinDep(), Dd = (RENTAS.dudas || []).filter(d => d["Estatus"] === "Resuelta");
+  const q = (st.rnFacQ || "").toLowerCase(), H = rFac().filter(f => !q || (f.folio + " " + f.cliente + " " + f.concepto + " " + rInmNom(f.id)).toLowerCase().includes(q)).sort((a, b) => (b.fecha || "").localeCompare(a.fecha || "")).slice(0, 150);
+  return `<h3>Por facturar · ${esc(rMesTxt(mes))} (${pend.length})</h3><div class="acts">${[rMesMas(rHoy().slice(0, 7), -1), rHoy().slice(0, 7), rMesMas(rHoy().slice(0, 7), 1)].map(m => `<button type="button" class="chip" data-rn-fmes="${m}" aria-pressed="${m === mes}">${esc(rMesTxt(m))}</button>`).join("")}</div>
+    ${P.length ? `<div class="tbl-wrap"><table class="rn-t" data-pl="1"><thead><tr><th>Inmueble</th><th>Concepto</th><th class="num">Total</th><th></th></tr></thead><tbody>${P.map((x, i) => `<tr><td><b>${esc(rInmNom(x.id))}</b><br><small>${esc(x.b.emp)} · ${esc(x.b.cliente)}</small></td><td>${esc(x.ya ? x.t : x.concepto)}${x.ya ? "" : `<br><small>Folio sugerido ${esc(x.b.emp)} ${esc(x.folio)}</small>`}</td><td class="num">${money(x.b.total)}</td><td>${x.ya ? `<span class="badge b-ok">Facturada</span>` : `<button class="btn" type="button" data-r-fac="${i}" data-r-facmes="${mes}">Ya la facturé</button>`}</td></tr>`).join("")}</tbody></table></div>` : `<div class="empty">No hay facturas de referencia para este mes.</div>`}
+    <h3>Facturas sin depósito (${S.length} · ${money(S.reduce((a, f) => a + f.total, 0))})</h3>${S.length ? `<div class="tbl-wrap"><table class="rn-t" data-pl="1"><thead><tr><th>Folio</th><th>Inmueble</th><th>Concepto</th><th class="num">Total</th><th></th></tr></thead><tbody>${S.map(f => `<tr><td>${esc(f.emp)} ${esc(f.folio)}<br><small>${esc(f.fecha)}</small></td><td><b>${esc(rInmNom(f.id) || "Sin ligar")}</b><br><small>${esc(f.cliente)}</small></td><td>${esc(f.concepto)}<br><small>${esc(f.tipo)}</small></td><td class="num">${money(f.total)}</td><td><button class="btn btn-dark" type="button" data-r-dep="${esc(f.emp + "|" + f.folio)}">Registrar depósito</button></td></tr>`).join("")}</tbody></table></div>` : `<div class="empty">Todas las facturas tienen depósito.</div>`}
+    <h3>Historial de facturas</h3><input id="rn-fq" type="search" placeholder="Buscar folio, cliente, concepto o inmueble" value="${esc(st.rnFacQ || "")}" style="width:100%;margin:4px 0 8px">
+    <div class="tbl-wrap"><table class="rn-t" data-pl="1"><thead><tr><th>Folio</th><th>Fecha</th><th>Inmueble</th><th>Concepto</th><th class="num">Total</th><th>Depósito</th></tr></thead><tbody>${H.map(f => `<tr><td>${esc(f.emp)} ${esc(f.folio)}</td><td>${esc(f.fecha)}</td><td>${esc(rInmNom(f.id) || "—")}</td><td>${esc(f.concepto)}<br><small>${esc(f.tipo)}${f.mes ? " · " + esc(rMesTxt(f.mes)) : ""}</small></td><td class="num">${money(f.total)}</td><td>${f.dep ? esc(f.dep) : f.tipo === "Cancelada" ? "" : `<span class="badge b-warn">Pendiente</span>`}</td></tr>`).join("")}</tbody></table></div>
+    <p class="sub">Se muestran facturas de 2025 en adelante. El consecutivo completo (desde 2012) está en la pestaña FACTURAS de RENTAS CEICA.</p>
+    ${Dd.length ? `<h3>Dudas resueltas (${Dd.length})</h3>${Dd.map(d => `<p class="card-m"><b>${esc(d["Inmueble"] || "")}</b> · ${esc(d["Pregunta"])}<br>→ ${esc(d["Respuesta"])} <small>(${esc(d["Resolvió"])}, ${esc(d["Resuelta el"])})</small></p>`).join("")}` : ""}`;
+}
+function rvDudas() {
+  const D = rDudas(); if (!D.length) return "";
+  return `<h3>Dudas para Judith (${D.length})</h3><div class="rn-al">${D.map(d => `<p><b>${esc(d["Inmueble"] || "General")}</b>${d["Tema"] ? " · " + esc(d["Tema"]) : ""}<br>${esc(d["Pregunta"])}${d["Respuesta"] ? `<br><small>Respuesta: ${esc(d["Respuesta"])}</small>` : ""}<br><button class="btn" type="button" data-r-duda="${esc(d["ID duda"])}" style="margin-top:6px">Responder</button></p>`).join("")}</div>`;
+}
+function dialogoRFac(x) {
+  const b = x.b, box = dialogo("Factura emitida · " + rInmNom(x.id), `<div class="frm"><p class="ctx">${esc(R_EMPRESAS_TXT[b.emp] || b.emp)} · ${esc(b.cliente)}</p>
+    <div class="dos"><div><label>Folio</label><input id="rf-fo" value="${esc(x.folio)}"></div><div><label>Fecha</label><input id="rf-f" type="date" value="${hoyISO()}"></div></div>
+    <label>Concepto</label><input id="rf-c" maxlength="200" value="${esc(x.concepto)}">
+    <div class="dos"><div><label>Importe</label><input id="rf-i" inputmode="decimal" value="${b.importe}"></div><div><label>IVA</label><input id="rf-v" inputmode="decimal" value="${b.iva}"></div></div>
+    <label>Total</label><input id="rf-t" inputmode="decimal" value="${b.total}"><button class="btn btn-dark" id="d-ok" type="button">Guardar factura</button></div>`);
+  const g = s => box.querySelector(s).value.trim();
+  box.querySelector("#d-ok").onclick = () => rEnviar(box, {tipo: "renta", op: "factura", factura: {accion: "alta", empresa: b.emp, folio: g("#rf-fo"), fecha: g("#rf-f"), cliente: b.cliente, concepto: g("#rf-c"), tipo: x.t, id: x.id, mes: x.mes,
+    importe: numv(g("#rf-i")), iva: numv(g("#rf-v")), total: numv(g("#rf-t"))}}, "Factura guardada");
+}
+const R_EMPRESAS_TXT = {CCI: "CEICA Construcciones", GOJ: "Grupo Ojanguren"};
+function dialogoRDep(key) {
+  const [emp, folio] = key.split("|"), f = rFac().find(x => x.emp === emp && x.folio === folio); if (!f) return;
+  const act = (RENTAS.inmuebles || []).filter(r => !R_ARCHIVO.includes(r["Estatus"]));
+  const box = dialogo("Depósito · " + emp + " " + folio, `<div class="frm"><p class="ctx">${esc(f.cliente)} · ${esc(f.concepto)} · <b>${money(f.total)}</b></p>
+    <label>Inmueble</label><select id="rd-id"><option value="">Sin ligar (otro ingreso)</option>${act.map(r => `<option value="${esc(r["ID"])}"${r["ID"] === f.id ? " selected" : ""}>${esc(rNom(r))}</option>`).join("")}</select>
+    <div class="dos"><div><label>Mes que cubre</label><input id="rd-m" type="month" value="${esc(f.mes || "")}"></div><div><label>Fecha del depósito</label><input id="rd-f" type="date" value="${hoyISO()}" max="${hoyISO()}"></div></div>
+    <label>Forma</label><select id="rd-fp">${opt(RENTAS.formas || ["Transferencia", "Efectivo"], "Transferencia")}</select>
+    <p class="card-m">También queda registrado como pago del inmueble (${esc(f.tipo === "Mantenimiento" ? "mantenimiento" : /Renta/.test(f.tipo) ? "renta" : "otro")}).</p>
+    <button class="btn btn-dark" id="d-ok" type="button">Guardar depósito</button></div>`);
+  const g = s => box.querySelector(s).value.trim();
+  box.querySelector("#d-ok").onclick = () => rEnviar(box, {tipo: "renta", op: "factura", factura: {accion: "deposito", empresa: emp, folio, fecha: g("#rd-f"), forma: g("#rd-fp"), id: g("#rd-id"), mes: g("#rd-m")}}, "Depósito guardado");
+}
+function dialogoRDuda(id) {
+  const d = (RENTAS.dudas || []).find(x => x["ID duda"] === id); if (!d) return;
+  const box = dialogo("Duda · " + (d["Inmueble"] || "Rentas"), `<div class="frm"><p class="ctx">${esc(d["Pregunta"])}</p><label>Respuesta</label><textarea id="rq-r" rows="4" maxlength="600">${esc(d["Respuesta"] || "")}</textarea>
+    <label class="chk"><input type="checkbox" id="rq-a"> Todavía no está resuelta (dejarla abierta)</label><button class="btn btn-dark" id="d-ok" type="button">Guardar</button></div>`);
+  box.querySelector("#d-ok").onclick = () => rEnviar(box, {tipo: "renta", op: "duda", idDuda: id, respuesta: box.querySelector("#rq-r").value.trim(), abierta: box.querySelector("#rq-a").checked}, "Respuesta guardada");
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return; const d = b.dataset;
+  if (d.rnFmes) { st.rnFacMes = d.rnFmes; render(); return; }
+  if (d.rFac === undefined && !d.rDep && !d.rDuda) return;
+  if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
+  if (d.rFac !== undefined) { const x = rPorFacturar(d.rFacmes)[Number(d.rFac)]; if (x && !x.ya) dialogoRFac(x); return; }
+  if (d.rDep) return dialogoRDep(d.rDep);
+  if (d.rDuda) return dialogoRDuda(d.rDuda);
+});
+document.addEventListener("input", e => { if (e.target.id === "rn-fq") { st.rnFacQ = e.target.value; clearTimeout(window._rnfq); window._rnfq = setTimeout(() => { render(); const i = $("#rn-fq"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }, 350); } });
+
 function rvArchivo(I) {
   const L = I.filter(r => R_ARCHIVO.includes(r["Estatus"]));
   return `<p class="sub">Vendidos, en caso legal, de uso propio y dados de baja. No cuentan en la renta ni en la ocupación.</p>` + R_ARCHIVO.map(e => { const rs = L.filter(r => r["Estatus"] === e); return rs.length ? `<p class="lbl gris">${esc(e)} (${rs.length})</p>` + rs.map(rCard).join("") : ""; }).join("");
