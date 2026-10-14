@@ -263,6 +263,16 @@ section[id],main[id]{scroll-margin-top:20px}
 .stud-group{margin-top:44px}
 .stud-group h3{font-family:var(--display);font-weight:400;font-size:1.5rem;margin:0 0 6px;color:var(--paper)}
 .stud-rate{color:var(--gold);margin:0 0 22px;font-size:.98rem}
+/* 14 oct 2026: envío de semen fresco y garantía de maquilas */
+.semen-envio{display:grid;grid-template-columns:1.3fr 1fr;gap:clamp(18px,3vw,40px);margin-top:40px;border-top:1px solid var(--rule-dark);padding-top:34px}
+.semen-envio h3{font-family:var(--display);font-weight:400;font-size:1.5rem;margin:0 0 8px;color:var(--paper)}
+.semen-envio p{color:rgba(255,255,255,.78);margin:0 0 14px;line-height:1.55}
+.se-costos{list-style:none;margin:0 0 14px;padding:0;border:1px solid var(--rule-dark)}
+.se-costos li{display:flex;justify-content:space-between;gap:12px;padding:11px 14px;border-bottom:1px solid var(--rule-dark);color:rgba(255,255,255,.86)}.se-costos li:last-child{border-bottom:0}
+.se-costos b{color:var(--gold);font-weight:500;white-space:nowrap}
+.se-nota{font-size:.9rem;color:rgba(255,255,255,.62)!important}
+.se-garantia{border:1px solid rgba(206,179,92,.45);padding:22px;background:linear-gradient(180deg,rgba(206,179,92,.08),transparent)}
+@media (max-width:760px){.semen-envio{grid-template-columns:1fr}}
 .studs{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
 .stud-card{border:1px solid var(--rule-dark);border-radius:2px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(180deg,rgba(206,179,92,.06),rgba(206,179,92,0))}
 .stud-card .plate{aspect-ratio:1/1;margin:-22px -22px 6px;border-radius:0}
@@ -997,6 +1007,23 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
     <div class="seg seg-dark" role="group" aria-label="Raza del semental" id="f-studs"><button data-v="Friesian" aria-pressed="true">Friesian</button><button data-v="Gypsy Vanner" aria-pressed="false">Gypsy Vanner</button></div>
     <div id="studs" data-raza="Friesian"></div>
     <p class="fine">Precios por monta en pesos mexicanos, más IVA. Todas las montas son facturables. Sujetos a disponibilidad del semental; pregunta por fechas y condiciones.</p>
+    <div class="semen-envio">
+      <div class="se-col">
+        <h3>Envío de semen fresco</h3>
+        <p>Si tu yegua no puede venir al rancho, te enviamos semen fresco refrigerado del semental que elijas.</p>
+        <ul class="se-costos">
+          <li><span>Maquila del semental</span><b>su precio de monta</b></li>
+          <li><span>Por eyaculado</span><b>+ $3,500</b></li>
+          <li><span>Contenedor refrigerado</span><b>+ $1,000</b></li>
+          <li><span>Paquetería</span><b>+ según destino</b></li>
+        </ul>
+        <p class="se-nota">Vida útil de 36 horas desde la colecta, refrigerado a 4–6 °C en el contenedor. Coordinamos la fecha con tu veterinario para inseminar en cuanto llegue.</p>
+      </div>
+      <div class="se-col se-garantia">
+        <h3>Garantía de preñez</h3>
+        <p>Todas las maquilas en formato físico tienen garantía, incluso si la yegua reabsorbe o aborta durante los primeros 4 meses de gestación, siempre que sea con el mismo semental y la misma yegua, salvo casos extraordinarios.</p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1522,9 +1549,10 @@ body.vw:not([data-v="inicio"]) .band:first-of-type{padding-top:clamp(36px,5vw,72
         <li><strong>Eventos:</strong> la fecha queda apartada al recibir el anticipo del 10% y la confirmación del Rancho. El saldo y sus fechas de pago se establecen en la propuesta formal.</li>
         <li><strong>Sesiones fotográficas:</strong> se reservan con mínimo 24 horas de anticipación y se apartan con un anticipo de $2,500 MXN al agendar. Al pagar el anticipo autorizas que el resto se cobre automáticamente a esa misma tarjeta 2 días antes de la sesión. Si ese cargo no pasa, te mandamos por WhatsApp o correo una liga para pagarlo; la sesión debe quedar pagada antes de empezar. Si reservas con menos de 48 horas, se paga el total al reservar. Al reservar indicas tu hora de llegada (desde el inicio de tu horario y hasta una hora después), el nombre del titular y de cada acompañante, y subes la identificación oficial del titular. La sesión dura 3 horas a partir de la hora de llegada que elegiste; si llegas más tarde no se extiende, salvo que contrates horas extra. Máximo 8 personas en total contando al titular (fotógrafo, maquillista y familia incluidos); solo ingresan las personas registradas.</li>
         <li><strong>Días festivos:</strong> en días festivos (oficiales, Jueves y Viernes Santo, 24 y 31 de diciembre) no se reservan sesiones ni se apartan eventos en línea; pregúntanos por WhatsApp si ese día está habilitado.</li>
-        <li><strong>Caballos en venta:</strong> el 10% del precio publicado aparta el caballo durante 15 días naturales. En ese plazo se liquida el saldo o se acuerda por escrito otro esquema.</li>
+        <li><strong>Caballos en venta:</strong> el 10% del precio publicado aparta el caballo durante 7 días naturales. En ese plazo se liquida el saldo o se acuerda por escrito otro esquema.</li>
         <li><strong>Potros 2027:</strong> la reserva de $10,000 MXN asegura tu lugar en la lista de espera y se abona íntegra al precio del potro. Según el plan que elijas, al precio del potro se suma 5% (pagos de $20,000 mensuales), 10% ($15,000) o 15% ($10,000). Si al destete queda saldo, el potro permanece en el Rancho y la pensión corre por tu cuenta hasta liquidarlo.</li>
-        <li><strong>Maquilas:</strong> la garantía de preñez se mantiene hasta que la yegua quede cargada y hasta 4 meses después. La pensión de la yegua durante su estancia se cobra aparte.</li>
+        <li><strong>Maquilas:</strong> todas las maquilas en formato físico tienen garantía de preñez, incluso si la yegua reabsorbe o aborta durante los primeros 4 meses de gestación, siempre que sea con el mismo semental y la misma yegua, salvo casos extraordinarios. La pensión de la yegua durante su estancia se cobra aparte.</li>
+        <li><strong>Envío de semen fresco:</strong> se cobra el precio de la maquila del semental más $3,500 MXN por eyaculado, $1,000 MXN del contenedor y la paquetería. El semen refrigerado tiene una vida útil de 36 horas desde la colecta; la fecha de envío se coordina con el veterinario de la yegua.</li>
       </ul>
       <h4>Ingreso al Rancho</h4>
       <ul>
@@ -1647,7 +1675,7 @@ const TARIFAS_FALLBACK = [
   ["sesion","manana","","",4000,3,1500,2500,"sí","Lunes a viernes de 10:00 a 14:00 · 2 caballos · todos los escenarios · cambio de vestuario · hasta 8 personas"],
   ["sesion","tarde","","",5000,3,1500,2500,"sí","Lunes a viernes de 14:00 a 18:00,o sábado de 10:00 a 14:00 · 2 caballos · todos los escenarios · cambio de vestuario · hasta 8 personas"],
   ["sesion","produccion","","",10000,4,2500,0.5,"sí","Medio día · marcas,moda,video · equipo hasta 10 personas · caballos según brief"],
-  ["apartado","caballo_en_venta","","",0,"","",0.1,"sí","10% del precio publicado aparta el caballo 15 días."],
+  ["apartado","caballo_en_venta","","",0,"","",0.1,"sí","10% del precio publicado aparta el caballo 7 días."],
   ["apartado","potro_2027","","",10000,"","","","sí","Reserva de lugar en lista de espera; se abona al precio del potro."]
 ].map(r=>({servicio:r[0],tipo:r[1],min:r[2],max:r[3],precio:r[4],horas:r[5],hora_extra:r[6],anticipo:r[7],publicar:r[8],nota:r[9]}));
 const FALLBACK = [{"Nombre": "ILE (ULRIKE)", "Raza": "Friesian", "Sexo": "Hembra", "Capa": "NEGRO", "Nacimiento": "26/05/2026", "Alzada (m)": "", "Padre": "DUSSE VAN", "Madre": "ULRIKE", "Abuelo materno": "WYLSTER 463", "Predicado propio": "", "Predicados maternos": "KROON AA 2º, 2º, 1º PREMIO/STER/STER PREF*5/STER/STER PREF*4", "ADN": "", "Precio": "328700", "Link foto": "", "Link video": ""}, {"Nombre": "CHARLOTTE VAN de Meulebossen", "Raza": "Friesian", "Sexo": "Hembra", "Capa": "NEGRO", "Nacimiento": "03/05/2016", "Alzada (m)": "1.68", "Padre": "GERBEN 479", "Madre": "RIENA FAN IT HIEM", "Abuelo materno": "ANTON 343", "Predicado propio": "3º PREMIO STB", "Predicados maternos": "STER/STER PREF*6/STER PREF*6/STER PREF*4", "ADN": "ENANISMO NICO-LIBRE DV", "Precio": "498700", "Link foto": "", "Link video": ""}, {"Nombre": "GRACE (GRIETSJE)", "Raza": "Friesian", "Sexo": "Hembra", "Capa": "NEGRO", "Nacimiento": "12/08/2026", "Alzada (m)": "", "Padre": "DUSSE VAN", "Madre": "GRIETSJE", "Abuelo materno": "JURRE 495", "Predicado propio": "", "Predicados maternos": "1º,1º PREMIO/STER/STER/MODEL PREF AA*5/STER", "ADN": "", "Precio": "328700", "Link foto": "", "Link video": ""}, {"Nombre": "WAILING VAN LAPINENBURG", "Raza": "Friesian", "Sexo": "Macho", "Capa": "NEGRO", "Nacimiento": "01/05/2023", "Alzada (m)": "", "Padre": "TIEDE 501", "Madre": "ANDREA K", "Abuelo materno": "JEHANNES 484", "Predicado propio": "", "Predicados maternos": "MODEL AAA/STER PREF*5/STER PREF*5", "ADN": "", "Precio": "1050000", "Link foto": "", "Link video": ""}, {"Nombre": "HARMEN (NINA)", "Raza": "Friesian", "Sexo": "Macho", "Capa": "NEGRO", "Nacimiento": "09/04/2026", "Alzada (m)": "", "Padre": "YGRAM", "Madre": "NINA", "Abuelo materno": "NANE 492", "Predicado propio": "", "Predicados maternos": "VB/KROON SPORT AA/STER PREF PREST*5/STER PREF*5/MODEL PREF*7", "ADN": "", "Precio": "294700", "Link foto": "", "Link video": ""}, {"Nombre": "BOB2", "Raza": "Gypsy Vanner", "Sexo": "Hembra", "Capa": "", "Nacimiento": "01/05/2019", "Alzada (m)": "1.60", "Padre": "", "Madre": "", "Abuelo materno": "", "Predicado propio": "", "Predicados maternos": "", "ADN": "", "Precio": "498700", "Link foto": "", "Link video": ""}, {"Nombre": "ZURI CA", "Raza": "Gypsy Vanner", "Sexo": "Hembra", "Capa": "", "Nacimiento": "23/05/2023", "Alzada (m)": "", "Padre": "MARCOPOLO", "Madre": "KAROLINE", "Abuelo materno": "BLIZZARD", "Predicado propio": "", "Predicados maternos": "", "ADN": "", "Precio": "498700", "Link foto": "", "Link video": ""}, {"Nombre": "DESIEE (IVORY)", "Raza": "Gypsy Vanner", "Sexo": "Hembra", "Capa": "CREMELLO", "Nacimiento": "29/04/2025", "Alzada (m)": "", "Padre": "BLIZZARD", "Madre": "ITS IVORY GIRL", "Abuelo materno": "FLAS OF GOLD", "Predicado propio": "", "Predicados maternos": "", "ADN": "", "Precio": "348700", "Link foto": "", "Link video": ""}, {"Nombre": "SIR ALBERT (MOONLIGHT)", "Raza": "Gypsy Vanner", "Sexo": "Macho", "Capa": "CREMELLO", "Nacimiento": "18/07/2025", "Alzada (m)": "", "Padre": "ITS BLIZZARD", "Madre": "ITS MOONLIGHT", "Abuelo materno": "ITS AMADEUS", "Predicado propio": "", "Predicados maternos": "", "ADN": "", "Precio": "328700", "Link foto": "", "Link video": ""}, {"Nombre": "ISBRAND (MADAME CURIE)", "Raza": "Gypsy Vanner", "Sexo": "Macho", "Capa": "", "Nacimiento": "22/06/2026", "Alzada (m)": "", "Padre": "MARCO POLO", "Madre": "MADAME CURIE", "Abuelo materno": "ITS BLIZZARD", "Predicado propio": "", "Predicados maternos": "", "ADN": "", "Precio": "328700", "Link foto": "", "Link video": ""}];
@@ -2780,7 +2808,7 @@ function apartarHTML(h){
   const on = PAGO_ON("caballo_anticipo");
   const wa = waLink(`Hola, quiero apartar a ${h.nombreVis} (${h.raza}) del catálogo de Rancho El Descanso con el anticipo del ${Math.round(p*100)}% (${money(monto)}). ¿Cómo hago el pago?`);
   return `<a class="btn btn-line" data-apartar="${esc(h.id)}" data-wa="${esc(wa)}" href="${on?"#":wa}"${on?"":` target="_blank" rel="noopener"`}>Apartar con el ${Math.round(p*100)}% · ${money(monto)}</a>
-    <p class="sheet-dep" style="flex-basis:100%">${on?`Pago seguro con tarjeta en Stripe; el apartado dura 15 días.`:`El apartado dura 15 días a partir del pago.`}</p>`;
+    <p class="sheet-dep" style="flex-basis:100%">${on?`Pago seguro con tarjeta en Stripe; el apartado dura 7 días.`:`El apartado dura 7 días a partir del pago.`}</p>`;
 }
 function wirePotros(){
   const t=tarifa("apartado","potro_2027"); const monto=(t&&t.precio)||10000;
@@ -2796,7 +2824,7 @@ function wirePotros(){
 /* Regreso de Stripe. /api/checkout manda al cliente de vuelta a /?pago=evento|caballo|potro|sesion&ref={CHECKOUT_SESSION_ID}; api/saldo.js a /?pago=saldo */
 const GRACIAS = {
   evento:["Recibimos tu anticipo","Te escribimos por WhatsApp el mismo día para confirmar tu fecha y enviarte la propuesta formal de tu evento."],
-  caballo:["Tu caballo quedó apartado","Recibimos tu anticipo. El apartado dura 15 días; te escribimos por WhatsApp para coordinar la visita, el examen y el saldo."],
+  caballo:["Tu caballo quedó apartado","Recibimos tu anticipo. El apartado dura 7 días; te escribimos por WhatsApp para coordinar la visita, el examen y el saldo."],
   sesion:["Tu sesión quedó apartada","Recibimos tu pago y tu horario ya está en nuestra agenda. Te escribimos por WhatsApp para afinar detalles; si pagaste anticipo, el resto se cobra automáticamente a la misma tarjeta 2 días antes. Llega a la hora que elegiste con tu identificación original; solo ingresan las personas que registraste."],
   potro:["Tu lugar en la lista está reservado","Recibimos tu reserva de potro 2027. Te escribimos por WhatsApp para confirmar tu lugar en la lista."],
   saldo:["Tu sesión quedó pagada","Recibimos el resto de tu sesión. Llega a la hora que elegiste con tu identificación original; solo ingresan las personas que registraste."]

@@ -177,7 +177,7 @@ async function cargoCaballo(body, T) {
   return {
     monto, pago: "caballo", ref: `CAB-${id}`,
     nombre: `Apartado ${Math.round(p * 100)}% · ${nombre}`,
-    descripcion: `${col(r, "raza") || "Caballo"} · precio publicado ${money(precio)} MXN. El apartado dura 15 días naturales.`,
+    descripcion: `${col(r, "raza") || "Caballo"} · precio publicado ${money(precio)} MXN. El apartado dura 7 días naturales.`,
     meta: {caballo: nombre, caballo_id: col(r, "id"), caballo_slug: id, precio_caballo: String(precio)}
   };
 }
