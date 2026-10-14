@@ -317,6 +317,43 @@ body.como main .acts,body.como main .big-actions,body.como .hoy-acts,body.como .
 .aviso{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:.9rem;margin:0 0 12px}
 .ok-big{font-family:var(--display);font-size:1.4rem;color:var(--ok);text-align:center;margin:0 0 12px}
 .frm .btn-wa{width:100%;justify-content:center;padding:13px;font-size:1rem;margin:0 0 10px}
+/* 13 oct 2026 · Orden por apartados (decidido por Nico): cada página se arma en bloques que se abren y cierran; dentro, las listas largas
+   muestran las primeras y cada tarjeta enseña solo lo principal con "Ver detalle". Lo hace plegar() solo, sobre lo que pinta cada sección. */
+.pl-g{background:#fff;border:1px solid var(--rule);border-radius:14px;margin:10px 0;overflow:hidden}
+.pl-g>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:54px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.pl-g>summary::-webkit-details-marker{display:none}
+.pl-g>summary:hover{background:#faf9f6}
+.pl-t{flex:1;min-width:0}
+.pl-t>h3,.pl-t>.lbl,.pl-t>p{margin:0!important;font-family:var(--display);font-weight:400;font-size:1.12rem;letter-spacing:0;text-transform:none;color:var(--ink)}
+.pl-n{flex:none;min-width:28px;text-align:center;border-radius:999px;padding:3px 10px;font-size:.82rem;font-weight:600;background:var(--info-bg);color:var(--muted)}
+.pl-n.pl-urg{background:var(--bad-bg);color:var(--bad)}
+.pl-n.pl-ok{background:var(--ok-bg);color:var(--ok)}
+.pl-chev{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:var(--gold-deep);transition:transform .18s}
+.pl-chev::before{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+.pl-g[open]>summary .pl-chev{transform:rotate(180deg)}
+.pl-g[open]>summary{border-bottom:1px solid var(--rule)}
+.pl-b{background:var(--mist);padding:12px}
+.pl-b>:first-child{margin-top:0}.pl-b>:last-child{margin-bottom:0}
+.pl-b .card{margin-bottom:8px}
+.pl-g.pl-sub{border-radius:12px;margin:8px 0}
+.pl-g.pl-sub>summary{min-height:46px;padding:10px 14px}
+.pl-g.pl-sub>summary .pl-t>*{font-family:inherit!important;font-size:.82rem!important;font-weight:700!important;letter-spacing:.05em!important;text-transform:uppercase!important}
+.pl-g.pl-sub>summary .pl-t>.lbl.rojo{color:var(--bad)!important}.pl-g.pl-sub>summary .pl-t>.lbl.oro{color:var(--gold-deep)!important}.pl-g.pl-sub>summary .pl-t>.lbl.gris{color:var(--muted)!important}
+.pl-b .pl-g.pl-sub>.pl-b{background:#fff}
+section.blk.pl-hecho{margin:10px 0 0}
+.card.pl-c{position:relative;padding-right:48px}
+.card.pl-c:not(.pl-on)>:not(.card-h):not(.acts):not(.pl-keep):not(.pl-tog){display:none!important}
+.card.pl-c:not(.pl-on)>.acts.pl-sinpri{display:none!important}
+.card.pl-c:not(.pl-on)>.acts>:not(.pl-pri):not(.pl-tog){display:none!important}
+.card.pl-c>.card-h{cursor:pointer}
+.pl-tog{position:absolute;top:10px;right:8px;width:34px;height:34px;border-radius:50%;border:1px solid var(--rule);background:#fff;color:var(--gold-deep);cursor:pointer;display:grid;place-items:center;padding:0;pointer-events:auto!important;opacity:1!important}
+.pl-tog::before{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .18s}
+.card.pl-on>.pl-tog::before{transform:translateY(2px) rotate(-135deg)}
+.card.pl-on>.pl-tog{background:var(--mist)}
+.pl-oc{display:none!important}
+.pl-mas{display:block;width:100%;margin:4px 0 0;padding:12px;border-radius:12px;border:1px dashed var(--gold-deep);background:#fff;color:var(--gold-deep);font-weight:600;cursor:pointer;font-size:.92rem}
+@media (max-width:600px){ .pl-g>summary{padding:12px 14px} .pl-b{padding:10px 8px} .pl-t>h3,.pl-t>.lbl,.pl-t>p{font-size:1.05rem} }
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:0 0 16px}
 </style>
 </head>
 <body>
@@ -3435,6 +3472,95 @@ document.addEventListener("click", async e => {
     box.querySelector("#d-ok").onclick = () => rEnviar(box, {tipo: "renta", op: "cobrado", idCargo: c["ID cargo"], fecha: box.querySelector("#ry-f").value, forma: box.querySelector("#ry-fp").value}, "Marcado como cobrado"); }
 });
 window.addEventListener("hashchange", () => { const h = location.hash.slice(1) || "hoy"; if (YO && h !== ACTUAL && (YO.permisos.secciones.includes(h) || h === "menu")) ir(h); });
+/* ---------- 13 oct 2026: orden por apartados (decidido por Nico) ----------
+   Después de pintar cualquier sección, plegar() la acomoda: bloques (h3 / etiquetas / bloques de Inicio) que se abren y cierran con su número
+   de pendientes, listas largas con "Ver los otros N", tablas largas recortadas y tarjetas que muestran solo lo principal (título, dato clave
+   y el botón principal) con "Ver detalle". Se abre solo lo urgente y el primer bloque; lo que cada quien abre se recuerda en ese celular. */
+const PL_SIN = ["menu", "reglamento", "agenda"];
+const PL_URG = /atrasad|vencid|espera tu decisi|lo tuyo|por aprobar|problema|pendiente|hace falta|debe |por capturar|por revisar|sin reporte|hoy$|^hoy|toca/i;
+let PL_AB = {}; try { PL_AB = JSON.parse(localStorage.getItem("crd_pl") || "{}"); } catch (e) {}
+const plClave = t => ACTUAL + "|" + String(t || "").toLowerCase().replace(/\(.*?\)|[\d$,.·:]+/g, "").replace(/\s+/g, " ").trim().slice(0, 60);
+function plGuarda(k, v) { PL_AB[k] = v; try { localStorage.setItem("crd_pl", JSON.stringify(PL_AB)); } catch (e) {} }
+const PL_ITEM = ":scope > article.card, :scope > div.card, :scope > details.prov, :scope > details.ev-mini, :scope > .rcv, :scope > .sv-row";
+function plCuenta(body) {
+  let n = body.querySelectorAll("article.card, div.card, details.prov, details.ev-mini, .rcv").length;
+  if (!n) n = body.querySelectorAll("table tbody tr").length;
+  return n;
+}
+function plGrupo(head, nodos, sub, idx) {
+  const tmp = document.createElement("div"); nodos.forEach(x => tmp.appendChild(x.cloneNode(true)));
+  if (!plCuenta(tmp) && tmp.querySelector(".empty") && !tmp.querySelector("input,select,textarea,button") && tmp.textContent.length < 300) return null; // vacío: se queda como está
+  const d = document.createElement("details"); d.className = "pl-g" + (sub ? " pl-sub" : "");
+  const s = document.createElement("summary"), t = document.createElement("span"), b = document.createElement("div");
+  t.className = "pl-t"; b.className = "pl-b";
+  head.parentNode.insertBefore(d, head); t.appendChild(head); s.appendChild(t); d.appendChild(s); d.appendChild(b);
+  nodos.forEach(n => b.appendChild(n));
+  const texto = head.textContent.trim(), n = plCuenta(b), vacio = false;
+  const urg = !vacio && (PL_URG.test(texto) || !!b.querySelector(".badge.b-bad, .kpi.bajo, .lbl.rojo")), form = !!b.querySelector("input:not(.search):not([type=search]),select,textarea");
+  if (n) { const p = document.createElement("span"); p.className = "pl-n" + (urg ? " pl-urg" : ""); p.textContent = String(n); s.appendChild(p); }
+  const ch = document.createElement("span"); ch.className = "pl-chev"; s.appendChild(ch);
+  const k = plClave(texto); d.dataset.k = k;
+  d.plPri = urg || form; d.plMem = k in PL_AB; d.open = d.plMem ? PL_AB[k] : false;
+  d.addEventListener("toggle", () => plGuarda(k, d.open));
+  return d;
+}
+function plAbreUno(gs) { // si nadie ha decidido, se abre solo uno: el primero urgente o, si no hay, el primero
+  if (!gs.length || gs.some(g => g.plMem)) return; (gs.find(g => g.plPri) || gs[0]).open = true;
+}
+function plAgrupar(c, sel, sub, minimo) {
+  const heads = [...c.children].filter(x => x.matches(sel)); if (heads.length < minimo) return [];
+  const hechos = [];
+  heads.forEach((h, i) => { const nodos = []; let x = h.nextElementSibling;
+    while (x && !x.matches(sel) && !x.matches("h2, h3, section.blk")) { nodos.push(x); x = x.nextElementSibling; }
+    if (!nodos.length) return; const g = plGrupo(h, nodos, sub, i); if (g) hechos.push(g); });
+  plAbreUno(hechos); return hechos;
+}
+function plLista(body) {
+  const it = [...body.querySelectorAll(PL_ITEM)]; if (it.length <= 8) return;
+  it.slice(6).forEach(x => x.classList.add("pl-oc"));
+  const b = document.createElement("button"); b.type = "button"; b.className = "pl-mas"; b.textContent = "Ver los otros " + (it.length - 6);
+  it[it.length - 1].after(b); b.addEventListener("click", () => { it.forEach(x => x.classList.remove("pl-oc")); b.remove(); });
+}
+function plTablas(root) {
+  root.querySelectorAll("table").forEach(tb => { const rs = [...tb.querySelectorAll("tbody > tr")]; if (rs.length <= 12 || tb.dataset.pl) return; tb.dataset.pl = "1";
+    rs.slice(10).forEach(r => r.classList.add("pl-oc"));
+    const b = document.createElement("button"); b.type = "button"; b.className = "pl-mas"; b.textContent = "Ver las " + rs.length + " filas";
+    (tb.closest(".tbl-wrap") || tb).after(b); b.addEventListener("click", () => { rs.forEach(r => r.classList.remove("pl-oc")); b.remove(); }); });
+}
+function plTarjeta(c) {
+  if (c.dataset.pl || c.querySelector("input,select,textarea,video,audio") || c.closest(".rcv")) return; c.dataset.pl = "1";
+  const kids = [...c.children]; let h = kids.find(x => x.classList.contains("card-h"));
+  const acts = kids.find(x => x.classList.contains("acts"));
+  if (!h) { const t = kids.find(x => x.classList.contains("card-t")); if (!t) return; t.classList.add("pl-keep"); const sig = t.nextElementSibling; if (sig && sig.classList.contains("card-m")) sig.classList.add("pl-keep"); h = t; }
+  const det = kids.filter(x => x !== h && x !== acts && !x.classList.contains("pl-keep"));
+  const btns = acts ? [...acts.children] : [];
+  if (!det.length && btns.length <= 2) return;
+  c.classList.add("pl-c");
+  const pri = btns.find(x => x.classList.contains("btn-dark")) || (btns.length === 1 ? btns[0] : null); if (pri) pri.classList.add("pl-pri"); else if (acts) acts.classList.add("pl-sinpri");
+  const t = document.createElement("button"); t.type = "button"; t.className = "pl-tog"; t.setAttribute("aria-label", "Ver detalle"); c.appendChild(t);
+  const tog = () => { const on = c.classList.toggle("pl-on"); t.setAttribute("aria-label", on ? "Ocultar detalle" : "Ver detalle"); };
+  t.addEventListener("click", e => { e.stopPropagation(); tog(); });
+  (h.classList.contains("card-h") ? h : c).addEventListener("click", e => { if (e.target.closest("button, a, input, select, label")) return; tog(); });
+}
+function plegar(m) {
+  if (PL_SIN.includes(ACTUAL) || !m.firstElementChild || m.firstElementChild.classList.contains("load")) return;
+  // Inicio: cada bloque (section.blk) es un apartado; se abren los urgentes de arriba (hasta 2)
+  const ini = [];
+  [...m.querySelectorAll(":scope > section.blk")].forEach((s, i) => { const h = s.firstElementChild;
+    if (!h || h.tagName !== "H3" || s.querySelector(".menu-grid, .qa, .hoy-acts, .big-actions") || s.classList.contains("pl-hecho")) return; s.classList.add("pl-hecho");
+    const nodos = [...s.children].slice(1); if (!nodos.length) return; const g = plGrupo(h, nodos, false, i); if (!g) return; s.appendChild(g); ini.push(g);
+    plAgrupar(g.querySelector(".pl-b"), "p.lbl", true, 2).forEach(x => plLista(x.querySelector(".pl-b"))); plLista(g.querySelector(".pl-b")); });
+  if (ini.length && !ini.some(g => g.plMem)) { const u = ini.filter(g => g.plPri).slice(0, 2); (u.length ? u : ini.slice(0, 1)).forEach(g => { g.open = true; }); }
+  // Resto: primero por títulos (h3); si no hay al menos dos, por etiquetas
+  let gs = plAgrupar(m, "h3", false, 2);
+  if (gs.length) gs.forEach(g => { const b = g.querySelector(".pl-b"); plAgrupar(b, "p.lbl", true, 2).forEach(x => plLista(x.querySelector(".pl-b"))); plLista(b); });
+  else { gs = plAgrupar(m, "p.lbl", false, 2); gs.forEach(g => plLista(g.querySelector(".pl-b"))); if (!gs.length) plLista(m); }
+  plTablas(m);
+  m.querySelectorAll("article.card, div.card").forEach(plTarjeta);
+}
+(() => { const m = document.getElementById("main"); if (!m || !window.MutationObserver) return;
+  const ob = new MutationObserver(() => { try { plegar(m); } catch (e) { console.error("plegar", e); } ob.takeRecords(); });
+  ob.observe(m, {childList: true}); })();
 iniciar();
 </script>
 </body>
