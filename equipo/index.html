@@ -3285,7 +3285,7 @@ const rLinks = t => esc(t || "").replace(/(https:\/\/[^\s]+)/g, '<a href="$1" ta
 function vRentas() {
   if (RENTAS.error) return `<h2>Rentas CEICA</h2><div class="err">${esc(RENTAS.error)}</div>`;
   const I = RENTAS.inmuebles || [], act = I.filter(r => r["Estatus"] === "Activo"), E = {}; act.forEach(r => E[r["ID"]] = rEstado(r));
-  const mes = (RENTAS.hoy || hoyISO()).slice(0, 7), tab = st.rTab || "inmuebles";
+  const mes = (RENTAS.hoy || hoyISO()).slice(0, 7), tab = st.rnTab || "inmuebles";
   const atr = act.filter(r => E[r["ID"]].debe > 0), sinDato = act.filter(r => E[r["ID"]].debe === null), ven = act.filter(r => E[r["ID"]].dias !== null && E[r["ID"]].dias <= 90);
   const cobMes = (RENTAS.pagos || []).filter(p => p["Estatus"] !== "Cancelado" && String(p["Fecha de pago"]).slice(0, 7) === mes && /^R/.test(p["ID"]));
   const porCobrarLuz = (RENTAS.cargos || []).filter(c => c["Se cobra a"] !== "Lo paga el arrendador" && !c["Cobrado el"]);
@@ -3416,7 +3416,7 @@ function rHistorial(id) {
 document.addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   const d = b.dataset;
-  if (d.rTab) { st.rTab = d.rTab; render(); return; }
+  if (d.rTab) { st.rnTab = d.rTab; render(); return; }
   if (d.rPago === undefined && d.rCargo === undefined && !d.rEdit && !d.rHist && !d.rCancel && !d.rCobrado) return;
   if (!d.rHist && COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
   try { if (!RENTAS) RENTAS = await api("accion=rentas"); } catch (err) { return alert(err.message); }
