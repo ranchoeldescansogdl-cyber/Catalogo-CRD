@@ -3448,6 +3448,27 @@ function rHis() { // {id: {mes: {e, f, monto, luz, mtto, fl, nota, origen}}}
   (RENTAS.historial || []).forEach(h => { (R_H[h[0]] = R_H[h[0]] || {})[h[1]] = {e: h[2], f: h[3], monto: numv(h[4]), luz: numv(h[5]), mtto: numv(h[6]), fl: h[7], nota: h[8], origen: h[9]}; });
   return R_H;
 }
+/* 14 oct (V25): lo que falta de cada mes según los pagos del portal (desde oct 2026): renta (con IVA) y mantenimiento por separado, y luz por cobrar */
+const R_PARCIAL_DESDE = "2026-10";
+const rParteRenta = r => { const b = numv(r["Renta base"]); return b > 0 ? b + numv(r["IVA renta"]) : numv(r["Total mensual"]); };
+const rParteMtto = r => Math.max(0, Math.round((numv(r["Total mensual"]) - rParteRenta(r)) * 100) / 100);
+function rPagMes(id, mes) {
+  let renta = 0, mtto = 0, n = 0;
+  (RENTAS.pagos || []).forEach(p => { if (p["ID"] !== id || p["Estatus"] === "Cancelado") return; const m0 = p["Mes que cubre"] || "", k = Math.max(1, numv(p["Meses"]) || 1);
+    if (p["Concepto"] === "Renta" && m0 && mes >= m0 && mes <= rMesMas(m0, k - 1)) { renta += numv(p["Monto"]) / k; n++; }
+    else if (p["Concepto"] === "Mantenimiento" && m0 === mes) { mtto += numv(p["Monto"]); n++; } });
+  return {renta, mtto, n};
+}
+function rFalta(r, mes) { // null = sin pagos del portal ese mes (manda el historial)
+  if (mes < R_PARCIAL_DESDE || !R_RENTA(r)) return null; const p = rPagMes(r["ID"], mes); if (!p.n) return null;
+  const tot = numv(r["Total mensual"]), mp = rParteMtto(r);
+  let fr = Math.max(0, rParteRenta(r) - p.renta), fm = Math.max(0, mp - p.mtto);
+  if (p.renta + p.mtto >= tot - 1) { fr = 0; fm = 0; } // pagó el total aunque lo haya capturado en un solo concepto
+  fr = fr > 1 ? Math.round(fr * 100) / 100 : 0; fm = fm > 1 ? Math.round(fm * 100) / 100 : 0;
+  return {fr, fm, total: fr + fm, pagado: p.renta + p.mtto};
+}
+const rLuzPend = id => (RENTAS.cargos || []).filter(x => x["ID"] === id && x["Se cobra a"] !== "Lo paga el arrendador" && !x["Cobrado el"]);
+const rFaltaTxt = f => [f.fr ? "renta " + money(f.fr) : "", f.fm ? "mantenimiento " + money(f.fm) : ""].filter(Boolean).join(" y ");
 function rEstado(r) {
   const hoy = rHoy(), mesHoy = hoy.slice(0, 7), dia = Number(hoy.slice(8, 10)), ph = /^\d{4}-\d{2}$/.test(r["Pagado hasta"] || "") ? r["Pagado hasta"] : "";
   const lim = (numv(r["Día de pago"]) || 1) + (String(r["Días de gracia"] || "").trim() === "" ? 10 : numv(r["Días de gracia"]));
@@ -3459,6 +3480,8 @@ function rEstado(r) {
 /* estado de un mes para la matriz: p pagado · x parcial · l libre · o ocupada · a atrasado · q sin registro · e en plazo · f futuro */
 function rCelda(r, mes) {
   const h = (rHis()[r["ID"]] || {})[mes], mh = rMesHoy();
+  const fa = rFalta(r, mes);
+  if (fa) return {c: fa.total ? (mes < mh || rEstado(r).debe > 0 || fa.pagado ? "x" : "a") : "p", h: h || {}, falta: fa};
   if (h && h.e) return {c: {Pagado: "p", Parcial: "x", Libre: "l", Ocupada: "o"}[h.e] || "q", h};
   const ph = r["Pagado hasta"] || "";
   if (mes > mh) return {c: "f", h: h || {}};
@@ -3477,7 +3500,8 @@ const rLinks = t => esc(t || "").replace(/(https:\/\/[^\s]+)/g, '<a href="$1" ta
 const rPct = (a, b) => b ? Math.round(a / b * 100) : 0;
 function rCobradoMes(I, mes) { // renta cobrada en ese mes (por mes que cubre), con el total mensual si no hay monto
   const H = rHis(); let c = 0;
-  I.forEach(r => { const h = (H[r["ID"]] || {})[mes]; if (h && h.e === "Pagado") c += h.monto || numv(r["Total mensual"]); else if (h && h.e === "Parcial") c += h.monto || 0; });
+  I.forEach(r => { const fa = rFalta(r, mes); if (fa) { c += Math.min(fa.pagado, numv(r["Total mensual"])); return; }
+    const h = (H[r["ID"]] || {})[mes]; if (h && h.e === "Pagado") c += h.monto || numv(r["Total mensual"]); else if (h && h.e === "Parcial") c += h.monto || 0; });
   return c;
 }
 function vRentas() {
@@ -3497,7 +3521,8 @@ function rvResumen(I) {
   const sinDato = act.filter(r => E[r["ID"]].debe === null);
   const H = rHis(), aclarar = []; act.forEach(r => { for (let m = "2026-01"; m < mh; m = rMesMas(m, 1)) if (rCelda(r, m).c === "q") aclarar.push([r, m]); });
   const deposito = act.filter(r => /falta completar dep/i.test(r["Notas"] || ""));
-  const pendMes = act.filter(r => !["p"].includes(rCelda(r, mh).c));
+  const pendMes = act.filter(r => !["p"].includes(rCelda(r, mh).c) || rLuzPend(r["ID"]).length);
+  const incompletos = []; act.forEach(r => { for (let m = R_PARCIAL_DESDE; m <= mh; m = rMesMas(m, 1)) { const f = rFalta(r, m); if (f && f.total) incompletos.push([r, m, f]); } });
   let h = `<div class="rn-kpis">
     <div class="kpi"><span>Renta mensual (${act.length} rentados)</span><b>${money(esperado)}</b><small>Neto sin IVA ${money(act.reduce((a, r) => a + rNeto(r), 0))}</small></div>
     <div class="kpi${cobrado >= esperado ? " ok" : ""}"><span>Cobrado de ${esc(rMesTxt(mh))}</span><b>${money(cobrado)}</b><div class="rn-bar"><i style="width:${Math.min(100, rPct(cobrado, esperado))}%"></i></div><small>${rPct(cobrado, esperado)}% · faltan ${money(Math.max(0, esperado - cobrado))}</small></div>
@@ -3508,6 +3533,8 @@ function rvResumen(I) {
   const al = [];
   atr.forEach(r => al.push(`<p class="r"><b>${esc(rNom(r))}</b> · ${esc(r["Arrendatario"])} debe ${E[r["ID"]].debe} ${E[r["ID"]].debe === 1 ? "mes" : "meses"} (${money(E[r["ID"]].debe * E[r["ID"]].total)}). Pagado hasta ${esc(rMesTxt(E[r["ID"]].ph))}.</p>`));
   ven.forEach(r => al.push(`<p class="v"><b>${esc(rNom(r))}</b> · contrato ${E[r["ID"]].dias < 0 ? "vencido el " : "vence el "}${esc(fFecha(E[r["ID"]].venc + "T12:00:00"))} (${E[r["ID"]].dias < 0 ? "hace " + (-E[r["ID"]].dias) : "en " + E[r["ID"]].dias} días).</p>`));
+  incompletos.forEach(([r, m, f]) => al.push(`<p class="r"><b>${esc(rNom(r))}</b> · ${esc(r["Arrendatario"])} pagó ${money(f.pagado)} de ${esc(rMesTxt(m))}: falta ${esc(rFaltaTxt(f))} (${money(f.total)}).</p>`));
+  act.forEach(r => { const L = rLuzPend(r["ID"]); if (L.length) al.push(`<p><b>${esc(rNom(r))}</b> · luz por cobrar ${money(L.reduce((a, x) => a + numv(x["Monto"]), 0))}${L.length > 1 ? " (" + L.length + " recibos)" : L[0]["Periodo"] ? " (" + esc(L[0]["Periodo"]) + ")" : ""}.</p>`); });
   sinDato.forEach(r => al.push(`<p><b>${esc(rNom(r))}</b> · falta poner hasta qué mes está pagado.</p>`));
   I.filter(r => /REVISAR/.test(r["Revisión"] || "")).forEach(r => al.push(`<p><b>${esc(rNom(r))}</b> · ${esc(String(r["Revisión"]).replace(/^.*?REVISAR:\s*/, ""))} (revisión ${esc(String(r["Revisión"]).split(":")[0])}).</p>`));
   deposito.forEach(r => al.push(`<p><b>${esc(rNom(r))}</b> · falta completar el depósito en garantía (${money(numv(r["Depósito"]))} registrado).</p>`));
@@ -3515,7 +3542,10 @@ function rvResumen(I) {
   h += `<h3>Pendientes y alertas (${al.length})</h3>${al.length ? `<div class="rn-al">${al.join("")}</div>` : `<div class="empty">Todo al corriente.</div>`}`;
   // pendientes del mes
   h += `<h3>Por cobrar en ${esc(rMesTxt(mh))} (${pendMes.length})</h3>${pendMes.length ? `<div class="tbl-wrap"><table class="rn-t" data-pl="1"><thead><tr><th>Inmueble</th><th>Arrendatario</th><th class="num">Monto</th><th>Estado</th></tr></thead><tbody>
-    ${pendMes.sort((a, b) => (E[b["ID"]].debe || 0) - (E[a["ID"]].debe || 0)).map(r => { const c = rCelda(r, mh); return `<tr><td><b>${esc(rNom(r))}</b></td><td>${esc(r["Arrendatario"])}</td><td class="num">${money(numv(r["Total mensual"]))}</td><td><span class="badge ${c.c === "a" ? "b-bad" : c.c === "x" ? "b-warn" : "b-info"}">${esc(R_CT[c.c] || "")}</span></td></tr>`; }).join("")}
+    ${pendMes.sort((a, b) => (E[b["ID"]].debe || 0) - (E[a["ID"]].debe || 0)).map(r => { const c = rCelda(r, mh), L = rLuzPend(r["ID"]), luz = L.reduce((a, x) => a + numv(x["Monto"]), 0), f = c.falta && c.falta.total ? c.falta : null, pend = c.c !== "p";
+      const monto = (f ? f.total : pend ? numv(r["Total mensual"]) : 0) + luz;
+      const det = [f ? "Falta " + rFaltaTxt(f) : "", luz ? "Luz " + money(luz) : ""].filter(Boolean).join(" · ");
+      return `<tr><td><b>${esc(rNom(r))}</b></td><td>${esc(r["Arrendatario"])}</td><td class="num">${money(monto)}</td><td>${pend ? `<span class="badge ${c.c === "a" ? "b-bad" : c.c === "x" ? "b-warn" : "b-info"}">${esc(f ? (f.fr && f.fm ? "Pago parcial" : f.fr ? "Falta renta" : "Falta mantenimiento") : R_CT[c.c] || "")}</span>` : ""}${luz ? ` <span class="badge b-warn">Luz por cobrar</span>` : ""}${det ? `<br><small>${esc(det)}</small>` : ""}</td></tr>`; }).join("")}
     </tbody></table></div>` : `<div class="empty">Ya se cobró todo el mes.</div>`}`;
   // por desarrollo
   const grupos = [...new Set(I.filter(r => !R_ARCHIVO.includes(r["Estatus"])).map(r => r["Grupo"] || "Otros"))];
@@ -3558,14 +3588,14 @@ function rvCobranza(I) {
   vis.forEach(g => { const rs = L.filter(r => (r["Grupo"] || "Otros") === g);
     h += `<tr class="rn-gr"><td>${esc(g)} · ${rs.filter(R_RENTA).length}/${rs.length}</td>${meses.map(m => `<td style="font-size:.68rem;color:var(--muted)">${(() => { const v = rCobradoMes(rs, m); return v ? Math.round(v / 1000) + "k" : ""; })()}</td>`).join("")}</tr>`;
     rs.forEach(r => { h += `<tr><td title="${esc(rNom(r))}"><b>${esc(r["Inmueble"])}</b><small>${esc(r["Arrendatario"] || r["Estatus"])}${R_RENTA(r) ? " · " + money(numv(r["Total mensual"])) : ""}</small></td>${meses.map(m => { const c = rCelda(r, m);
-      return `<td${m === mh ? ' class="rn-hoy"' : ""}>${c.c === "f" ? "" : `<button type="button" class="rn-c ${c.c}" data-rn-mes="${esc(r["ID"])}|${m}" title="${esc(rMesTxt(m))}: ${esc(R_CT[c.c])}${c.h.f ? " · " + esc(c.h.f) : ""}${c.h.nota ? " · " + esc(c.h.nota) : ""}">${R_CL[c.c]}</button>`}</td>`; }).join("")}</tr>`; }); });
+      return `<td${m === mh ? ' class="rn-hoy"' : ""}>${c.c === "f" ? "" : `<button type="button" class="rn-c ${c.c}" data-rn-mes="${esc(r["ID"])}|${m}" title="${esc(rMesTxt(m))}: ${esc(R_CT[c.c])}${c.falta && c.falta.total ? " · falta " + esc(rFaltaTxt(c.falta)) : ""}${c.h.f ? " · " + esc(c.h.f) : ""}${c.h.nota ? " · " + esc(c.h.nota) : ""}">${R_CL[c.c]}</button>`}</td>`; }).join("")}</tr>`; }); });
   return h + `</tbody></table></div><p class="card-m" style="margin-top:8px">Toca un cuadro para ver el detalle, registrar el pago o corregir el mes. El renglón del desarrollo suma lo cobrado de cada mes.</p>`;
 }
 function rCard(r) {
   const e = rEstado(r), c = rCelda(r, rMesHoy());
   return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(r["Inmueble"])}${r["Tipo"] ? ` <span class="badge b-info">${esc(r["Tipo"])}</span>` : ""}</p><p class="card-m">${esc(r["Arrendatario"] || (r["Estatus"] === "Libre" ? "Libre" : r["Estatus"]))}${r["Arrendador"] ? " · " + esc(r["Arrendador"]) : ""}</p></div>
     <div style="text-align:right">${R_RENTA(r) ? `<div class="cc-monto">${money(numv(r["Total mensual"]))}</div>${rBadge(e)}` : `<span class="badge ${r["Estatus"] === "Libre" ? "b-warn" : "b-info"}">${esc(r["Estatus"])}</span>`}</div></div>
-    <p class="card-m">${R_RENTA(r) ? `Pagado hasta <b>${esc(rMesTxt(e.ph))}</b> · este mes: ${esc(R_CT[c.c] || "—")} · paga el día ${esc(r["Día de pago"] || "1")}` : ""}${r["Vencimiento"] ? " · contrato al " + esc(fFecha(e.venc + "T12:00:00")) : ""} ${rVenceTxt(e)}</p>
+    <p class="card-m">${R_RENTA(r) ? `Pagado hasta <b>${esc(rMesTxt(e.ph))}</b> · este mes: ${esc(R_CT[c.c] || "—")}${c.falta && c.falta.total ? " (falta " + esc(rFaltaTxt(c.falta)) + ")" : ""} · paga el día ${esc(r["Día de pago"] || "1")}` : ""}${r["Vencimiento"] ? " · contrato al " + esc(fFecha(e.venc + "T12:00:00")) : ""} ${rVenceTxt(e)}</p>
     <p class="card-m">${[r["m²"] ? numv(r["m²"]) + " m²" : "", numv(r["Renta base"]) ? "renta " + money(numv(r["Renta base"])) : "", rIva(r) ? "IVA " + money(rIva(r)) : "", numv(r["Mantenimiento"]) ? "mtto " + money(numv(r["Mantenimiento"])) : "", numv(r["Mtto que pagamos"]) ? "mtto que pagamos " + money(numv(r["Mtto que pagamos"])) : "", rCom(r) ? "comisión " + esc(r["Comisión a"]) + " " + numv(r["Comisión %"]) + "% (" + money(rCom(r)) + ")" : "", r["Aumento"] ? "aumento " + esc(r["Aumento"]) : "", numv(r["Depósito"]) ? "depósito " + money(numv(r["Depósito"])) : ""].filter(Boolean).join(" · ")}</p>
     ${r["Revisión"] ? `<p class="card-m">${/REVISAR/.test(r["Revisión"]) ? `<span class="badge b-warn">Revisar</span> ` : ""}Revisión: ${esc(r["Revisión"])}</p>` : ""}${r["Notas"] ? `<p class="card-m">${esc(r["Notas"])}</p>` : ""}
     <div class="acts">${R_RENTA(r) ? `<button class="btn btn-dark" type="button" data-r-pago="${esc(r["ID"])}">Registrar pago</button>` : ""}<button class="btn" type="button" data-r-cargo="${esc(r["ID"])}">Luz o mtto</button><button class="btn" type="button" data-r-hist="${esc(r["ID"])}">Historial</button><button class="btn" type="button" data-r-edit="${esc(r["ID"])}">Editar</button></div></article>`;

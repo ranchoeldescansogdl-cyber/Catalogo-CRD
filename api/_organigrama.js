@@ -35,6 +35,9 @@ const ORG = [
   /* 13 oct 2026: Chago, mantenimiento y operador de la retro y el volteo. Mismo portal que Eliseo */
   {clave: "chago",   busca: ["chago"], puesto: "Mantenimiento y operador de retro y volteo", area: "Mantenimiento", reportaA: "mario", quitar: ["salud", "herrajes"],
    vista: {agenda: "rancho", contacto: false, ine: false}},
+  /* 14 oct 2026: Raúl Ortiz entra a mantenimiento, mismo portal que Eliseo */
+  {clave: "raul",    busca: ["raul"], puesto: "Mantenimiento", area: "Mantenimiento", reportaA: "mario", quitar: ["salud", "herrajes"],
+   vista: {agenda: "rancho", contacto: false, ine: false}},
   {clave: "olga",    busca: ["olgaespinoza419@gmail.com", "olga"], puesto: "Jardinería y caja chica", area: "Jardinería", reportaA: "mario", caja: true, entrada: "07:00", vehiculos: ["RANCHO", "CARPINTERÍA"], quitar: ["salud", "herrajes"]}
 ];
 const CUENTAS_GENERALES = ["ranchoeldescansogdl@gmail.com"]; // no es una persona: fuera del organigrama, no asigna ni pide
