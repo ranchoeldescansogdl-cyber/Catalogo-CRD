@@ -844,7 +844,43 @@ async function caballoPost(u, body, res) {
     const r = await agendaPost("panel_caballos", {op, quien: u.nombre, pago, archivos});
     return res.status(r.ok ? 200 : 400).json(r);
   }
+  /* V27 (14 oct 2026): panel de caballos editable. Admin y contabilidad editan todo lo permitido, dan de baja y registran ventas y pensiones nuevas.
+     Vendedores (dinero "propio"): solo el Contacto (WhatsApp o medio de contacto) de SUS ventas y pensiones, para mandar estados de cuenta. */
+  if (op === "editar") {
+    const hoja = t(body.hoja, 20), clave = t(body.clave, 20), cambios = body.cambios && typeof body.cambios === "object" ? body.cambios : {};
+    if (!["CABALLOS CRD", "VENTAS", "PENSIONES"].includes(hoja)) return no("Hoja no válida.", 400);
+    const limpio = {}; Object.keys(cambios).slice(0, 40).forEach(k => { const v = cambios[k]; limpio[t(k, 40)] = typeof v === "boolean" ? v : t(v, 600); });
+    if (A.includes("caballo_alta")) { const r = await agendaPost("panel_caballos", {op, quien: u.nombre, hoja, clave, cambios: limpio}); return res.status(r.ok ? 200 : 400).json(r); }
+    if (u.permisos.dinero !== "propio" || hoja === "CABALLOS CRD") return no("Solo Judith, Mario o Nico editan la Maestra.");
+    const L = await caballosVista(u); const mia = (hoja === "VENTAS" ? L.ventas : L.pensiones).some(x => x["Folio"] === clave);
+    if (!mia) return no("Solo puedes editar el contacto de tus propios clientes.");
+    const r = await agendaPost("panel_caballos", {op, quien: u.nombre, hoja, clave, cambios: {Contacto: limpio.Contacto || ""}, permitidas: ["Contacto"]});
+    return res.status(r.ok ? 200 : 400).json(r);
+  }
+  if (op === "baja" || op === "venta_nueva" || op === "pension_nueva") {
+    if (!A.includes("caballo_alta")) return no("Solo Judith, Mario o Nico hacen esto en la Maestra.");
+    const lim = (o, n) => { const x = {}; Object.keys(o || {}).slice(0, 30).forEach(k => { const v = o[k]; x[t(k, 30)] = typeof v === "boolean" ? v : t(v, n); }); return x; };
+    const r = await agendaPost("panel_caballos", op === "baja" ? {op, quien: u.nombre, id: t(body.id, 20), estatus: t(body.estatus, 20), motivo: t(body.motivo, 200), folio: t(body.folio, 12), comprador: t(body.comprador, 80)}
+      : op === "venta_nueva" ? {op, quien: u.nombre, venta: lim(body.venta, 300)} : {op, quien: u.nombre, pension: lim(body.pension, 300)});
+    return res.status(r.ok ? 200 : 400).json(r);
+  }
   return no("Acción no válida.", 400);
+}
+/* V27: lo que cada quien ve del panel de caballos. Admin y contabilidad: todo. Vendedores: sus ventas (columna Vendedor), las pensiones que llevan
+   (columna Vendedor de PENSIONES o cliente que también les compró un caballo), los abonos de esos folios y los caballos (sin precio si no ve dinero). */
+const nomCli = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/\s+/g, " ").trim();
+async function caballosVista(u) {
+  const p = u.permisos, [L, m] = await Promise.all([agendaPost("panel_caballos", {op: "lista"}), maestraSegura()]);
+  if (!L.ok) throw new Error(L.error || "caballos");
+  const todo = p.dinero === "todo", propio = v => todo || (p.dinero === "propio" && !!u.vendedor && claveVendedor(v["Vendedor"]) === u.vendedor);
+  const ventas = L.ventas.filter(propio), historico = (L.historico || []).filter(propio), clientes = new Set(ventas.concat(historico).map(v => nomCli(v["Comprador"])).filter(Boolean));
+  const pensiones = todo ? L.pensiones : p.dinero === "propio" ? L.pensiones.filter(x => propio(x) || clientes.has(nomCli(x["Cliente"]))) : [];
+  const folios = new Set(ventas.concat(pensiones, historico).map(x => x["Folio"]));
+  const cobros = p.dinero === "nada" ? [] : L.cobros.filter(c => folios.has(c["Referencia"]));
+  pensiones.forEach(x => clientes.add(nomCli(x["Cliente"])));
+  const cargos = p.dinero === "nada" ? [] : todo ? L.cargos : L.cargos.filter(c => folios.has(c["Folio"]) || clientes.has(nomCli(c["Cliente"])));
+  return {generado: L.generado, panel: todo, ventas, pensiones, historico, cobros, cargos, maquilas: (m.maquilas || []).filter(propio),
+    caballos: L.caballos.map(c => p.dinero === "nada" ? {...c, Precio: ""} : c), vendedores: todo ? (await equipo()).filter(x => VENDEDORES_ROL.includes(x.rol) && !(ORG.puestoDe(x) || {}).general).map(x => x.nombre) : []};
 }
 const MOV_TIPOS = ["Salió a clínica", "Salió del rancho", "Regresó al rancho", "Gasto médico extraordinario", "Trámite de chip", "Trámite de clínica"];
 async function movimientoPost(u, body, res) {
@@ -1196,12 +1232,7 @@ module.exports = async (req, res) => {
     }
     if (q.accion === "caballos") {
       if (!p.secciones.includes("caballos")) return res.status(403).json({error: "Sin acceso."});
-      const m = await agendaPost("panel_maestra");
-      if (!m.ok) throw new Error(m.error || "maestra");
-      const propio = v => p.dinero === "todo" || (p.dinero === "propio" && !!u.vendedor && claveVendedor(v["Vendedor"]) === u.vendedor);
-      return res.status(200).json({generado: m.generado,
-        ventas: m.ventas.filter(propio), pensiones: p.dinero === "todo" ? m.pensiones : [], maquilas: m.maquilas.filter(propio),
-        caballos: m.caballos.map(c => p.dinero === "nada" ? {...c, Precio: ""} : c)});
+      return res.status(200).json(await caballosVista(u)); // V27 (14 oct 2026): panel completo, recortado por rol
     }
     if (q.accion === "pagos") {
       if (!p.secciones.includes("pagos")) return res.status(403).json({error: "Sin acceso."});

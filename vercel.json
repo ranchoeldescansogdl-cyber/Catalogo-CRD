@@ -73,6 +73,26 @@
   ],
   "redirects": [
     {
+      "source": "/gvhsmx/",
+      "destination": "https://gypsyvanner.mx/",
+      "permanent": false
+    },
+    {
+      "source": "/gvhsmx",
+      "destination": "https://gypsyvanner.mx/",
+      "permanent": false
+    },
+    {
+      "source": "/gvhs/",
+      "destination": "https://gypsyvanner.mx/",
+      "permanent": false
+    },
+    {
+      "source": "/gvhs",
+      "destination": "https://gypsyvanner.mx/",
+      "permanent": false
+    },
+    {
       "source": "/",
       "has": [
         {

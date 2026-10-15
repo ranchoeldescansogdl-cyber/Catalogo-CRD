@@ -20,6 +20,7 @@
 .t-tabla td{vertical-align:middle}.card.t-prob{border-color:var(--bad);box-shadow:inset 3px 0 0 var(--bad)}
 .qa-turno{width:100%;margin-top:12px}
 .ca-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;width:100%;text-align:left;background:#fff;border:1px solid var(--rule);border-radius:12px;padding:10px 14px;margin:0 0 6px;cursor:pointer}
+.ca-bar{height:6px;background:var(--mist);border-radius:4px;margin:6px 0 4px;overflow:hidden}.ca-bar i{display:block;height:100%;background:var(--gold)}
 .ca-row span:not(.badge){grid-column:1;color:var(--muted);font-size:.88rem}.ca-row .badge{grid-column:2;grid-row:1/span 2;align-self:center}
 .rc-bar{display:flex;align-items:center;gap:10px;margin:6px 0 10px}.rc-bar b{font-family:var(--display);font-size:1.2rem;min-width:170px;text-align:center}
 .rc-sem,.rc-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.rc-sem span{text-align:center;font-size:.78rem;color:var(--muted);font-weight:600}
@@ -951,22 +952,6 @@ function tabla(lista, cols, vacio) {
   if (!lista.length) return `<div class="empty">${vacio}</div>`;
   const esNum = c => /Precio|Pagado|Saldo|Monto|Total|Comisión \$|Tarifa/.test(c);
   return `<div class="tbl-wrap"><table><thead><tr>${cols.map(c => `<th${esNum(c) ? ' class="num"' : ""}>${esc(c)}</th>`).join("")}</tr></thead><tbody>${lista.map(r => `<tr>${cols.map(c => `<td${esNum(c) ? ' class="num"' : ""}>${esc(r[c])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
-}
-function vCaballos() {
-  const C = CABALLOS, P = YO.permisos;
-  const activas = C.ventas.filter(v => !/cerrad|pagad|cancel/i.test(v["Estatus"] || ""));
-  const enVenta = C.caballos.filter(c => /venta/i.test(c["Estatus"])), apart = C.caballos.filter(c => /apartad/i.test(c["Estatus"]));
-  const kpi = `<div class="grid-kpi"><div class="kpi"><span>Caballos en el rancho</span><b>${C.caballos.length}</b></div><div class="kpi"><span>En venta</span><b>${enVenta.length}</b></div>
-    <div class="kpi"><span>Apartados</span><b>${apart.length}</b></div>${P.dinero !== "nada" ? `<div class="kpi"><span>${P.dinero === "propio" ? "Mis ventas activas" : "Ventas activas"}</span><b>${activas.length}</b></div>
-    <div class="kpi"><span>Por cobrar en ventas</span><b>${money(activas.reduce((a, v) => a + numv(v["Saldo"]), 0))}</b></div>` : ""}</div>`;
-  const A = P.acciones, btns = [A.includes("caballo_alta") ? `<button class="btn btn-dark" type="button" data-ca-nuevo="1">🐴 Registrar caballo nuevo</button>` : "",
-    A.includes("caballo_pago") ? `<button class="btn btn-dark" type="button" data-pc-nuevo="">💳 Registrar pago o gasto de un caballo</button>` : ""].filter(Boolean).join("");
-  const lista = P.dinero === "todo" ? `<h3>Todos los caballos</h3><p class="card-m">Toca uno para ver su ficha: venta, compra, pagos, gastos y movimientos.</p><input class="search" id="ca-busca" placeholder="Buscar por nombre, ID o estatus" value="${esc(st.caBusca || "")}"><div id="ca-lista">${caLista()}</div>` : "";
-  return `<h2>Caballos y ventas</h2><p class="sub">Datos de la Maestra Caballos CRD v2.</p>${btns ? `<div class="big-actions">${btns}</div>` : ""}${kpi}
-    <h3>${P.dinero === "propio" ? "Mis ventas activas" : "Ventas activas"}</h3>${tabla(activas, ["Folio", "Concepto", "Comprador", "Precio", "Pagado", "Saldo", "Estatus", "Monto próximo", "Vendedor"], "No hay ventas activas.")}
-    ${C.pensiones.length ? `<h3>Pensiones</h3>${tabla(C.pensiones.filter(p => !/termin|cerrad/i.test(p["Situación"])), ["Folio", "Cliente", "Caballo", "Inicio", "Días", "Tarifa diaria", "Total a la fecha", "Pagado", "Saldo", "Estatus"], "Sin pensiones vigentes.")}` : ""}
-    ${C.maquilas.length ? `<h3>Maquilas con saldo</h3>${tabla(C.maquilas.filter(m => numv(m["Saldo"]) > 0), ["Folio", "Cliente", "Yegua", "Semental", "Fecha monta", "Precio", "Pagado", "Saldo", "Vendedor"], "Todas las maquilas están pagadas.")}` : ""}
-    <h3>En venta y apartados</h3>${tabla([...apart, ...enVenta], ["ID", "Nombre", "Raza", "Sexo", "Nacimiento", ...(P.dinero !== "nada" ? ["Precio"] : []), "Estatus"], "No hay caballos en venta.")}${lista}`;
 }
 function vComisiones() {
   const filas = PAGOS.comisiones;
@@ -2987,8 +2972,11 @@ async function fichaCaballo(id) {
     const f = await api("accion=caballo_ficha&id=" + encodeURIComponent(id)); if (!box.isConnected) return;
     const tot = L => L.reduce((a, x) => a + numv(x.Total), 0);
     box.innerHTML = `<p class="card-m">${[c.Raza, c.Sexo, c.Capa, c.Nacimiento ? "nació " + c.Nacimiento : "", c.Estatus, c.Precio ? "precio " + c.Precio : ""].filter(Boolean).map(esc).join(" · ")}</p>
-      ${YO.permisos.acciones.includes("caballo_pago") ? `<div class="big-actions"><button class="btn btn-dark" type="button" data-pc-nuevo="${esc(id)}">💳 Registrar pago o gasto</button></div>` : ""}
-      ${f.ventas.length ? `<h3>Venta</h3>${tabla(f.ventas, ["Folio", "Comprador", "Precio", "Pagado", "Saldo", "Estatus", "Próximo pago"], "")}` : ""}
+      ${c.Padre || c.Madre ? `<p class="card-m">${c.Padre ? "Padre " + esc(c.Padre) : ""}${c.Madre ? " · Madre " + esc(c.Madre) : ""}${c.Chip ? " · chip " + esc(c.Chip) : ""}${c["No. registro"] ? " · reg. " + esc(c["No. registro"]) : ""}</p>` : ""}
+      ${/cargada/i.test(c["Reproducción"] || "") ? `<p class="card-m">🤰 Cargada de ${esc(c["Cargada de"] || "—")}${c["Fecha monta"] ? " · monta " + esc(caFecha(c["Fecha monta"])) : ""}${c["Fecha pare"] ? " · pare " + esc(caFecha(c["Fecha pare"])) : ""}</p>` : ""}${c.Notas ? `<p class="card-m">${esc(c.Notas)}</p>` : ""}
+      <div class="big-actions">${YO.permisos.acciones.includes("caballo_alta") ? `<button class="btn btn-dark" type="button" data-ca-editar="${esc(id)}">✏️ Editar datos</button>${caEnRancho(c) && !/vendid/i.test(c.Estatus) ? `<button class="btn" type="button" data-ca-venta="${esc(id)}">🤝 Registrar venta</button>` : ""}` : ""}
+        ${YO.permisos.acciones.includes("caballo_pago") ? `<button class="btn" type="button" data-pc-nuevo="${esc(id)}">💳 Pago o gasto</button>` : ""}${YO.permisos.acciones.includes("caballo_alta") && caEnRancho(c) ? `<button class="btn" type="button" data-ca-baja="${esc(id)}">Dar de baja</button>` : ""}</div>
+      ${f.ventas.length ? `<h3>Venta</h3>${tabla(f.ventas, ["Folio", "Comprador", "Precio", "Pagado", "Saldo", "Estatus", "Próximo pago"], "")}<div class="acts">${f.ventas.map(v => `<button class="btn" type="button" data-ca-edo="${esc(v.Folio)}">Estado de cuenta ${esc(v.Folio)}</button>`).join("")}</div>` : ""}
       ${f.compras.length ? `<h3>Compra</h3>${tabla(f.compras, ["Folio", "Proveedor", "Moneda", "Precio CRD", "Pagado", "Saldo", "Estatus"], "")}` : ""}
       ${f.pagos.length ? `<h3>Pagos</h3>${tabla(f.pagos, ["Fecha", "Tipo", "Referencia", "Monto", "Forma de pago", "Registró"], "")}` : ""}
       <h3>Gastos del caballo${f.gastos.length ? " · " + money(tot(f.gastos)) : ""}</h3>${tabla(f.gastos, ["Fecha", "Categoría", "Concepto", "Total", "Forma de pago"], "Sin gastos registrados.")}
@@ -3174,10 +3162,289 @@ document.addEventListener("click", async e => {
   if (b.dataset.rInsq) { if (sinCosto()) return; try { await post({accion: "hacer", tipo: "redes", op: "instruccion_quitar", id: b.dataset.rInsq}); toast("Indicación quitada"); REDES = null; render(); } catch (err) { alert(err.message); } return; }
 });
 document.addEventListener("input", e => { if (e.target.id === "ca-busca") { st.caBusca = e.target.value; const L = $("#ca-lista"); if (L) L.innerHTML = caLista(); } });
-function caLista() {
-  const t = String(st.caBusca || "").toLowerCase(), L = (CABALLOS ? CABALLOS.caballos : []).filter(c => !t || (c.Nombre + " " + c.ID + " " + c.Raza + " " + c.Estatus).toLowerCase().includes(t));
-  return L.slice(0, 80).map(c => `<button class="ca-row" type="button" data-ca-ficha="${esc(c.ID)}"><b>${esc(c.Nombre)}</b><span>${esc(c.ID)} · ${esc(c.Raza)} · ${esc(c.Sexo)}</span><span class="badge ${/venta/i.test(c.Estatus) ? "b-warn" : /vendid/i.test(c.Estatus) ? "b-info" : "b-ok"}">${esc(c.Estatus)}</span></button>`).join("") || `<div class="empty">Ningún caballo coincide.</div>`;
+/* ===================== 14 oct 2026 (V27) · Panel de caballos editable =====================
+   Nico y Mario (admin) y Judith (contabilidad) ven y editan los ~70 caballos, las ventas y las pensiones sin abrir la Maestra en Drive:
+   datos del caballo, baja (nunca se borra), venta nueva, pensión nueva, abonos, estados de cuenta con historial de abonos.
+   Vendedores (Mónica, Yuliana): solo SUS clientes (columna Vendedor): sus ventas, las pensiones de esos clientes, el historial de abonos
+   y el estado de cuenta listo para mandar por WhatsApp o PDF; pueden capturar el contacto del cliente. */
+const CA_EST = {"Plantel": "b-ok", "En venta": "b-warn", "Apartado": "b-info", "Vendido": "b-info", "Baja": "b-bad", "Muerto": "b-bad", "Donado": "b-bad", "Regresado": "b-bad"};
+const caEnRancho = c => !/vendid|baja|muert|donad|regres/i.test(c.Estatus || "");
+const caVentaActiva = v => !/cerrad|cancel/i.test(v["Estatus"] || "");
+const caPct = v => { const p = numv(v["Precio"]), g = numv(v["Pagado"]); return p > 0 ? Math.max(0, Math.min(100, Math.round(g * 100 / p))) : 0; };
+const caFecha = t => { const i = isoDe(t); return i ? fCorta(i) + " " + i.slice(0, 4) : (t || "—"); };
+const caBarra = v => `<div class="ca-bar"><i style="width:${caPct(v)}%"></i></div>`;
+const caCobros = folio => (CABALLOS.cobros || []).filter(c => c["Referencia"] === folio);
+const caPensionesDe = cli => (CABALLOS.pensiones || []).filter(p => nomCli(p["Cliente"]) === nomCli(cli));
+const nomCli = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase().replace(/\s+/g, " ").trim();
+const caVendedorTxt = v => v["Vendedor"] || "sin vendedor";
+function vCaballos() {
+  const C = CABALLOS, P = YO.permisos, panel = !!C.panel, A = P.acciones, dinero = P.dinero !== "nada";
+  const activas = C.ventas.filter(caVentaActiva), atras = activas.filter(v => /atras/i.test(v["Estatus"])), pensV = C.pensiones.filter(p => /vigente/i.test(p["Situación"]));
+  const tabs = panel ? [["caballos", `Caballos (${C.caballos.filter(caEnRancho).length})`], ["ventas", `Ventas (${activas.length})`], ["pensiones", `Pensiones (${pensV.length})`], ["historial", "Vendidos e historial"]]
+    : [["ventas", `${P.dinero === "propio" ? "Mis ventas" : "Ventas"} (${activas.length})`], ...(C.pensiones.length ? [["pensiones", `${P.dinero === "propio" ? "Mis pensiones" : "Pensiones"} (${pensV.length})`]] : []), ["caballos", "Caballos en venta"], ...(C.historico.length ? [["historial", "Ventas cerradas"]] : [])];
+  const f = tabs.some(t => t[0] === st.caTab) ? st.caTab : tabs[0][0];
+  const btns = [A.includes("caballo_alta") ? `<button class="btn btn-dark" type="button" data-ca-nuevo="1">🐴 Caballo nuevo</button><button class="btn btn-dark" type="button" data-ca-venta="">🤝 Venta nueva</button><button class="btn btn-dark" type="button" data-ca-pension="">🏠 Pensión nueva</button>` : "",
+    A.includes("caballo_pago") ? `<button class="btn btn-dark" type="button" data-pc-nuevo="">💳 Registrar pago o gasto</button>` : ""].filter(Boolean).join("");
+  let cuerpo = "";
+  if (f === "caballos") {
+    const R = C.caballos.filter(caEnRancho), enVenta = C.caballos.filter(c => /venta/i.test(c.Estatus)), apart = C.caballos.filter(c => /apartad/i.test(c.Estatus));
+    const kpi = panel ? `<div class="grid-kpi"><div class="kpi"><span>En el rancho</span><b>${R.length}</b></div><div class="kpi"><span>Plantel</span><b>${R.filter(c => /plantel/i.test(c.Estatus)).length}</b></div>
+      <div class="kpi"><span>En venta</span><b>${enVenta.length}</b></div><div class="kpi"><span>Apartados</span><b>${apart.length}</b></div><div class="kpi"><span>Vendidos (con saldo)</span><b>${activas.length}</b></div>
+      <div class="kpi${atras.length ? " bajo" : ""}"><span>Ventas atrasadas</span><b>${atras.length}</b></div><div class="kpi"><span>Por cobrar en ventas</span><b>${money(activas.reduce((a, v) => a + numv(v["Saldo"]), 0))}</b></div></div>` : "";
+    cuerpo = panel ? `${kpi}<div class="bar">${[["", "Todos"], ["Plantel", "Plantel"], ["En venta", "En venta"], ["Apartado", "Apartados"], ["Vendido", "Vendidos"], ["Baja", "Bajas"]].map(([k, n]) => `<button class="chip" type="button" data-ca-fil="${k}" aria-pressed="${(st.caFil || "") === k}">${n}</button>`).join("")}
+      ${[["", "Todas las razas"], ["Friesian", "Friesian"], ["Gypsy Vanner", "Gypsy Vanner"]].map(([k, n]) => `<button class="chip" type="button" data-ca-raza="${k}" aria-pressed="${(st.caRaza || "") === k}">${n}</button>`).join("")}</div>
+      <input class="search" id="ca-busca" placeholder="Buscar por nombre, ID, padre, madre o chip" value="${esc(st.caBusca || "")}"><div id="ca-lista">${caLista()}</div>`
+      : `<h3>En venta y apartados</h3>${tabla([...apart, ...enVenta], ["ID", "Nombre", "Raza", "Sexo", "Nacimiento", ...(dinero ? ["Precio"] : []), "Estatus"], "No hay caballos en venta.")}`;
+  }
+  if (f === "ventas") {
+    const todas = (st.caVentasTodas ? C.ventas : activas).slice().sort((a, b) => (/atras/i.test(b["Estatus"]) - /atras/i.test(a["Estatus"])) || numv(b["Saldo"]) - numv(a["Saldo"]));
+    const kpi = dinero ? `<div class="grid-kpi"><div class="kpi"><span>${P.dinero === "propio" ? "Mis ventas activas" : "Ventas activas"}</span><b>${activas.length}</b></div><div class="kpi"><span>Por cobrar</span><b>${money(activas.reduce((a, v) => a + numv(v["Saldo"]), 0))}</b></div>
+      <div class="kpi${atras.length ? " bajo" : ""}"><span>Atrasadas</span><b>${atras.length}</b></div><div class="kpi"><span>Cobrado</span><b>${money(activas.reduce((a, v) => a + numv(v["Pagado"]), 0))}</b></div></div>` : "";
+    cuerpo = `${kpi}${P.dinero === "propio" ? `<p class="card-m" style="margin:0 0 10px">Solo ves las ventas donde tú eres el vendedor. Toca una venta para ver su estado de cuenta y mandarlo al cliente.</p>` : ""}
+      ${todas.length ? todas.map(cardVenta).join("") : `<div class="empty">No hay ventas activas.</div>`}`;
+  }
+  if (f === "pensiones") {
+    const L = C.pensiones.slice().sort((a, b) => (/vigente/i.test(b["Situación"]) - /vigente/i.test(a["Situación"])) || numv(b["Saldo"]) - numv(a["Saldo"]));
+    cuerpo = `${dinero ? `<div class="grid-kpi"><div class="kpi"><span>Vigentes</span><b>${pensV.length}</b></div><div class="kpi"><span>Por cobrar</span><b>${money(pensV.reduce((a, p) => a + numv(p["Saldo"]), 0))}</b></div><div class="kpi${pensV.filter(p => !numv(p["Tarifa diaria"])).length ? " bajo" : ""}"><span>Sin tarifa</span><b>${pensV.filter(p => !numv(p["Tarifa diaria"])).length}</b></div></div>` : ""}
+      ${L.length ? L.map(cardPension).join("") : `<div class="empty">No hay pensiones.</div>`}`;
+  }
+  if (f === "historial") {
+    const H = (C.historico || []).slice().reverse(), vend = C.caballos.filter(c => /vendid/i.test(c.Estatus)), baj = C.caballos.filter(c => /baja|muert|donad|regres/i.test(c.Estatus));
+    cuerpo = `<h3>Ventas cerradas (${H.length})</h3><p class="card-m" style="margin:0 0 10px">Toca una para ver cómo se fue pagando.</p>${H.length ? H.map(cardHistorico).join("") : `<div class="empty">Sin ventas cerradas.</div>`}
+      ${panel ? `<h3>Caballos vendidos (${vend.length})</h3>${tabla(vend, ["ID", "Nombre", "Raza", "Sexo", "Precio", "Fecha estatus"], "Ninguno.")}${baj.length ? `<h3>Bajas (${baj.length})</h3>${tabla(baj, ["ID", "Nombre", "Raza", "Estatus", "Fecha estatus", "Notas"], "")}` : ""}` : ""}`;
+  }
+  return `<h2>Caballos y ventas</h2><p class="sub">${panel ? "Todo lo de la Maestra Caballos CRD v2 desde aquí: toca un caballo, una venta o una pensión para ver, editar o mandar su estado de cuenta. Nada se borra: los caballos se dan de baja y queda historial." : "Datos de la Maestra Caballos CRD v2."}</p>
+    ${btns ? `<div class="big-actions">${btns}</div>` : ""}<div class="bar">${tabs.map(([k, n]) => `<button class="chip" type="button" data-ca-tab="${k}" aria-pressed="${f === k}">${n}</button>`).join("")}</div>${cuerpo}`;
 }
+function caLista() {
+  const t = String(st.caBusca || "").toLowerCase(), fil = st.caFil || "", raza = st.caRaza || "";
+  const L = (CABALLOS ? CABALLOS.caballos : []).filter(c => (!fil || (fil === "Baja" ? /baja|muert|donad|regres/i.test(c.Estatus) : c.Estatus === fil)) && (!raza || c.Raza === raza) && (fil || caEnRancho(c) || t)
+    && (!t || [c.Nombre, c.ID, c.Raza, c.Padre, c.Madre, c.Chip, c["No. registro"], c.Estatus].join(" ").toLowerCase().includes(t)));
+  return `<p class="card-m" style="margin:0 0 8px">${L.length} caballo${L.length === 1 ? "" : "s"}</p>` + (L.slice(0, 120).map(c => `<button class="ca-row" type="button" data-ca-ficha="${esc(c.ID)}"><b>${esc(c.Nombre)}</b><span>${esc(c.ID)} · ${esc(c.Raza)} · ${esc(c.Sexo)}${c.Nacimiento ? " · " + esc(caFecha(c.Nacimiento)) : ""}${YO.permisos.dinero !== "nada" && c.Precio && /venta|apartad|vendid/i.test(c.Estatus) ? " · " + money(numv(c.Precio)) : ""}${/cargada/i.test(c["Reproducción"] || "") ? " · 🤰 " + esc(c["Cargada de"] || "cargada") : ""}</span><span class="badge ${CA_EST[c.Estatus] || "b-info"}">${esc(c.Estatus)}</span></button>`).join("") || `<div class="empty">Ningún caballo coincide.</div>`);
+}
+function cardVenta(v) {
+  const act = caVentaActiva(v), atr = /atras/i.test(v["Estatus"]), A = YO.permisos.acciones, prox = v["Próximo pago"] ? `Próximo: ${esc(caFecha(v["Próximo pago"]))}${v["Monto próximo"] ? " · " + money(numv(v["Monto próximo"])) : ""}` : (v["Plan de pagos"] ? "Plan: " + esc(v["Plan de pagos"]).slice(0, 80) : "Sin plan de pagos");
+  return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(v["Concepto"])} <small class="card-m">${esc(v["Folio"])}</small></p>
+    <p class="card-m">${esc(v["Comprador"])}${v["Contacto"] ? " · " + esc(v["Contacto"]) : ` · <span class="badge b-warn">sin contacto</span>`}${CABALLOS.panel ? " · " + esc(caVendedorTxt(v)) : ""}</p>
+    <p class="card-m">Precio ${money(numv(v["Precio"]))} · Pagado ${money(numv(v["Pagado"]))} · <b>Saldo ${money(numv(v["Saldo"]))}</b></p>${caBarra(v)}<p class="card-m">${prox}${v["Atrasado"] && numv(v["Atrasado"]) > 0 ? ` · <b style="color:var(--bad)">atrasado ${money(numv(v["Atrasado"]))}</b>` : ""}</p></div>
+    <div style="text-align:right"><div class="cc-monto">${caPct(v)}%</div><span class="badge ${!act ? "b-info" : atr ? "b-bad" : /sin plan/i.test(v["Estatus"]) ? "b-warn" : "b-ok"}">${esc(v["Estatus"] || "")}</span></div></div>
+    <div class="acts"><button class="btn btn-dark" type="button" data-ca-edo="${esc(v["Folio"])}">Estado de cuenta</button>${A.includes("caballo_pago") && act ? `<button class="btn" type="button" data-ca-abono="${esc(v["Folio"])}">Registrar abono</button>` : ""}
+    ${A.includes("caballo_alta") ? `<button class="btn" type="button" data-ca-edit-venta="${esc(v["Folio"])}">Editar</button>` : `<button class="btn" type="button" data-ca-contacto="VENTAS|${esc(v["Folio"])}">${v["Contacto"] ? "Cambiar contacto" : "Poner contacto"}</button>`}</div></article>`;
+}
+function cardPension(p) {
+  const vig = /vigente/i.test(p["Situación"]), A = YO.permisos.acciones, sinT = !numv(p["Tarifa diaria"]);
+  return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(p["Caballo"])} <small class="card-m">${esc(p["Folio"])}${p["Raza"] ? " · " + esc(p["Raza"]) : ""}</small></p>
+    <p class="card-m">${esc(p["Cliente"])}${p["Contacto"] ? " · " + esc(p["Contacto"]) : ` · <span class="badge b-warn">sin contacto</span>`}${p["Vendedor"] ? " · " + esc(p["Vendedor"]) : ""}</p>
+    <p class="card-m">Desde ${esc(caFecha(p["Inicio"]))}${p["Fin"] ? " hasta " + esc(caFecha(p["Fin"])) : ""} · ${esc(p["Días"] || "0")} días · ${sinT ? `<span class="badge b-warn">tarifa por definir</span>` : money(numv(p["Tarifa diaria"])) + "/día"}</p>
+    ${YO.permisos.dinero !== "nada" ? `<p class="card-m">Total ${money(numv(p["Total a la fecha"]))} · Pagado ${money(numv(p["Pagado"]))} · <b>Saldo ${money(numv(p["Saldo"]))}</b></p>` : ""}</div>
+    <div style="text-align:right"><span class="badge ${!vig ? "b-info" : numv(p["Saldo"]) > 0 ? "b-warn" : "b-ok"}">${esc(p["Estatus"] || p["Situación"] || "")}</span></div></div>
+    <div class="acts"><button class="btn btn-dark" type="button" data-ca-edo="${esc(p["Folio"])}">Estado de cuenta</button>${A.includes("caballo_pago") && vig ? `<button class="btn" type="button" data-ca-abono="${esc(p["Folio"])}">Registrar pago</button>` : ""}
+    ${A.includes("caballo_alta") ? `<button class="btn" type="button" data-ca-edit-pension="${esc(p["Folio"])}">Editar</button>` : `<button class="btn" type="button" data-ca-contacto="PENSIONES|${esc(p["Folio"])}">${p["Contacto"] ? "Cambiar contacto" : "Poner contacto"}</button>`}</div></article>`;
+}
+function cardHistorico(h) {
+  return `<article class="card"><div class="card-h"><div style="flex:1;min-width:0"><p class="card-t">${esc(h["Concepto"])} <small class="card-m">${esc(h["Folio"])}</small></p><p class="card-m">${esc(h["Comprador"])}${h["Vendedor"] ? " · " + esc(h["Vendedor"]) : ""} · ${money(numv(h["Precio"]))}</p></div>
+    <span class="badge b-ok">${esc(h["Estatus"] || "Cerrada")}</span></div><div class="acts"><button class="btn" type="button" data-ca-edo="${esc(h["Folio"])}">Ver cómo se pagó</button></div></article>`;
+}
+/* ----- estado de cuenta de una venta o pensión: resumen arriba, detalle abajo, WhatsApp y PDF con logo ----- */
+function caEstado(folio) {
+  const C = CABALLOS, v = C.ventas.find(x => x["Folio"] === folio), p = C.pensiones.find(x => x["Folio"] === folio), h = (C.historico || []).find(x => x["Folio"] === folio);
+  const o = v || p || h; if (!o) return null;
+  const tipo = p ? "pension" : "venta", cliente = o["Comprador"] || o["Cliente"], cobros = caCobros(folio).slice().sort((a, b) => (isoDe(a["Fecha"]) || a["Fecha"]).localeCompare(isoDe(b["Fecha"]) || b["Fecha"]));
+  const movs = cobros.map(c => ({fecha: c["Fecha"], t: c["Concepto"] || "Abono", d: [c["Forma de pago"], c["Notas"]].filter(Boolean).join(" · "), m: numv(c["Monto MXN"] || c["Monto"]), k: "pago"}));
+  const cargos = (C.cargos || []).filter(c => c["Folio"] === folio && /confirm/i.test(c["Estatus"] || "")).map(c => ({fecha: c["Fecha"], t: c["Servicio"] || "Servicio", d: c["Caballo"] || "", m: numv(c["Precio"]), k: "srv"}));
+  const otras = tipo === "venta" ? caPensionesDe(cliente).filter(x => numv(x["Saldo"]) > 0 || /vigente/i.test(x["Situación"])) : [];
+  let plan = [];
+  if (tipo === "venta" && v) { const men = numv(v["Mensualidad"]), ini = isoDe(v["Primer pago"]), saldo = numv(v["Saldo"]); // calendario de lo que falta
+    if (men > 0 && ini) { let d = new Date(ini + "T12:00:00Z"), resta = saldo; const hoy = hoyISO(); for (let i = 0; i < 60 && resta > 0.5; i++) { const f = d.toISOString().slice(0, 10), m = Math.min(men, resta);
+      if (f >= hoy.slice(0, 7) + "-01") plan.push({fecha: f, m, vencido: f < hoy}); resta -= m; d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, Math.min(Number(ini.slice(8)), 28), 12)); } } }
+  return {folio, tipo, o, cliente, contacto: o["Contacto"] || "", caballo: o["Concepto"] || o["Caballo"], movs, cargos, otras, plan, precio: numv(o["Precio"]), pagado: numv(o["Pagado"]), saldo: numv(o["Saldo"]), total: numv(o["Total a la fecha"])};
+}
+function caEdoTexto(e) {
+  const L = [`*Rancho El Descanso · Estado de cuenta*`, `${e.cliente}`, `${e.tipo === "pension" ? "Pensión de " : ""}${e.caballo} (${e.folio}) · al ${fCorta(hoyISO())} ${hoyISO().slice(0, 4)}`, ""];
+  if (e.tipo === "venta") L.push(`Precio: ${money(e.precio)}`, `Pagado: ${money(e.pagado)}`, `*Saldo: ${money(e.saldo)}*`);
+  else L.push(`Desde ${caFecha(e.o["Inicio"])}${e.o["Fin"] ? " hasta " + caFecha(e.o["Fin"]) : ""} · ${e.o["Días"]} días × ${money(numv(e.o["Tarifa diaria"]))}`, `Total: ${money(e.total)}`, `Pagado: ${money(e.pagado)}`, `*Saldo: ${money(e.saldo)}*`);
+  if (e.movs.length) { L.push("", "Pagos recibidos:"); e.movs.forEach(m => L.push(`• ${caFecha(m.fecha)} · ${money(m.m)}${m.d && !/^Transferencia$|^Efectivo$/.test(m.d) ? "" : m.d ? " (" + m.d.toLowerCase() + ")" : ""}`)); }
+  if (e.cargos.length) { L.push("", "Servicios cargados:"); e.cargos.forEach(c => L.push(`• ${caFecha(c.fecha)} · ${c.t}${c.d ? " · " + c.d : ""} · ${money(c.m)}`)); }
+  if (e.plan.length) { L.push("", "Pagos por venir:"); e.plan.slice(0, 6).forEach(p => L.push(`• ${caFecha(p.fecha)} · ${money(p.m)}${p.vencido ? " (vencido)" : ""}`)); if (e.plan.length > 6) L.push(`• … y ${e.plan.length - 6} más`); }
+  if (e.otras.length) { L.push("", "Pensión:"); e.otras.forEach(p => L.push(`• ${p["Caballo"]} (${p["Folio"]}): ${p["Días"]} días, saldo ${money(numv(p["Saldo"]))}`)); }
+  L.push("", "Si algo no corresponde, respóndenos por aquí y lo revisamos. Quedo a la orden cualquier cosa.");
+  return L.join("\n");
+}
+function caEdoDetalle(folio) {
+  const e = caEstado(folio); if (!e) return;
+  const A = YO.permisos.acciones, mio = A.includes("caballo_alta"), act = e.tipo === "venta" ? caVentaActiva(e.o) : /vigente/i.test(e.o["Situación"] || "");
+  const fila = (t, d, m, k = "") => `<div class="es-r ${k}"><div><b>${esc(t)}</b>${d ? `<small>${esc(d)}</small>` : ""}</div><span class="n">${k === "pago" ? "−" : ""}${money(Math.abs(m))}</span></div>`;
+  dialogo("Estado de cuenta · " + e.cliente, `<p class="ctx">${esc(e.caballo)} · ${esc(e.folio)}${e.o["Vendedor"] ? " · vendedor " + esc(e.o["Vendedor"]) : ""}<br>${e.contacto ? "Contacto: " + esc(e.contacto) : `<span class="badge b-warn">Sin contacto del cliente</span>`} <button class="btn" type="button" style="padding:3px 10px;font-size:.85rem" data-ca-contacto="${e.tipo === "venta" ? "VENTAS" : "PENSIONES"}|${esc(e.folio)}">${e.contacto ? "Cambiar" : "Poner contacto"}</button></p>
+    <div class="grid-kpi">${e.tipo === "venta" ? `<div class="kpi"><span>Precio</span><b>${money(e.precio)}</b></div><div class="kpi"><span>Pagado</span><b>${money(e.pagado)}</b></div><div class="kpi${e.saldo > 0 ? " bajo" : ""}"><span>Saldo</span><b>${money(e.saldo)}</b></div><div class="kpi"><span>Avance</span><b>${caPct(e.o)}%</b></div>`
+      : `<div class="kpi"><span>Días</span><b>${esc(e.o["Días"] || "0")}</b></div><div class="kpi"><span>Tarifa</span><b>${numv(e.o["Tarifa diaria"]) ? money(numv(e.o["Tarifa diaria"])) : "—"}</b></div><div class="kpi"><span>Total</span><b>${money(e.total)}</b></div><div class="kpi${e.saldo > 0 ? " bajo" : ""}"><span>Saldo</span><b>${money(e.saldo)}</b></div>`}</div>
+    ${e.tipo === "venta" ? `<p class="card-m" style="margin:-6px 0 12px">${e.o["Próximo pago"] ? `Próximo pago ${esc(caFecha(e.o["Próximo pago"]))} · ${money(numv(e.o["Monto próximo"]))}` : ""}${e.o["Mensualidad"] ? ` · mensualidad ${money(numv(e.o["Mensualidad"]))}${e.o["Día de pago"] ? " los días " + esc(e.o["Día de pago"]) : ""}` : ""}${e.o["Plan de pagos"] ? `<br>Plan: ${esc(e.o["Plan de pagos"])}` : ""}</p>` : ""}
+    <h3>Pagos recibidos (${e.movs.length})</h3><div class="es-tabla">${e.movs.length ? e.movs.map(m => fila(caFecha(m.fecha) + " · " + (m.t || "Abono"), m.d, m.m, "pago")).join("") : `<div class="es-r"><small>Todavía no hay pagos registrados en PAGOS.</small></div>`}
+      ${e.cargos.length ? e.cargos.map(c => fila(caFecha(c.fecha) + " · " + c.t, c.d, c.m, "srv")).join("") : ""}<div class="es-r es-tot"><b>${e.saldo > 0 ? "Saldo pendiente" : e.saldo < 0 ? "Saldo a favor" : "Liquidado"}</b><span class="n">${money(Math.abs(e.saldo))}</span></div></div>
+    ${e.plan.length ? `<h3>Pagos por venir</h3><div class="es-tabla">${e.plan.slice(0, 12).map(p => fila(caFecha(p.fecha), p.vencido ? "vencido" : "", p.m, p.vencido ? "ant" : "")).join("")}</div>` : ""}
+    ${e.otras.length ? `<h3>Pensión del mismo cliente</h3>${e.otras.map(p => fila(p["Caballo"] + " · " + p["Folio"], p["Días"] + " días · " + (numv(p["Tarifa diaria"]) ? money(numv(p["Tarifa diaria"])) + "/día" : "tarifa por definir"), numv(p["Saldo"]))).join("")}` : ""}
+    ${e.o["Historial Excel"] ? `<h3>Historial (Excel anterior)</h3><p class="card-m">${esc(e.o["Historial Excel"])}</p>` : ""}
+    <div class="big-actions" style="justify-content:center;margin-top:12px">${A.includes("caballo_pago") && act ? `<button class="btn" type="button" data-ca-abono="${esc(e.folio)}">Registrar ${e.tipo === "venta" ? "abono" : "pago"}</button>` : ""}${mio && e.tipo === "venta" && e.o["ID caballo"] ? `<button class="btn" type="button" data-ca-ficha="${esc(e.o["ID caballo"])}">Ficha del caballo</button>` : ""}</div>
+    <div class="big-actions" style="justify-content:center"><button class="btn btn-wa" type="button" data-ca-wa="${esc(e.folio)}">Enviar por WhatsApp</button><button class="btn" type="button" data-ca-pdf="${esc(e.folio)}">Imprimir o PDF</button></div>`);
+}
+function caEdoPdf(folio) {
+  const e = caEstado(folio); if (!e) return;
+  const w = window.open("", "_blank"); if (!w) return alert("Permite ventanas emergentes para imprimir.");
+  const r = (t, d, m, k = "") => `<tr class="${k}"><td>${esc(t)}${d ? `<small>${esc(d)}</small>` : ""}</td><td class="n">${k === "pago" ? "−" : ""}${money(Math.abs(m))}</td></tr>`;
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>Estado de cuenta · ${esc(e.cliente)} · ${esc(e.folio)}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Cormorant+Garamond:wght@400;600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>body{font-family:Jost,system-ui,sans-serif;margin:34px 40px;color:#1F3A2B}.top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #B8964A;padding-bottom:12px;margin-bottom:18px}
+    .top img{height:52px}.top h2{font-family:Cinzel,Georgia,serif;font-weight:500;font-size:17px;margin:0 0 2px;color:#1F3A2B}.top p{margin:2px 0;color:#5E5B55;font-size:13px}
+    .res{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 16px}.res div{background:#F6F2E8;border-radius:8px;padding:10px 12px}.res span{display:block;font-size:11px;color:#5E5B55;text-transform:uppercase;letter-spacing:.04em}.res b{font-size:18px}
+    h3{font-family:Cinzel,Georgia,serif;font-weight:500;font-size:13px;letter-spacing:.04em;margin:18px 0 4px;color:#B8964A}table{border-collapse:collapse;width:100%}td{border-bottom:1px solid #e6e3dc;padding:8px 6px;font-size:13.5px;vertical-align:top}
+    td small{color:#5E5B55;display:block;font-size:12px}td.n{text-align:right;white-space:nowrap}tr.pago td.n{color:#1f7a3d}tr.ant td{color:#5E5B55}.tot{margin-top:14px;display:flex;justify-content:flex-end}.tot div{border:2px solid #1F3A2B;padding:10px 18px;text-align:right}.tot b{font-size:22px;display:block}
+    .pie{margin-top:26px;color:#5E5B55;font-size:11.5px;line-height:1.6;border-top:1px solid #e6e3dc;padding-top:10px}@media print{body{margin:18px 22px}}</style>
+    <div class="top"><div><img src="/marca/logo-horizontal-oro-verde.png" alt="Rancho El Descanso"><p>Estado de cuenta · ${esc(fCorta(hoyISO()))} ${hoyISO().slice(0, 4)}</p></div>
+    <div style="text-align:right"><h2>${esc(e.cliente)}</h2><p>${e.tipo === "pension" ? "Pensión de " : ""}${esc(e.caballo)} · ${esc(e.folio)}</p>${e.contacto ? `<p>${esc(e.contacto)}</p>` : ""}</div></div>
+    <div class="res">${e.tipo === "venta" ? `<div><span>Precio</span><b>${money(e.precio)}</b></div><div><span>Pagado</span><b>${money(e.pagado)}</b></div><div><span>Saldo</span><b>${money(e.saldo)}</b></div><div><span>Avance</span><b>${caPct(e.o)}%</b></div>`
+      : `<div><span>Días</span><b>${esc(e.o["Días"] || "0")}</b></div><div><span>Tarifa diaria</span><b>${numv(e.o["Tarifa diaria"]) ? money(numv(e.o["Tarifa diaria"])) : "—"}</b></div><div><span>Total</span><b>${money(e.total)}</b></div><div><span>Saldo</span><b>${money(e.saldo)}</b></div>`}</div>
+    ${e.tipo === "venta" && (e.o["Plan de pagos"] || e.o["Próximo pago"]) ? `<p style="font-size:13px;color:#5E5B55;margin:0">${e.o["Próximo pago"] ? `Próximo pago: ${esc(caFecha(e.o["Próximo pago"]))} · ${money(numv(e.o["Monto próximo"]))}. ` : ""}${e.o["Plan de pagos"] ? "Plan: " + esc(e.o["Plan de pagos"]) : ""}</p>` : ""}
+    <h3>Pagos recibidos</h3><table>${e.movs.length ? e.movs.map(m => r(caFecha(m.fecha) + " · " + (m.t || "Abono"), m.d, m.m, "pago")).join("") : `<tr><td colspan="2"><small>Sin pagos registrados.</small></td></tr>`}</table>
+    ${e.cargos.length ? `<h3>Servicios cargados</h3><table>${e.cargos.map(c => r(caFecha(c.fecha) + " · " + c.t, c.d, c.m, "srv")).join("")}</table>` : ""}
+    ${e.plan.length ? `<h3>Pagos por venir</h3><table>${e.plan.slice(0, 12).map(p => r(caFecha(p.fecha), p.vencido ? "vencido" : "", p.m, p.vencido ? "ant" : "")).join("")}</table>` : ""}
+    ${e.otras.length ? `<h3>Pensión</h3><table>${e.otras.map(p => r(p["Caballo"] + " · " + p["Folio"], p["Días"] + " días" + (numv(p["Tarifa diaria"]) ? " × " + money(numv(p["Tarifa diaria"])) : ""), numv(p["Saldo"]))).join("")}</table>` : ""}
+    <div class="tot"><div>${e.saldo > 0 ? "Saldo pendiente" : e.saldo < 0 ? "Saldo a favor" : "Liquidado"}<b>${money(Math.abs(e.saldo))}</b></div></div>
+    <p class="pie">CRIADERO RANCHO EL DESCANSO · San Miguel Cuyutlán, Tlajomulco de Zúñiga, Jalisco · WhatsApp +52 33 1604 5548 · ranchoeldescansogdl@gmail.com<br>Si algo no corresponde, escríbenos y lo revisamos.</p>
+    <script>document.fonts.ready.then(() => setTimeout(print, 300))<\/script>`);
+  w.document.close();
+}
+async function caContacto(hoja, clave) {
+  if (sinCosto()) return;
+  const L = hoja === "VENTAS" ? CABALLOS.ventas : CABALLOS.pensiones, o = L.find(x => x["Folio"] === clave); if (!o) return;
+  const box = dialogo("Contacto del cliente", `<div class="frm"><p class="ctx">${esc(o["Comprador"] || o["Cliente"])} · ${esc(o["Concepto"] || o["Caballo"])} (${esc(clave)})</p>
+    <label>WhatsApp o medio de contacto</label><input id="ct-v" maxlength="80" value="${esc(o["Contacto"] || "")}" placeholder="Ej. 33 1234 5678 · o correo"><button class="btn btn-dark" id="ct-ok" type="button">Guardar</button>
+    <p class="card-m">Con el número se puede mandar el estado de cuenta directo por WhatsApp.</p></div>`);
+  box.querySelector("#ct-ok").onclick = async () => { const v = box.querySelector("#ct-v").value.trim(); const b = box.querySelector("#ct-ok"); b.disabled = true;
+    try { await post({accion: "hacer", tipo: "caballo", op: "editar", hoja, clave, cambios: {Contacto: v}}); o["Contacto"] = v; $("#dlg").close(); toast("Contacto guardado"); render(); } catch (e) { alert(e.message); b.disabled = false; } };
+}
+const caTel = s => { const d = String(s || "").replace(/\D/g, ""); return d.length === 10 ? "52" + d : d.length >= 11 && d.length <= 13 ? d : ""; };
+function caWa(folio) {
+  const e = caEstado(folio); if (!e) return;
+  if (!e.contacto) { toast("Primero pon el contacto del cliente."); return caContacto(e.tipo === "venta" ? "VENTAS" : "PENSIONES", folio); }
+  const t = caTel(e.contacto); window.open(t ? "https://wa.me/" + t + "?text=" + encodeURIComponent(caEdoTexto(e)) : wa(caEdoTexto(e)), "_blank", "noopener");
+}
+/* ----- ficha editable del caballo ----- */
+const CA_CAMPOS = [["Nombre", "text"], ["Raza", "sel", ["Friesian", "Gypsy Vanner", "Otra"]], ["Sexo", "sel", ["Hembra", "Macho"]], ["Capa", "text"], ["Alzada (m)", "num"], ["Nacimiento", "date"], ["Propiedad", "text"],
+  ["Padre", "text"], ["Madre", "text"], ["Abuelo materno", "text"], ["No. registro", "text"], ["Chip", "text"], ["ADN", "text"], ["Certificado", "text"], ["Predicados", "area"],
+  ["Estatus", "sel", ["Plantel", "En venta", "Apartado", "Vendido"]], ["Precio", "num"], ["Semental", "sel", ["NO", "SI"]], ["Publicar", "sel", ["NO", "SI"]], ["Destacado", "sel", ["", "SI", "NO"]],
+  ["Reproducción", "sel", ["", "Cargada", "Por cargar", "Vacía", "Lactando", "No aplica"]], ["Cargada de", "text"], ["Fecha monta", "date"], ["Fecha pare", "date"], ["Link video", "text"], ["Notas", "area"]];
+function caCampo([k, t, ops], val, pre) {
+  const id = pre + k.replace(/[^a-z]/gi, ""), v = esc(val || "");
+  if (t === "sel") return `<label>${esc(k)}</label><select data-k="${esc(k)}">${(ops.includes(val) ? ops : [val, ...ops]).map(o => `<option value="${esc(o)}"${o === val ? " selected" : ""}>${o === "" ? "—" : esc(o)}</option>`).join("")}</select>`;
+  if (t === "area") return `<label>${esc(k)}</label><textarea data-k="${esc(k)}" rows="2" maxlength="600">${v}</textarea>`;
+  if (t === "date") return `<label>${esc(k)}</label><input type="date" data-k="${esc(k)}" value="${esc(isoDe(val) || "")}">`;
+  if (t === "num") return `<label>${esc(k)}</label><input type="number" step="any" data-k="${esc(k)}" value="${esc(String(val || "").replace(/[^0-9.\-]/g, ""))}">`;
+  return `<label>${esc(k)}</label><input data-k="${esc(k)}" maxlength="160" value="${v}">`;
+}
+function caLeer(box) { const o = {}; box.querySelectorAll("[data-k]").forEach(i => { o[i.dataset.k] = i.value; }); return o; }
+function caDiff(orig, nuevo, campos) { const d = {}; campos.forEach(([k, t]) => { if (!(k in nuevo)) return; const a = t === "date" ? (isoDe(orig[k]) || "") : t === "num" ? String(orig[k] || "").replace(/[^0-9.\-]/g, "") : String(orig[k] || ""); if (String(nuevo[k]) !== a) d[k] = nuevo[k]; }); return d; }
+async function caEditarCaballo(id) {
+  if (sinCosto()) return;
+  const c = CABALLOS.caballos.find(x => x.ID === id); if (!c) return;
+  const box = dialogo("Editar · " + c.Nombre, `<div class="frm"><p class="ctx">${esc(id)} · los cambios se escriben en CABALLOS CRD y quedan en CAMBIOS PORTAL.</p>
+    <div class="dos">${CA_CAMPOS.map(f => caCampo(f, c[f[0]], "ce-")).join("")}</div><button class="btn btn-dark" id="ce-ok" type="button">Guardar cambios</button></div>`);
+  box.querySelector("#ce-ok").onclick = async () => { const cambios = caDiff(c, caLeer(box), CA_CAMPOS); if (!Object.keys(cambios).length) return toast("No cambiaste nada.");
+    const b = box.querySelector("#ce-ok"); b.disabled = true;
+    try { const r = await post({accion: "hacer", tipo: "caballo", op: "editar", hoja: "CABALLOS CRD", clave: id, cambios}); $("#dlg").close(); toast(`Guardado: ${r.hechos.join(", ")}${r.saltados.length ? " · no se tocó: " + r.saltados.join(", ") : ""}`); CABALLOS = null; await cargar("caballos"); render(); }
+    catch (e) { alert(e.message); b.disabled = false; } };
+}
+async function caBaja(id) {
+  if (sinCosto()) return;
+  const c = CABALLOS.caballos.find(x => x.ID === id); if (!c) return;
+  const box = dialogo("Dar de baja · " + c.Nombre, `<div class="frm"><p class="ctx">No se borra nada: el caballo queda como Baja (o Vendido / Muerto…) en CABALLOS CRD, deja de publicarse y se anota en HISTORIAL CABALLOS.</p>
+    <label>¿Qué pasó?</label><select id="cb-e">${["Baja", "Vendido", "Muerto", "Donado", "Regresado"].map(x => `<option>${x}</option>`).join("")}</select>
+    <label>Motivo</label><textarea id="cb-m" rows="3" maxlength="200" placeholder="Ej. Se vendió fuera de la Maestra a … / Murió el 12 oct por cólico"></textarea><button class="btn btn-dark" id="cb-ok" type="button">Dar de baja</button></div>`);
+  box.querySelector("#cb-ok").onclick = async () => { const motivo = box.querySelector("#cb-m").value.trim(); if (motivo.length < 3) return alert("Escribe el motivo."); const b = box.querySelector("#cb-ok"); b.disabled = true;
+    try { await post({accion: "hacer", tipo: "caballo", op: "baja", id, estatus: box.querySelector("#cb-e").value, motivo}); $("#dlg").close(); toast(c.Nombre + " dado de baja"); CABALLOS = null; await cargar("caballos"); render(); } catch (e) { alert(e.message); b.disabled = false; } };
+}
+const VE_CAMPOS = [["Comprador", "text"], ["Contacto", "text"], ["Vendedor", "text"], ["Precio", "num"], ["Moneda", "sel", ["MXN", "USD", "EUR"]], ["Fecha venta", "date"], ["Anticipo (plan)", "num"], ["Mensualidad", "num"], ["Primer pago", "date"], ["Día de pago", "num"],
+  ["Entrega / destete", "text"], ["Salió del rancho", "date"], ["Comisión %", "num"], ["Comisión pagada", "sel", ["", "SI", "NO"]], ["Plan de pagos", "area"], ["Notas", "area"]];
+async function caEditarVenta(folio) {
+  if (sinCosto()) return;
+  const v = CABALLOS.ventas.find(x => x["Folio"] === folio); if (!v) return;
+  const box = dialogo("Editar venta · " + folio, `<div class="frm"><p class="ctx">${esc(v["Concepto"])} · Pagado, Saldo, Estatus y Próximo pago los calcula la Maestra; aquí cambias lo demás. Los abonos se registran con "Registrar abono".</p>
+    <div class="dos">${VE_CAMPOS.map(f => caCampo(f, v[f[0]], "ve-")).join("")}</div><button class="btn btn-dark" id="ve-ok" type="button">Guardar cambios</button></div>`);
+  box.querySelector("#ve-ok").onclick = async () => { const cambios = caDiff(v, caLeer(box), VE_CAMPOS); if (!Object.keys(cambios).length) return toast("No cambiaste nada."); const b = box.querySelector("#ve-ok"); b.disabled = true;
+    try { const r = await post({accion: "hacer", tipo: "caballo", op: "editar", hoja: "VENTAS", clave: folio, cambios}); $("#dlg").close(); toast(`Guardado: ${r.hechos.join(", ")}${r.saltados.length ? " · no se tocó: " + r.saltados.join(", ") : ""}`); CABALLOS = null; await cargar("caballos"); render(); }
+    catch (e) { alert(e.message); b.disabled = false; } };
+}
+const PE_CAMPOS = [["Cliente", "text"], ["Contacto", "text"], ["Caballo", "text"], ["Raza", "sel", ["Friesian", "Gypsy Vanner", "Otra"]], ["Inicio", "date"], ["Fin", "date"], ["Tarifa diaria", "num"], ["Vendedor", "text"], ["Notas", "area"]];
+async function caEditarPension(folio) {
+  if (sinCosto()) return;
+  const p = CABALLOS.pensiones.find(x => x["Folio"] === folio); if (!p) return;
+  const box = dialogo("Editar pensión · " + folio, `<div class="frm"><p class="ctx">Días, Total, Pagado y Saldo los calcula la Maestra. Pon "Fin" cuando el caballo se vaya: la pensión queda Terminada.</p>
+    <div class="dos">${PE_CAMPOS.map(f => caCampo(f, p[f[0]], "pe-")).join("")}</div><button class="btn btn-dark" id="pe-ok" type="button">Guardar cambios</button></div>`);
+  box.querySelector("#pe-ok").onclick = async () => { const cambios = caDiff(p, caLeer(box), PE_CAMPOS); if (!Object.keys(cambios).length) return toast("No cambiaste nada."); const b = box.querySelector("#pe-ok"); b.disabled = true;
+    try { const r = await post({accion: "hacer", tipo: "caballo", op: "editar", hoja: "PENSIONES", clave: folio, cambios}); $("#dlg").close(); toast(`Guardado: ${r.hechos.join(", ")}`); CABALLOS = null; await cargar("caballos"); render(); }
+    catch (e) { alert(e.message); b.disabled = false; } };
+}
+async function caVentaNueva(id0) {
+  if (sinCosto()) return;
+  const C = CABALLOS.caballos.filter(caEnRancho).slice().sort((a, b) => String(a.Nombre).localeCompare(String(b.Nombre))), vend = CABALLOS.vendedores || [];
+  const box = dialogo("Venta nueva", `<div class="frm"><p class="ctx">Se crea el folio V-… en VENTAS con las mismas fórmulas de las demás ventas y el caballo pasa a Vendido (o Apartado). Los abonos se registran después con "Registrar abono".</p>
+    <label>Caballo</label><select data-k="idCaballo"><option value="">Elige el caballo…</option>${C.map(c => `<option value="${esc(c.ID)}"${c.ID === id0 ? " selected" : ""}>${esc(c.Nombre)} · ${esc(c.ID)} · ${esc(c.Estatus)}${c.Precio ? " · " + money(numv(c.Precio)) : ""}</option>`).join("")}</select>
+    <div class="dos"><div><label>Comprador</label><input data-k="comprador" maxlength="80"></div><div><label>Contacto (WhatsApp)</label><input data-k="contacto" maxlength="80"></div>
+    <div><label>Precio</label><input type="number" step="any" data-k="precio"></div><div><label>Moneda</label><select data-k="moneda"><option>MXN</option><option>USD</option><option>EUR</option></select></div>
+    <div><label>Fecha de venta</label><input type="date" data-k="fechaVenta" value="${hoyISO()}"></div><div><label>Vendedor</label><input data-k="vendedor" list="ve-vend" maxlength="40"><datalist id="ve-vend">${vend.map(v => `<option value="${esc(v.split(" ")[0])}">`).join("")}</datalist></div>
+    <div><label>Anticipo (plan)</label><input type="number" step="any" data-k="anticipo"></div><div><label>Mensualidad</label><input type="number" step="any" data-k="mensualidad"></div>
+    <div><label>Primer pago</label><input type="date" data-k="primerPago"></div><div><label>Día de pago</label><input type="number" min="1" max="31" data-k="diaPago"></div>
+    <div><label>Comisión %</label><input type="number" step="any" data-k="comision" placeholder="7"></div><div><label>Entrega / destete</label><input data-k="entrega" maxlength="80"></div></div>
+    <label>Plan de pagos (como se lo explicaste al cliente)</label><input data-k="plan" maxlength="300"><label>Notas</label><textarea data-k="notas" rows="2" maxlength="300"></textarea>
+    <label class="chk"><input type="checkbox" data-k="apartado"> Solo es apartado (el caballo queda Apartado, no Vendido)</label><label class="chk"><input type="checkbox" data-k="forzar"> Es otra venta aunque ya tenga una abierta</label>
+    <button class="btn btn-dark" id="vn-ok" type="button">Registrar venta</button></div>`);
+  box.querySelector("#vn-ok").onclick = async () => { const venta = {}; box.querySelectorAll("[data-k]").forEach(i => { venta[i.dataset.k] = i.type === "checkbox" ? i.checked : i.value.trim(); });
+    if (!venta.idCaballo) return alert("Elige el caballo."); if (venta.comprador.length < 3) return alert("Escribe el comprador."); if (!(numv(venta.precio) > 0)) return alert("Escribe el precio.");
+    const b = box.querySelector("#vn-ok"); b.disabled = true;
+    try { const r = await post({accion: "hacer", tipo: "caballo", op: "venta_nueva", venta}); $("#dlg").close(); toast("Venta " + r.folio + " registrada"); CABALLOS = null; st.caTab = "ventas"; await cargar("caballos"); render(); } catch (e) { alert(e.message); b.disabled = false; } };
+}
+async function caPensionNueva() {
+  if (sinCosto()) return;
+  const vend = CABALLOS.vendedores || [];
+  const box = dialogo("Pensión nueva", `<div class="frm"><p class="ctx">Caballo de un cliente que se queda en el rancho. Se crea el folio P-… en PENSIONES; los días y el total se calculan solos. Los pagos se registran con "Registrar pago".</p>
+    <div class="dos"><div><label>Cliente</label><input data-k="cliente" maxlength="80"></div><div><label>Contacto (WhatsApp)</label><input data-k="contacto" maxlength="80"></div>
+    <div><label>Caballo</label><input data-k="caballo" maxlength="60"></div><div><label>Raza</label><select data-k="raza"><option>Gypsy Vanner</option><option>Friesian</option><option>Otra</option></select></div>
+    <div><label>Desde</label><input type="date" data-k="inicio" value="${hoyISO()}"></div><div><label>Tarifa diaria</label><input type="number" step="any" data-k="tarifa" placeholder="445"></div>
+    <div><label>Vendedor / quien lo atiende</label><input data-k="vendedor" list="pe-vend" maxlength="40"><datalist id="pe-vend">${vend.map(v => `<option value="${esc(v.split(" ")[0])}">`).join("")}</datalist></div></div>
+    <label>Notas</label><textarea data-k="notas" rows="2" maxlength="300"></textarea><button class="btn btn-dark" id="pn-ok" type="button">Registrar pensión</button></div>`);
+  box.querySelector("#pn-ok").onclick = async () => { const pension = {}; box.querySelectorAll("[data-k]").forEach(i => { pension[i.dataset.k] = i.value.trim(); });
+    if (pension.cliente.length < 3) return alert("Escribe el cliente."); if (pension.caballo.length < 2) return alert("Escribe el caballo."); const b = box.querySelector("#pn-ok"); b.disabled = true;
+    try { const r = await post({accion: "hacer", tipo: "caballo", op: "pension_nueva", pension}); $("#dlg").close(); toast("Pensión " + r.folio + " registrada"); CABALLOS = null; st.caTab = "pensiones"; await cargar("caballos"); render(); } catch (e) { alert(e.message); b.disabled = false; } };
+}
+/* abono rápido a una venta (V-…) o pago a una pensión (P-…): va a PAGOS como Cobro con la referencia del folio */
+async function caAbono(folio) {
+  if (sinCosto()) return;
+  const v = CABALLOS.ventas.find(x => x["Folio"] === folio), p = CABALLOS.pensiones.find(x => x["Folio"] === folio), o = v || p; if (!o) return;
+  const box = dialogo((v ? "Abono a la venta " : "Pago de la pensión ") + folio, `<div class="frm"><p class="ctx">${esc(o["Comprador"] || o["Cliente"])} · ${esc(o["Concepto"] || o["Caballo"])} · saldo ${money(numv(o["Saldo"]))}</p>
+    <div class="dos"><div><label>Monto</label><input type="number" step="any" id="ab-m" placeholder="${esc(String(numv(o["Monto próximo"]) || ""))}"></div><div><label>Fecha</label><input type="date" id="ab-f" value="${hoyISO()}"></div>
+    <div><label>Forma de pago</label><select id="ab-fp">${FORMAS_PAGO.map(x => `<option>${x}</option>`).join("")}</select></div><div><label>Cuenta (opcional)</label><input id="ab-c" maxlength="60"></div></div>
+    <label>Notas</label><input id="ab-n" maxlength="200"><label>Comprobante (opcional)</label><input type="file" id="d-fotos" accept="image/*"><button class="btn btn-dark" id="ab-ok" type="button">Registrar</button></div>`);
+  box.querySelector("#ab-ok").onclick = async () => { const monto = numv(box.querySelector("#ab-m").value); if (!(monto > 0)) return alert("Escribe el monto."); const b = box.querySelector("#ab-ok"); b.disabled = true;
+    try { const archivos = await archivosDe(box);
+      if (v) await post({accion: "hacer", tipo: "caballo", op: "pago", pago: {clase: "venta", folio, monto, fecha: box.querySelector("#ab-f").value, forma: box.querySelector("#ab-fp").value, cuenta: box.querySelector("#ab-c").value, notas: box.querySelector("#ab-n").value}, archivos});
+      else await post({accion: "hacer", tipo: "servicio", op: "estado_pago", cliente: p["Cliente"], monto, fecha: box.querySelector("#ab-f").value, forma: box.querySelector("#ab-fp").value, notas: box.querySelector("#ab-n").value, archivos});
+      $("#dlg").close(); toast("Registrado en PAGOS"); CABALLOS = null; await cargar("caballos"); render(); } catch (e) { alert(e.message); b.disabled = false; } };
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return; const d = b.dataset;
+  if (d.caTab) { st.caTab = d.caTab; render(); }
+  if (d.caFil !== undefined) { st.caFil = d.caFil; const L = $("#ca-lista"); if (L) { L.innerHTML = caLista(); document.querySelectorAll("[data-ca-fil]").forEach(x => x.setAttribute("aria-pressed", x.dataset.caFil === d.caFil)); } }
+  if (d.caRaza !== undefined) { st.caRaza = d.caRaza; const L = $("#ca-lista"); if (L) { L.innerHTML = caLista(); document.querySelectorAll("[data-ca-raza]").forEach(x => x.setAttribute("aria-pressed", x.dataset.caRaza === d.caRaza)); } }
+  if (d.caEdo) caEdoDetalle(d.caEdo);
+  if (d.caWa) caWa(d.caWa);
+  if (d.caPdf) caEdoPdf(d.caPdf);
+  if (d.caContacto) { const [h, k] = d.caContacto.split("|"); caContacto(h, k); }
+  if (d.caEditar) caEditarCaballo(d.caEditar);
+  if (d.caBaja) caBaja(d.caBaja);
+  if (d.caEditVenta) caEditarVenta(d.caEditVenta);
+  if (d.caEditPension) caEditarPension(d.caEditPension);
+  if (d.caVenta !== undefined) caVentaNueva(d.caVenta);
+  if (d.caPension !== undefined) caPensionNueva();
+  if (d.caAbono) caAbono(d.caAbono);
+});
 /* ===================== 10 oct 2026 · control vehicular (base: Google Sheet "CONTROL VEHICULAR MCM") =====================
    Oficina (Nico, Mario, Judith): todas las unidades; lecturas, servicios, seguros, refrendo y verificación.
    Olga: unidades de RANCHO y CARPINTERÍA; lecturas (km u horas) y servicios. Cada registro es una fila nueva en la Bitácora. */
@@ -3398,14 +3665,20 @@ function asHuella(src) { const c = document.createElement("canvas"); c.width = 9
 function dialogoAsistencia(tipo) {
   if (COMO) return toast("Estás en \"Ver como\": solo se puede ver.");
   const box = dialogo("Marcar mi " + tipo.toLowerCase(), `<div class="frm"><video id="as-v" autoplay playsinline muted style="width:100%;max-height:52vh;background:#000;border-radius:12px;transform:scaleX(-1)"></video>
-    <p class="ctx" id="as-st">Activando la cámara y la ubicación…</p><button class="btn btn-dark" id="as-ok" type="button" disabled>Tomar foto y marcar ${esc(tipo.toLowerCase())}</button>
-    <p class="card-m">La foto se toma aquí, en vivo. Necesitas permitir la cámara y la ubicación. La hora la pone el sistema.</p></div>`);
-  const v = box.querySelector("#as-v"), stt = box.querySelector("#as-st"), ok = box.querySelector("#as-ok"); let stream = null, pos = null, geo = null;
+    <p class="ctx" id="as-st">Activando la cámara y la ubicación…</p><div class="big-actions" style="justify-content:center"><button class="btn btn-dark" id="as-ok" type="button" disabled>Tomar foto y marcar ${esc(tipo.toLowerCase())}</button><button class="btn" id="as-flip" type="button" title="Cambiar entre selfie y cámara normal">🔄 Cambiar cámara</button></div>
+    <p class="card-m">La foto se toma aquí, en vivo (selfie o cámara normal, como te acomode). Necesitas permitir la cámara y la ubicación. La hora la pone el sistema.</p></div>`);
+  const v = box.querySelector("#as-v"), stt = box.querySelector("#as-st"), ok = box.querySelector("#as-ok"), flip = box.querySelector("#as-flip"); let stream = null, pos = null, geo = null, cara = "user";
   const listo = () => { ok.disabled = !(stream && pos); stt.textContent = !stream ? "Permite la cámara para continuar." : !pos ? "Esperando tu ubicación… (actívala si te la pide)" : "Listo. Ponte de frente y toca el botón."; };
   const parar = () => { if (stream) stream.getTracks().forEach(t => t.stop()); if (geo !== null) navigator.geolocation.clearWatch(geo); };
   $("#dlg").addEventListener("close", parar, {once: true});
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { stt.textContent = "Este celular no deja usar la cámara desde el portal."; return; }
-  navigator.mediaDevices.getUserMedia({video: {facingMode: "user", width: {ideal: 960}}, audio: false}).then(s => { stream = s; v.srcObject = s; listo(); }).catch(() => { stt.textContent = "No se pudo abrir la cámara. Permite la cámara para el portal en tu celular e inténtalo de nuevo."; });
+  const abrirCam = () => { // 14 oct 2026: selfie (user) o cámara normal (environment); la galería sigue bloqueada para que la foto sea en vivo
+    if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; v.style.transform = cara === "user" ? "scaleX(-1)" : "none";
+    navigator.mediaDevices.getUserMedia({video: {facingMode: cara === "user" ? "user" : {ideal: "environment"}, width: {ideal: 960}}, audio: false}).then(s => { stream = s; v.srcObject = s; listo(); })
+      .catch(() => { stt.textContent = cara === "user" ? "No se pudo abrir la cámara. Permite la cámara para el portal en tu celular e inténtalo de nuevo." : "Este celular no dejó abrir la cámara trasera; vuelve a cambiar a selfie."; });
+  };
+  flip.onclick = () => { cara = cara === "user" ? "environment" : "user"; abrirCam(); };
+  abrirCam();
   if (!navigator.geolocation) stt.textContent = "Este celular no comparte la ubicación.";
   else geo = navigator.geolocation.watchPosition(p => { pos = p.coords; listo(); }, () => { stt.textContent = "Activa la ubicación del celular para marcar tu asistencia."; }, {enableHighAccuracy: true, maximumAge: 0, timeout: 20000});
   ok.onclick = async () => {
